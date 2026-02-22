@@ -1,0 +1,194 @@
+import { eq, and, between, isNull, sql } from "drizzle-orm";
+import { type AppDatabase } from "../db/connection.js";
+import {
+  transactions,
+  budgetCategories,
+  merchantAliases,
+} from "../db/schema.js";
+
+export function createTransactionService(db: AppDatabase) {
+  return {
+    getByMonth(householdId: number, month: string) {
+      // month is "YYYY-MM"
+      const startDate = `${month}-01`;
+      const endDate = `${month}-31`;
+
+      const results = db
+        .select({
+          id: transactions.id,
+          dateOperation: transactions.dateOperation,
+          labelSimplified: transactions.labelSimplified,
+          labelOperation: transactions.labelOperation,
+          amount: transactions.amount,
+          bankCategory: transactions.bankCategory,
+          bankSubCategory: transactions.bankSubCategory,
+          budgetCategoryId: transactions.budgetCategoryId,
+          budgetCategoryName: budgetCategories.name,
+          displayName: merchantAliases.displayName,
+          reference: transactions.reference,
+          additionalInfo: transactions.additionalInfo,
+          operationType: transactions.operationType,
+        })
+        .from(transactions)
+        .leftJoin(
+          budgetCategories,
+          eq(transactions.budgetCategoryId, budgetCategories.id),
+        )
+        .leftJoin(
+          merchantAliases,
+          and(
+            eq(transactions.labelSimplified, merchantAliases.originalLabel),
+            eq(merchantAliases.householdId, householdId),
+          ),
+        )
+        .where(
+          and(
+            eq(transactions.householdId, householdId),
+            between(transactions.dateOperation, startDate, endDate),
+          ),
+        )
+        .orderBy(transactions.dateOperation)
+        .all();
+
+      return results;
+    },
+
+    getMonthlySummary(householdId: number, month: string) {
+      const startDate = `${month}-01`;
+      const endDate = `${month}-31`;
+
+      // Categorized transactions
+      const categorized = db
+        .select({
+          id: budgetCategories.id,
+          name: budgetCategories.name,
+          totalAmount: sql<number>`sum(${transactions.amount})`.as(
+            "total_amount",
+          ),
+          transactionCount: sql<number>`count(*)`.as("transaction_count"),
+        })
+        .from(transactions)
+        .innerJoin(
+          budgetCategories,
+          eq(transactions.budgetCategoryId, budgetCategories.id),
+        )
+        .where(
+          and(
+            eq(transactions.householdId, householdId),
+            between(transactions.dateOperation, startDate, endDate),
+          ),
+        )
+        .groupBy(budgetCategories.id, budgetCategories.name)
+        .all();
+
+      // Uncategorized transactions
+      const uncategorized = db
+        .select({
+          totalAmount: sql<number>`coalesce(sum(${transactions.amount}), 0)`.as(
+            "total_amount",
+          ),
+          transactionCount: sql<number>`count(*)`.as("transaction_count"),
+        })
+        .from(transactions)
+        .where(
+          and(
+            eq(transactions.householdId, householdId),
+            between(transactions.dateOperation, startDate, endDate),
+            isNull(transactions.budgetCategoryId),
+          ),
+        )
+        .get()!;
+
+      const totalAmount =
+        categorized.reduce((sum, c) => sum + c.totalAmount, 0) +
+        uncategorized.totalAmount;
+
+      return {
+        month,
+        totalAmount,
+        categories: categorized,
+        uncategorized: {
+          totalAmount: uncategorized.totalAmount,
+          transactionCount: uncategorized.transactionCount,
+        },
+      };
+    },
+
+    getHistory(householdId: number, from: string, to: string) {
+      // Generate month list
+      const months: string[] = [];
+      const [fromYear, fromMonth] = from.split("-").map(Number);
+      const [toYear, toMonth] = to.split("-").map(Number);
+
+      let currentYear = fromYear;
+      let currentMonth = fromMonth;
+
+      while (
+        currentYear < toYear ||
+        (currentYear === toYear && currentMonth <= toMonth)
+      ) {
+        months.push(`${currentYear}-${String(currentMonth).padStart(2, "0")}`);
+        currentMonth++;
+        if (currentMonth > 12) {
+          currentMonth = 1;
+          currentYear++;
+        }
+      }
+
+      const startDate = `${from}-01`;
+      const endDate = `${to}-31`;
+
+      // Get all categorized transactions in range
+      const results = db
+        .select({
+          categoryId: budgetCategories.id,
+          categoryName: budgetCategories.name,
+          month: sql<string>`substr(${transactions.dateOperation}, 1, 7)`.as(
+            "month",
+          ),
+          totalAmount: sql<number>`sum(${transactions.amount})`.as(
+            "total_amount",
+          ),
+        })
+        .from(transactions)
+        .innerJoin(
+          budgetCategories,
+          eq(transactions.budgetCategoryId, budgetCategories.id),
+        )
+        .where(
+          and(
+            eq(transactions.householdId, householdId),
+            between(transactions.dateOperation, startDate, endDate),
+          ),
+        )
+        .groupBy(
+          budgetCategories.id,
+          budgetCategories.name,
+          sql`substr(${transactions.dateOperation}, 1, 7)`,
+        )
+        .all();
+
+      // Pivot to { categoryId, categoryName, amounts: { month: amount } }
+      const categoryMap = new Map<
+        number,
+        { id: number; name: string; amounts: Record<string, number> }
+      >();
+
+      for (const row of results) {
+        if (!categoryMap.has(row.categoryId)) {
+          categoryMap.set(row.categoryId, {
+            id: row.categoryId,
+            name: row.categoryName,
+            amounts: {},
+          });
+        }
+        categoryMap.get(row.categoryId)!.amounts[row.month] = row.totalAmount;
+      }
+
+      return {
+        months,
+        categories: Array.from(categoryMap.values()),
+      };
+    },
+  };
+}
