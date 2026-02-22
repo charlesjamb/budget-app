@@ -120,7 +120,7 @@ function ImportPage() {
 
   return (
     <>
-      <Title>Import CSV</Title>
+      <Title>📥 Import CSV</Title>
 
       <UploadArea onClick={() => fileInputRef.current?.click()}>
         <UploadText>Click to upload your bank CSV file</UploadText>

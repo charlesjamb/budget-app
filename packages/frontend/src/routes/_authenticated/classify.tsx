@@ -113,7 +113,7 @@ const TxSublabel = styled.span`
 `;
 
 const TxAmount = styled.span`
-  color: #dc2626;
+  color: #059669;
   font-weight: 500;
   flex-shrink: 0;
   min-width: 80px;
@@ -163,7 +163,7 @@ function ClassifyPage() {
 
   return (
     <>
-      <Title>Classify Transactions</Title>
+      <Title>✅ Classify Transactions</Title>
 
       {subcategories.length === 0 ? (
         <EmptyState>

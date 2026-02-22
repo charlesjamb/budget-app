@@ -4,6 +4,11 @@ const Container = styled.div`
   display: flex;
   align-items: center;
   gap: 16px;
+
+  @media (max-width: 640px) {
+    width: 100%;
+    justify-content: space-between;
+  }
 `;
 
 const ArrowButton = styled.button`

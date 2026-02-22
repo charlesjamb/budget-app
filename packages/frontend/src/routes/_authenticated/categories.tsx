@@ -157,7 +157,7 @@ function CategoriesPage() {
 
   return (
     <>
-      <Title>Budget Categories</Title>
+      <Title>🏷️ Budget Categories</Title>
 
       <AddForm onSubmit={handleAdd}>
         <Input

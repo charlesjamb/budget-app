@@ -13,18 +13,47 @@ const Header = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+`;
+
+const TotalSummary = styled.div`
+  @media (max-width: 640px) {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-left: 4px solid #059669;
+    border-radius: 8px;
+    padding: 12px 16px;
+  }
 `;
 
 const TotalAmount = styled.div`
   font-size: 28px;
   font-weight: 700;
-  color: #dc2626;
+  color: #059669;
+  white-space: nowrap;
+
+  @media (max-width: 640px) {
+    font-size: 24px;
+  }
 `;
 
 const TotalLabel = styled.div`
   font-size: 13px;
   color: #6b7280;
   text-align: right;
+
+  @media (max-width: 640px) {
+    text-align: left;
+  }
 `;
 
 const CardList = styled.div`
@@ -39,6 +68,11 @@ const SectionTitle = styled.h2`
   letter-spacing: 0.05em;
   color: #6b7280;
   margin: 24px 0 12px;
+`;
+
+const PageTitle = styled.h1`
+  font-size: 24px;
+  margin-bottom: 20px;
 `;
 
 const EmptyState = styled.p`
@@ -76,6 +110,7 @@ function DashboardPage() {
   if (!summary || summary.totalAmount === 0) {
     return (
       <>
+        <PageTitle>💰 Dashboard</PageTitle>
         <Header>
           <MonthPicker month={month} onChange={setMonth} />
         </Header>
@@ -86,12 +121,13 @@ function DashboardPage() {
 
   return (
     <>
+      <PageTitle>💰 Dashboard</PageTitle>
       <Header>
         <MonthPicker month={month} onChange={setMonth} />
-        <div>
+        <TotalSummary>
           <TotalLabel>Total spent</TotalLabel>
           <TotalAmount>{formatAmount(summary.totalAmount)}</TotalAmount>
-        </div>
+        </TotalSummary>
       </Header>
 
       <CardList>

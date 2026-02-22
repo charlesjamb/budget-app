@@ -9,6 +9,18 @@ const Nav = styled.nav`
   align-items: center;
   height: 56px;
   gap: 8px;
+
+  @media (max-width: 640px) {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    padding: 0;
+    gap: 0;
+    border-top: 1px solid #2d2d4e;
+    z-index: 100;
+  }
 `;
 
 const Brand = styled.span`
@@ -16,6 +28,10 @@ const Brand = styled.span`
   font-weight: 700;
   font-size: 18px;
   margin-right: 24px;
+
+  @media (max-width: 640px) {
+    display: none;
+  }
 `;
 
 const NavLink = styled(Link)<{ $active?: boolean }>`
@@ -32,10 +48,32 @@ const NavLink = styled(Link)<{ $active?: boolean }>`
     color: #fff;
     background: #16213e;
   }
+
+  @media (max-width: 640px) {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 2px;
+    border-radius: 0;
+    font-size: 11px;
+    font-weight: ${(p) => (p.$active ? "600" : "400")};
+    height: 100%;
+    background: transparent;
+    border-top: 2px solid ${(p) => (p.$active ? "#fff" : "transparent")};
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+  }
 `;
 
 const Spacer = styled.div`
   flex: 1;
+
+  @media (max-width: 640px) {
+    display: none;
+  }
 `;
 
 const LogoutButton = styled.button`
@@ -50,6 +88,10 @@ const LogoutButton = styled.button`
   &:hover {
     color: #fff;
     border-color: #fff;
+  }
+
+  @media (max-width: 640px) {
+    display: none;
   }
 `;
 

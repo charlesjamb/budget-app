@@ -26,6 +26,16 @@ const SectionTitle = styled.h2`
   }
 `;
 
+const TableScroll = styled.div`
+  @media (max-width: 640px) {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+  }
+`;
+
 const Table = styled.table`
   width: 100%;
   background: #fff;
@@ -33,6 +43,13 @@ const Table = styled.table`
   border-radius: 8px;
   border-collapse: collapse;
   overflow: hidden;
+
+  @media (max-width: 640px) {
+    border: none;
+    border-radius: 0;
+    width: max-content;
+    min-width: 100%;
+  }
 `;
 
 const Th = styled.th`
@@ -44,6 +61,7 @@ const Th = styled.th`
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #6b7280;
+  white-space: nowrap;
 `;
 
 const Td = styled.td`
@@ -68,6 +86,10 @@ const AddForm = styled.form`
   display: flex;
   gap: 8px;
   margin-bottom: 16px;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+  }
 `;
 
 const Input = styled.input`
@@ -167,38 +189,40 @@ function SettingsPage() {
 
   return (
     <>
-      <Title>Settings</Title>
+      <Title>⚙️ Settings</Title>
 
       <SectionTitle>Mapping Rules</SectionTitle>
       {rules.length === 0 ? (
         <EmptyState>No mapping rules yet.</EmptyState>
       ) : (
-        <Table>
-          <thead>
-            <tr>
-              <Th>Label</Th>
-              <Th>Bank Sub-Category</Th>
-              <Th>Budget Category</Th>
-              <Th>Actions</Th>
-            </tr>
-          </thead>
-          <tbody>
-            {rules.map((rule) => (
-              <tr key={rule.id}>
-                <Td>{rule.labelSimplified}</Td>
-                <Td>{rule.bankSubCategory}</Td>
-                <Td>{rule.budgetCategoryName}</Td>
-                <Td>
-                  <DangerButton
-                    onClick={() => deleteRuleMutation.mutate(rule.id)}
-                  >
-                    Delete
-                  </DangerButton>
-                </Td>
+        <TableScroll>
+          <Table>
+            <thead>
+              <tr>
+                <Th>Label</Th>
+                <Th>Bank Sub-Category</Th>
+                <Th>Budget Category</Th>
+                <Th>Actions</Th>
               </tr>
-            ))}
-          </tbody>
-        </Table>
+            </thead>
+            <tbody>
+              {rules.map((rule) => (
+                <tr key={rule.id}>
+                  <Td>{rule.labelSimplified}</Td>
+                  <Td>{rule.bankSubCategory}</Td>
+                  <Td>{rule.budgetCategoryName}</Td>
+                  <Td>
+                    <DangerButton
+                      onClick={() => deleteRuleMutation.mutate(rule.id)}
+                    >
+                      Delete
+                    </DangerButton>
+                  </Td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </TableScroll>
       )}
 
       <SectionTitle>Merchant Aliases</SectionTitle>
@@ -222,51 +246,53 @@ function SettingsPage() {
       {aliases.length === 0 ? (
         <EmptyState>No merchant aliases yet.</EmptyState>
       ) : (
-        <Table>
-          <thead>
-            <tr>
-              <Th>Original Label</Th>
-              <Th>Display Name</Th>
-              <Th>Actions</Th>
-            </tr>
-          </thead>
-          <tbody>
-            {aliases.map((alias) => (
-              <tr key={alias.id}>
-                <Td>{alias.originalLabel}</Td>
-                {editingAlias === alias.id ? (
-                  <Td>
-                    <EditInput
-                      value={editAliasName}
-                      onChange={(e) => setEditAliasName(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") handleSaveAlias(alias.id);
-                        if (e.key === "Escape") setEditingAlias(null);
-                      }}
-                      autoFocus
-                    />
-                  </Td>
-                ) : (
-                  <EditableCell
-                    onClick={() => {
-                      setEditingAlias(alias.id);
-                      setEditAliasName(alias.displayName);
-                    }}
-                  >
-                    {alias.displayName}
-                  </EditableCell>
-                )}
-                <Td>
-                  <DangerButton
-                    onClick={() => deleteAliasMutation.mutate(alias.id)}
-                  >
-                    Delete
-                  </DangerButton>
-                </Td>
+        <TableScroll>
+          <Table>
+            <thead>
+              <tr>
+                <Th>Original Label</Th>
+                <Th>Display Name</Th>
+                <Th>Actions</Th>
               </tr>
-            ))}
-          </tbody>
-        </Table>
+            </thead>
+            <tbody>
+              {aliases.map((alias) => (
+                <tr key={alias.id}>
+                  <Td>{alias.originalLabel}</Td>
+                  {editingAlias === alias.id ? (
+                    <Td>
+                      <EditInput
+                        value={editAliasName}
+                        onChange={(e) => setEditAliasName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleSaveAlias(alias.id);
+                          if (e.key === "Escape") setEditingAlias(null);
+                        }}
+                        autoFocus
+                      />
+                    </Td>
+                  ) : (
+                    <EditableCell
+                      onClick={() => {
+                        setEditingAlias(alias.id);
+                        setEditAliasName(alias.displayName);
+                      }}
+                    >
+                      {alias.displayName}
+                    </EditableCell>
+                  )}
+                  <Td>
+                    <DangerButton
+                      onClick={() => deleteAliasMutation.mutate(alias.id)}
+                    >
+                      Delete
+                    </DangerButton>
+                  </Td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </TableScroll>
       )}
     </>
   );

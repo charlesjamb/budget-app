@@ -15,6 +15,10 @@ const Main = styled.main`
   width: 100%;
   margin: 0 auto;
   padding: 24px;
+
+  @media (max-width: 640px) {
+    padding: 16px 16px 80px;
+  }
 `;
 
 const LoadingScreen = styled.div`

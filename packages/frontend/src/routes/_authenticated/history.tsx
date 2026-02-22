@@ -13,6 +13,11 @@ const Controls = styled.div`
   gap: 12px;
   align-items: center;
   margin-bottom: 24px;
+
+  @media (max-width: 640px) {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
 `;
 
 const Label = styled.label`
@@ -65,7 +70,7 @@ const Td = styled.td<{ $highlight?: boolean }>`
   font-size: 14px;
   text-align: right;
   white-space: nowrap;
-  color: ${(p) => (p.$highlight ? "#dc2626" : "inherit")};
+  color: ${(p) => (p.$highlight ? "#059669" : "inherit")};
 
   &:first-child {
     text-align: left;
@@ -116,7 +121,7 @@ function HistoryPage() {
 
   return (
     <>
-      <Title>Spending History</Title>
+      <Title>📊 Spending History</Title>
 
       <Controls>
         <Label>
