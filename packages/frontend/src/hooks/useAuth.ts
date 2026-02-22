@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
 import { getMe, login, logout } from "../api/auth.js";
 import type { LoginRequest } from "@budget-app/shared";
 
@@ -30,11 +31,13 @@ export function useLogin() {
 
 export function useLogout() {
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   return useMutation({
     mutationFn: logout,
     onSuccess: () => {
       queryClient.clear();
+      router.navigate({ to: "/login" });
     },
   });
 }
