@@ -4,52 +4,37 @@ import * as schema from "./schema.js";
 
 export type AppDatabase = ReturnType<typeof createDb>;
 
-export function createDb(path?: string) {
-  const sqlite = new Database(path ?? "budget.db");
-  sqlite.pragma("journal_mode = WAL");
-  sqlite.pragma("foreign_keys = ON");
-
-  const db = drizzle(sqlite, { schema });
-
-  return db;
-}
-
-export function createTestDb() {
-  const sqlite = new Database(":memory:");
-  sqlite.pragma("foreign_keys = ON");
-
-  const db = drizzle(sqlite, { schema });
-
-  // Create all tables for tests
+function initSchema(sqlite: Database.Database, ifNotExists: boolean) {
+  const modifier = ifNotExists ? "IF NOT EXISTS" : "";
   sqlite.exec(`
-    CREATE TABLE users (
+    CREATE TABLE ${modifier} users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       email TEXT NOT NULL UNIQUE,
       password_hash TEXT NOT NULL,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
-    CREATE TABLE households (
+    CREATE TABLE ${modifier} households (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
-    CREATE TABLE household_members (
+    CREATE TABLE ${modifier} household_members (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER NOT NULL REFERENCES users(id),
       household_id INTEGER NOT NULL REFERENCES households(id),
       UNIQUE(user_id, household_id)
     );
 
-    CREATE TABLE sessions (
+    CREATE TABLE ${modifier} sessions (
       id TEXT PRIMARY KEY,
       user_id INTEGER NOT NULL REFERENCES users(id),
       expires_at TEXT NOT NULL,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
-    CREATE TABLE budget_categories (
+    CREATE TABLE ${modifier} budget_categories (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       household_id INTEGER NOT NULL REFERENCES households(id),
       name TEXT NOT NULL,
@@ -58,7 +43,7 @@ export function createTestDb() {
       UNIQUE(household_id, name)
     );
 
-    CREATE TABLE transactions (
+    CREATE TABLE ${modifier} transactions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       household_id INTEGER NOT NULL REFERENCES households(id),
       date_operation TEXT NOT NULL,
@@ -75,7 +60,7 @@ export function createTestDb() {
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
-    CREATE TABLE mapping_rules (
+    CREATE TABLE ${modifier} mapping_rules (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       household_id INTEGER NOT NULL REFERENCES households(id),
       bank_sub_category TEXT NOT NULL,
@@ -85,7 +70,7 @@ export function createTestDb() {
       UNIQUE(household_id, bank_sub_category, label_simplified)
     );
 
-    CREATE TABLE merchant_aliases (
+    CREATE TABLE ${modifier} merchant_aliases (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       household_id INTEGER NOT NULL REFERENCES households(id),
       original_label TEXT NOT NULL,
@@ -94,6 +79,28 @@ export function createTestDb() {
       UNIQUE(household_id, original_label)
     );
   `);
+}
+
+export function createDb(path?: string) {
+  const sqlite = new Database(path ?? "budget.db");
+  sqlite.pragma("journal_mode = WAL");
+  sqlite.pragma("foreign_keys = ON");
+
+  initSchema(sqlite, true);
+
+  const db = drizzle(sqlite, { schema });
+
+  return db;
+}
+
+export function createTestDb() {
+  const sqlite = new Database(":memory:");
+  sqlite.pragma("foreign_keys = ON");
+
+  const db = drizzle(sqlite, { schema });
+
+  // Create all tables for tests
+  initSchema(sqlite, false);
 
   return db;
 }
