@@ -22,7 +22,7 @@ describe("Import Page", () => {
 
     render(<TestWrapper initialPath="/import" />);
 
-    expect(await screen.findByText("Import CSV")).toBeInTheDocument();
+    expect(await screen.findByText(/Import CSV/)).toBeInTheDocument();
     expect(
       screen.getByText("Click to upload your bank CSV file"),
     ).toBeInTheDocument();
@@ -42,7 +42,7 @@ describe("Import Page", () => {
 
     render(<TestWrapper initialPath="/import" />);
 
-    await screen.findByText("Import CSV");
+    await screen.findByText(/Import CSV/);
 
     const user = userEvent.setup();
     const file = new File(["csv content"], "expenses.csv", {
