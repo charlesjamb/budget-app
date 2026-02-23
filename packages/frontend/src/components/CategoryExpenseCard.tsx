@@ -1,6 +1,7 @@
 import { useState } from "react";
 import styled from "styled-components";
 import type { Transaction } from "@budget-app/shared";
+import { ProgressBar } from "./ProgressBar.js";
 
 const COLOR_PALETTE = [
   "#6366f1", // indigo
@@ -119,6 +120,10 @@ const TransactionAmount = styled.span<{ $color: string }>`
   font-weight: 500;
 `;
 
+const ProgressWrapper = styled.div`
+  padding: 0 20px 12px;
+`;
+
 function formatAmount(cents: number): string {
   return (cents / 100).toFixed(2) + " \u20AC";
 }
@@ -133,6 +138,7 @@ interface CategoryExpenseCardProps {
   totalAmount: number;
   transactionCount: number;
   transactions: Transaction[];
+  budgetAmountCents?: number;
 }
 
 export function CategoryExpenseCard({
@@ -140,6 +146,7 @@ export function CategoryExpenseCard({
   totalAmount,
   transactionCount,
   transactions,
+  budgetAmountCents,
 }: CategoryExpenseCardProps) {
   const [expanded, setExpanded] = useState(false);
   const color = getCategoryColor(name);
@@ -150,9 +157,17 @@ export function CategoryExpenseCard({
         <CategoryName>{name}</CategoryName>
         <CategoryInfo>
           <Count>{transactionCount} transactions</Count>
-          <Amount $color={color}>{formatAmount(totalAmount)}</Amount>
+          <Amount $color={color}>
+            {formatAmount(totalAmount)}
+            {budgetAmountCents ? ` / ${formatAmount(budgetAmountCents)}` : ""}
+          </Amount>
         </CategoryInfo>
       </CardHeader>
+      {budgetAmountCents != null && budgetAmountCents > 0 && (
+        <ProgressWrapper>
+          <ProgressBar spent={totalAmount} budget={budgetAmountCents} />
+        </ProgressWrapper>
+      )}
       {expanded && (
         <TransactionList>
           {transactions.map((tx) => (

@@ -109,6 +109,15 @@ const EmptyState = styled.p`
   font-size: 15px;
 `;
 
+const GroupBadge = styled.span`
+  font-size: 11px;
+  color: #6b7280;
+  background: #f3f4f6;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-left: 8px;
+`;
+
 const ErrorMessage = styled.p`
   color: #dc2626;
   font-size: 13px;
@@ -121,8 +130,10 @@ export const Route = createFileRoute("/_authenticated/categories")({
 
 function CategoriesPage() {
   const [newName, setNewName] = useState("");
+  const [newGroupName, setNewGroupName] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editName, setEditName] = useState("");
+  const [editGroupName, setEditGroupName] = useState("");
 
   const categoriesQuery = useCategories();
   const createMutation = useCreateCategory();
@@ -135,35 +146,49 @@ function CategoriesPage() {
     e.preventDefault();
     if (!newName.trim()) return;
     createMutation.mutate(
-      { name: newName.trim() },
+      { name: newName.trim(), groupName: newGroupName.trim() || undefined },
       {
-        onSuccess: () => setNewName(""),
+        onSuccess: () => {
+          setNewName("");
+          setNewGroupName("");
+        },
       },
     );
   };
 
-  const handleStartEdit = (id: number, name: string) => {
+  const handleStartEdit = (id: number, name: string, groupName?: string) => {
     setEditingId(id);
     setEditName(name);
+    setEditGroupName(groupName ?? "");
   };
 
   const handleSaveEdit = (id: number) => {
     if (!editName.trim()) return;
     updateMutation.mutate(
-      { id, name: editName.trim() },
+      {
+        id,
+        name: editName.trim(),
+        groupName: editGroupName.trim() || undefined,
+      },
       { onSuccess: () => setEditingId(null) },
     );
   };
 
   return (
     <>
-      <Title>🏷️ Budget Categories</Title>
+      <Title>Budget Categories</Title>
 
       <AddForm onSubmit={handleAdd}>
         <Input
           placeholder="New category name..."
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
+        />
+        <Input
+          placeholder="Group (optional)"
+          value={newGroupName}
+          onChange={(e) => setNewGroupName(e.target.value)}
+          style={{ flex: "0 0 160px" }}
         />
         <Button type="submit" disabled={createMutation.isPending}>
           Add
@@ -193,6 +218,15 @@ function CategoriesPage() {
                     }}
                     autoFocus
                   />
+                  <EditInput
+                    value={editGroupName}
+                    onChange={(e) => setEditGroupName(e.target.value)}
+                    placeholder="Group"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleSaveEdit(cat.id);
+                      if (e.key === "Escape") setEditingId(null);
+                    }}
+                  />
                   <Actions>
                     <Button
                       onClick={() => handleSaveEdit(cat.id)}
@@ -207,9 +241,16 @@ function CategoriesPage() {
                 </>
               ) : (
                 <>
-                  <CategoryName>{cat.name}</CategoryName>
+                  <CategoryName>
+                    {cat.name}
+                    {cat.groupName && <GroupBadge>{cat.groupName}</GroupBadge>}
+                  </CategoryName>
                   <Actions>
-                    <Button onClick={() => handleStartEdit(cat.id, cat.name)}>
+                    <Button
+                      onClick={() =>
+                        handleStartEdit(cat.id, cat.name, cat.groupName)
+                      }
+                    >
                       Edit
                     </Button>
                     <DangerButton onClick={() => deleteMutation.mutate(cat.id)}>

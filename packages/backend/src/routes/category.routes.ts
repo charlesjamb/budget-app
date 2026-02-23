@@ -12,7 +12,7 @@ export function categoryRoutes(db: AppDatabase): Router {
   });
 
   router.post("/", (req, res) => {
-    const { name } = req.body;
+    const { name, groupName } = req.body;
 
     if (!name || typeof name !== "string" || !name.trim()) {
       res.status(400).json({ error: "Name is required" });
@@ -20,7 +20,11 @@ export function categoryRoutes(db: AppDatabase): Router {
     }
 
     try {
-      const category = categoryService.create(req.householdId!, name.trim());
+      const category = categoryService.create(
+        req.householdId!,
+        name.trim(),
+        groupName?.trim() || undefined,
+      );
       res.status(201).json({ category });
     } catch {
       res.status(409).json({ error: "Category already exists" });
@@ -29,7 +33,7 @@ export function categoryRoutes(db: AppDatabase): Router {
 
   router.put("/:id", (req, res) => {
     const id = parseInt(req.params.id, 10);
-    const { name } = req.body;
+    const { name, groupName } = req.body;
 
     if (!name || typeof name !== "string" || !name.trim()) {
       res.status(400).json({ error: "Name is required" });
@@ -41,6 +45,7 @@ export function categoryRoutes(db: AppDatabase): Router {
         id,
         req.householdId!,
         name.trim(),
+        groupName !== undefined ? groupName?.trim() || null : undefined,
       );
       if (!category) {
         res.status(404).json({ error: "Category not found" });

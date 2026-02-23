@@ -6,32 +6,57 @@ export function createCategoryService(db: AppDatabase) {
   return {
     getAll(householdId: number) {
       return db
-        .select({ id: budgetCategories.id, name: budgetCategories.name })
+        .select({
+          id: budgetCategories.id,
+          name: budgetCategories.name,
+          groupName: budgetCategories.groupName,
+        })
         .from(budgetCategories)
         .where(eq(budgetCategories.householdId, householdId))
         .all();
     },
 
-    create(householdId: number, name: string) {
+    create(householdId: number, name: string, groupName?: string) {
       const result = db
         .insert(budgetCategories)
-        .values({ householdId, name })
-        .returning({ id: budgetCategories.id, name: budgetCategories.name })
+        .values({ householdId, name, groupName: groupName ?? null })
+        .returning({
+          id: budgetCategories.id,
+          name: budgetCategories.name,
+          groupName: budgetCategories.groupName,
+        })
         .get();
       return result;
     },
 
-    update(id: number, householdId: number, name: string) {
+    update(
+      id: number,
+      householdId: number,
+      name: string,
+      groupName?: string | null,
+    ) {
+      const setValues: Record<string, unknown> = {
+        name,
+        updatedAt: new Date().toISOString(),
+      };
+      if (groupName !== undefined) {
+        setValues.groupName = groupName;
+      }
+
       const result = db
         .update(budgetCategories)
-        .set({ name, updatedAt: new Date().toISOString() })
+        .set(setValues)
         .where(
           and(
             eq(budgetCategories.id, id),
             eq(budgetCategories.householdId, householdId),
           ),
         )
-        .returning({ id: budgetCategories.id, name: budgetCategories.name })
+        .returning({
+          id: budgetCategories.id,
+          name: budgetCategories.name,
+          groupName: budgetCategories.groupName,
+        })
         .get();
       return result ?? null;
     },

@@ -9,6 +9,7 @@ import { importRoutes } from "./routes/import.routes.js";
 import { mappingRuleRoutes } from "./routes/mapping-rule.routes.js";
 import { transactionRoutes } from "./routes/transaction.routes.js";
 import { merchantAliasRoutes } from "./routes/merchant-alias.routes.js";
+import { budgetRoutes } from "./routes/budget.routes.js";
 import { authMiddleware } from "./middleware/auth.js";
 
 export function createApp(db: AppDatabase) {
@@ -26,6 +27,7 @@ export function createApp(db: AppDatabase) {
   app.use("/api/mapping-rules", authMiddleware(db), mappingRuleRoutes(db));
   app.use("/api/transactions", authMiddleware(db), transactionRoutes(db));
   app.use("/api/merchant-aliases", authMiddleware(db), merchantAliasRoutes(db));
+  app.use("/api/budgets", authMiddleware(db), budgetRoutes(db));
 
   // Serve frontend in production
   if (process.env.NODE_ENV === "production") {

@@ -51,6 +51,7 @@ export const budgetCategories = sqliteTable(
       .notNull()
       .references(() => households.id),
     name: text("name").notNull(),
+    groupName: text("group_name"),
     createdAt: text("created_at")
       .notNull()
       .default(sql`(datetime('now'))`),
@@ -59,6 +60,26 @@ export const budgetCategories = sqliteTable(
       .default(sql`(datetime('now'))`),
   },
   (table) => [unique().on(table.householdId, table.name)],
+);
+
+export const monthlyBudgets = sqliteTable(
+  "monthly_budgets",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    householdId: integer("household_id")
+      .notNull()
+      .references(() => households.id),
+    month: text("month").notNull(),
+    categoryId: integer("category_id").notNull(),
+    amountCents: integer("amount_cents").notNull(),
+    createdAt: text("created_at")
+      .notNull()
+      .default(sql`(datetime('now'))`),
+    updatedAt: text("updated_at")
+      .notNull()
+      .default(sql`(datetime('now'))`),
+  },
+  (table) => [unique().on(table.householdId, table.month, table.categoryId)],
 );
 
 export const transactions = sqliteTable("transactions", {

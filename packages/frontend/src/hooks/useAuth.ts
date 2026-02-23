@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { getMe, login, logout } from "../api/auth.js";
-import type { LoginRequest } from "@budget-app/shared";
+import type { LoginRequest, AuthMeResponse } from "@budget-app/shared";
 
 export function useAuth() {
   const query = useQuery({
@@ -23,8 +23,11 @@ export function useLogin() {
 
   return useMutation({
     mutationFn: (data: LoginRequest) => login(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["auth"] });
+    onSuccess: (data) => {
+      queryClient.setQueryData<AuthMeResponse>(["auth", "me"], {
+        user: data.user,
+        householdId: data.householdId,
+      });
     },
   });
 }

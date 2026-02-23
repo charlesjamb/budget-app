@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { CreateCategoryRequest } from "@budget-app/shared";
 import {
   getCategories,
   createCategory,
@@ -17,7 +18,7 @@ export function useCreateCategory() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: createCategory,
+    mutationFn: (data: CreateCategoryRequest) => createCategory(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
     },
@@ -28,8 +29,15 @@ export function useUpdateCategory() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, name }: { id: number; name: string }) =>
-      updateCategory(id, { name }),
+    mutationFn: ({
+      id,
+      name,
+      groupName,
+    }: {
+      id: number;
+      name: string;
+      groupName?: string;
+    }) => updateCategory(id, { name, groupName }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
     },

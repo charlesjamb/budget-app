@@ -8,6 +8,7 @@ export interface User {
 export interface BudgetCategory {
   id: number;
   name: string;
+  groupName?: string;
 }
 
 export interface Transaction {
@@ -54,6 +55,7 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   user: User;
+  householdId: number;
 }
 
 export interface CategoriesResponse {
@@ -62,10 +64,12 @@ export interface CategoriesResponse {
 
 export interface CreateCategoryRequest {
   name: string;
+  groupName?: string;
 }
 
 export interface UpdateCategoryRequest {
   name: string;
+  groupName?: string;
 }
 
 export interface ImportResult {
@@ -83,11 +87,13 @@ export interface CategorySummary {
   name: string;
   totalAmount: number;
   transactionCount: number;
+  budgetAmountCents?: number;
 }
 
 export interface MonthlySummary {
   month: string;
   totalAmount: number;
+  globalBudgetCents?: number;
   categories: CategorySummary[];
   uncategorized: {
     totalAmount: number;
@@ -159,4 +165,32 @@ export interface CreateMerchantAliasRequest {
 
 export interface UpdateMerchantAliasRequest {
   displayName: string;
+}
+
+// ---- Budget ----
+
+export const GLOBAL_CAP_CATEGORY_ID = 0;
+
+export interface MonthlyBudget {
+  categoryId: number;
+  amountCents: number;
+}
+
+export interface MonthlyBudgetsResponse {
+  month: string;
+  budgets: MonthlyBudget[];
+}
+
+export interface UpsertBudgetsRequest {
+  month: string;
+  budgets: MonthlyBudget[];
+}
+
+export interface CopyBudgetRequest {
+  sourceMonth: string;
+  targetMonth: string;
+}
+
+export interface CopyBudgetResponse {
+  copiedCount: number;
 }

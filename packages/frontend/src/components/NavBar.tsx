@@ -97,6 +97,7 @@ const LogoutButton = styled.button`
 
 const navItems = [
   { to: "/", label: "Dashboard" },
+  { to: "/budget", label: "Budget" },
   { to: "/import", label: "Import" },
   { to: "/classify", label: "Classify" },
   { to: "/categories", label: "Categories" },

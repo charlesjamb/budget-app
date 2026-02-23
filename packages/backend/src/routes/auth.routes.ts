@@ -27,7 +27,7 @@ export function authRoutes(db: AppDatabase): Router {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    res.json({ user: result.user });
+    res.json({ user: result.user, householdId: result.householdId });
   });
 
   router.post("/logout", (req, res) => {

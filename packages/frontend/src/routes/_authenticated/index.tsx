@@ -7,6 +7,7 @@ import {
 } from "../../hooks/useTransactions.js";
 import { MonthPicker } from "../../components/MonthPicker.js";
 import { CategoryExpenseCard } from "../../components/CategoryExpenseCard.js";
+import { ProgressBar } from "../../components/ProgressBar.js";
 
 const Header = styled.div`
   display: flex;
@@ -110,7 +111,7 @@ function DashboardPage() {
   if (!summary || summary.totalAmount === 0) {
     return (
       <>
-        <PageTitle>💰 Dashboard</PageTitle>
+        <PageTitle>Dashboard</PageTitle>
         <Header>
           <MonthPicker month={month} onChange={setMonth} />
         </Header>
@@ -121,12 +122,24 @@ function DashboardPage() {
 
   return (
     <>
-      <PageTitle>💰 Dashboard</PageTitle>
+      <PageTitle>Dashboard</PageTitle>
       <Header>
         <MonthPicker month={month} onChange={setMonth} />
         <TotalSummary>
           <TotalLabel>Total spent</TotalLabel>
-          <TotalAmount>{formatAmount(summary.totalAmount)}</TotalAmount>
+          <TotalAmount>
+            {formatAmount(summary.totalAmount)}
+            {summary.globalBudgetCents
+              ? ` / ${formatAmount(summary.globalBudgetCents)}`
+              : ""}
+          </TotalAmount>
+          {summary.globalBudgetCents != null &&
+            summary.globalBudgetCents > 0 && (
+              <ProgressBar
+                spent={summary.totalAmount}
+                budget={summary.globalBudgetCents}
+              />
+            )}
         </TotalSummary>
       </Header>
 
@@ -138,6 +151,7 @@ function DashboardPage() {
             totalAmount={cat.totalAmount}
             transactionCount={cat.transactionCount}
             transactions={txList.filter((tx) => tx.budgetCategoryId === cat.id)}
+            budgetAmountCents={cat.budgetAmountCents}
           />
         ))}
       </CardList>

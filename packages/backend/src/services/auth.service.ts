@@ -29,9 +29,16 @@ export function createAuthService(db: AppDatabase) {
         .values({ id: sessionId, userId: user.id, expiresAt })
         .run();
 
+      const membership = db
+        .select()
+        .from(householdMembers)
+        .where(eq(householdMembers.userId, user.id))
+        .get();
+
       return {
         sessionId,
         user: { id: user.id, email: user.email },
+        householdId: membership?.householdId ?? null,
       };
     },
 

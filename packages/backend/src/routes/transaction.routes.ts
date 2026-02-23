@@ -1,12 +1,15 @@
 import { Router } from "express";
+import { GLOBAL_CAP_CATEGORY_ID } from "@budget-app/shared";
 import { type AppDatabase } from "../db/connection.js";
 import { createTransactionService } from "../services/transaction.service.js";
 import { createMappingRuleService } from "../services/mapping-rule.service.js";
+import { createBudgetService } from "../services/budget.service.js";
 
 export function transactionRoutes(db: AppDatabase): Router {
   const router = Router();
   const transactionService = createTransactionService(db);
   const mappingRuleService = createMappingRuleService(db);
+  const budgetService = createBudgetService(db);
 
   router.get("/", (req, res) => {
     const month = req.query.month as string;
@@ -36,7 +39,23 @@ export function transactionRoutes(db: AppDatabase): Router {
       req.householdId!,
       month,
     );
-    res.json(summary);
+
+    // Enrich with budget data
+    const budgets = budgetService.getByMonth(req.householdId!, month);
+    const budgetMap = new Map(
+      budgets.map((b) => [b.categoryId, b.amountCents]),
+    );
+
+    const enrichedCategories = summary.categories.map((cat) => ({
+      ...cat,
+      budgetAmountCents: budgetMap.get(cat.id),
+    }));
+
+    res.json({
+      ...summary,
+      categories: enrichedCategories,
+      globalBudgetCents: budgetMap.get(GLOBAL_CAP_CATEGORY_ID),
+    });
   });
 
   router.get("/history", (req, res) => {

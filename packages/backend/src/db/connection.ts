@@ -38,9 +38,21 @@ function initSchema(sqlite: Database.Database, ifNotExists: boolean) {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       household_id INTEGER NOT NULL REFERENCES households(id),
       name TEXT NOT NULL,
+      group_name TEXT,
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       updated_at TEXT NOT NULL DEFAULT (datetime('now')),
       UNIQUE(household_id, name)
+    );
+
+    CREATE TABLE ${modifier} monthly_budgets (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      household_id INTEGER NOT NULL REFERENCES households(id),
+      month TEXT NOT NULL,
+      category_id INTEGER NOT NULL,
+      amount_cents INTEGER NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+      UNIQUE(household_id, month, category_id)
     );
 
     CREATE TABLE ${modifier} transactions (
@@ -81,12 +93,23 @@ function initSchema(sqlite: Database.Database, ifNotExists: boolean) {
   `);
 }
 
+function runMigrations(sqlite: Database.Database) {
+  // Add group_name column to budget_categories if missing
+  const cols = sqlite.prepare("PRAGMA table_info(budget_categories)").all() as {
+    name: string;
+  }[];
+  if (!cols.some((c) => c.name === "group_name")) {
+    sqlite.exec("ALTER TABLE budget_categories ADD COLUMN group_name TEXT");
+  }
+}
+
 export function createDb(path?: string) {
   const sqlite = new Database(path ?? "budget.db");
   sqlite.pragma("journal_mode = WAL");
   sqlite.pragma("foreign_keys = ON");
 
   initSchema(sqlite, true);
+  runMigrations(sqlite);
 
   const db = drizzle(sqlite, { schema });
 

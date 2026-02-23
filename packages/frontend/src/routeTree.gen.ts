@@ -17,6 +17,7 @@ import { Route as AuthenticatedImportRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticated/history'
 import { Route as AuthenticatedClassifyRouteImport } from './routes/_authenticated/classify'
 import { Route as AuthenticatedCategoriesRouteImport } from './routes/_authenticated/categories'
+import { Route as AuthenticatedBudgetRouteImport } from './routes/_authenticated/budget'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -57,10 +58,16 @@ const AuthenticatedCategoriesRoute = AuthenticatedCategoriesRouteImport.update({
   path: '/categories',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedBudgetRoute = AuthenticatedBudgetRouteImport.update({
+  id: '/budget',
+  path: '/budget',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/login': typeof LoginRoute
+  '/budget': typeof AuthenticatedBudgetRoute
   '/categories': typeof AuthenticatedCategoriesRoute
   '/classify': typeof AuthenticatedClassifyRoute
   '/history': typeof AuthenticatedHistoryRoute
@@ -69,6 +76,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
+  '/budget': typeof AuthenticatedBudgetRoute
   '/categories': typeof AuthenticatedCategoriesRoute
   '/classify': typeof AuthenticatedClassifyRoute
   '/history': typeof AuthenticatedHistoryRoute
@@ -80,6 +88,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
+  '/_authenticated/budget': typeof AuthenticatedBudgetRoute
   '/_authenticated/categories': typeof AuthenticatedCategoriesRoute
   '/_authenticated/classify': typeof AuthenticatedClassifyRoute
   '/_authenticated/history': typeof AuthenticatedHistoryRoute
@@ -92,6 +101,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/budget'
     | '/categories'
     | '/classify'
     | '/history'
@@ -100,6 +110,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
+    | '/budget'
     | '/categories'
     | '/classify'
     | '/history'
@@ -110,6 +121,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_authenticated'
     | '/login'
+    | '/_authenticated/budget'
     | '/_authenticated/categories'
     | '/_authenticated/classify'
     | '/_authenticated/history'
@@ -181,10 +193,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCategoriesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/budget': {
+      id: '/_authenticated/budget'
+      path: '/budget'
+      fullPath: '/budget'
+      preLoaderRoute: typeof AuthenticatedBudgetRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedBudgetRoute: typeof AuthenticatedBudgetRoute
   AuthenticatedCategoriesRoute: typeof AuthenticatedCategoriesRoute
   AuthenticatedClassifyRoute: typeof AuthenticatedClassifyRoute
   AuthenticatedHistoryRoute: typeof AuthenticatedHistoryRoute
@@ -194,6 +214,7 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedBudgetRoute: AuthenticatedBudgetRoute,
   AuthenticatedCategoriesRoute: AuthenticatedCategoriesRoute,
   AuthenticatedClassifyRoute: AuthenticatedClassifyRoute,
   AuthenticatedHistoryRoute: AuthenticatedHistoryRoute,
