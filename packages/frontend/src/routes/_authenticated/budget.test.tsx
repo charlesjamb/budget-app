@@ -107,14 +107,14 @@ describe("Budget Page", () => {
     expect(screen.getByText("Budget couple")).toBeInTheDocument();
   });
 
-  it("should show global monthly cap section", async () => {
+  it("should show total budgeted section", async () => {
     setupAuthenticatedUser();
     setupBudgetData();
 
     render(<TestWrapper initialPath="/budget" />);
 
-    expect(await screen.findByText("Global monthly cap")).toBeInTheDocument();
-    expect(screen.getByText("Spent: 1500.00 \u20AC")).toBeInTheDocument();
+    expect(await screen.findByText("Total budgeted")).toBeInTheDocument();
+    expect(screen.getByText(/Spent: 1500\.00/)).toBeInTheDocument();
   });
 
   it("should show empty state when no categories", async () => {

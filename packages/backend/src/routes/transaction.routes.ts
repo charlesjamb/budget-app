@@ -51,10 +51,15 @@ export function transactionRoutes(db: AppDatabase): Router {
       budgetAmountCents: budgetMap.get(cat.id),
     }));
 
+    const globalBudgetCents =
+      budgets
+        .filter((b) => b.categoryId !== GLOBAL_CAP_CATEGORY_ID)
+        .reduce((sum, b) => sum + b.amountCents, 0) || undefined;
+
     res.json({
       ...summary,
       categories: enrichedCategories,
-      globalBudgetCents: budgetMap.get(GLOBAL_CAP_CATEGORY_ID),
+      globalBudgetCents,
     });
   });
 

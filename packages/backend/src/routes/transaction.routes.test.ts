@@ -92,6 +92,41 @@ describe("Transaction Routes", () => {
       expect(res.body.uncategorized.totalAmount).toBe(800);
       expect(res.body.uncategorized.transactionCount).toBe(1);
     });
+
+    it("should compute globalBudgetCents from sum of per-category budgets", async () => {
+      const food = createCategory(ctx.db, ctx.householdId, "Food");
+      const transport = createCategory(ctx.db, ctx.householdId, "Transport");
+
+      createTransaction(ctx.db, ctx.householdId, {
+        dateOperation: "2026-02-10",
+        amount: 1500,
+        budgetCategoryId: food.id,
+      });
+      createTransaction(ctx.db, ctx.householdId, {
+        dateOperation: "2026-02-15",
+        amount: 500,
+        budgetCategoryId: transport.id,
+      });
+
+      await request(app)
+        .put("/api/budgets")
+        .set("Cookie", ctx.sessionCookie)
+        .send({
+          month: "2026-02",
+          budgets: [
+            { categoryId: 0, amountCents: 999999 },
+            { categoryId: food.id, amountCents: 50000 },
+            { categoryId: transport.id, amountCents: 30000 },
+          ],
+        });
+
+      const res = await request(app)
+        .get("/api/transactions/monthly-summary?month=2026-02")
+        .set("Cookie", ctx.sessionCookie);
+
+      expect(res.status).toBe(200);
+      expect(res.body.globalBudgetCents).toBe(80000);
+    });
   });
 
   describe("GET /api/transactions/history", () => {

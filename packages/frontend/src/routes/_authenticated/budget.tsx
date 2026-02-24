@@ -1,7 +1,6 @@
 import { useState, useCallback, useMemo } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import styled from "styled-components";
-import { GLOBAL_CAP_CATEGORY_ID } from "@budget-app/shared";
 import { MonthPicker } from "../../components/MonthPicker.js";
 import { ProgressBar } from "../../components/ProgressBar.js";
 import { Wallet } from "lucide-react";
@@ -178,7 +177,10 @@ function BudgetPage() {
   const upsertMutation = useUpsertBudgets();
   const copyMutation = useCopyBudget();
 
-  const categories = categoriesQuery.data?.categories ?? [];
+  const categories = useMemo(
+    () => categoriesQuery.data?.categories ?? [],
+    [categoriesQuery.data?.categories],
+  );
   const summary = summaryQuery.data;
 
   const budgetMap = useMemo(
@@ -220,10 +222,7 @@ function BudgetPage() {
     const budgets: { categoryId: number; amountCents: number }[] = [];
 
     // Collect all category IDs that need updating
-    const allCategoryIds = [
-      GLOBAL_CAP_CATEGORY_ID,
-      ...categories.map((c) => c.id),
-    ];
+    const allCategoryIds = categories.map((c) => c.id);
 
     for (const catId of allCategoryIds) {
       if (localBudgets[catId] !== undefined) {
@@ -293,7 +292,17 @@ function BudgetPage() {
     });
 
   const totalSpent = summary?.totalAmount ?? 0;
-  const globalCapCents = budgetMap.get(GLOBAL_CAP_CATEGORY_ID) ?? 0;
+
+  // Compute total budgeted from per-category budgets (same logic as backend)
+  const totalBudgetedCents = useMemo(() => {
+    return categories.reduce((sum, cat) => {
+      const cents =
+        localBudgets[cat.id] !== undefined
+          ? Math.round(parseFloat(localBudgets[cat.id]) * 100) || 0
+          : (budgetMap.get(cat.id) ?? 0);
+      return sum + cents;
+    }, 0);
+  }, [categories, localBudgets, budgetMap]);
 
   if (categoriesQuery.isLoading || budgetsQuery.isLoading) {
     return <EmptyState>Loading...</EmptyState>;
@@ -329,22 +338,18 @@ function BudgetPage() {
 
       <GlobalCapSection>
         <GlobalCapRow>
-          <GlobalCapLabel>Global monthly cap</GlobalCapLabel>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <SpentVsBudget>Spent: {formatAmount(totalSpent)}</SpentVsBudget>
-            <AmountInput
-              type="text"
-              inputMode="decimal"
-              placeholder="0.00"
-              value={getInputValue(GLOBAL_CAP_CATEGORY_ID)}
-              onChange={(e) =>
-                handleInputChange(GLOBAL_CAP_CATEGORY_ID, e.target.value)
-              }
-            />
-          </div>
+          <GlobalCapLabel>Total budgeted</GlobalCapLabel>
+          <SpentVsBudget>
+            {formatAmount(totalBudgetedCents)} | Spent:{" "}
+            {formatAmount(totalSpent)}
+          </SpentVsBudget>
         </GlobalCapRow>
-        {globalCapCents > 0 && (
-          <ProgressBar spent={totalSpent} budget={globalCapCents} showLabel />
+        {totalBudgetedCents > 0 && (
+          <ProgressBar
+            spent={totalSpent}
+            budget={totalBudgetedCents}
+            showLabel
+          />
         )}
       </GlobalCapSection>
 

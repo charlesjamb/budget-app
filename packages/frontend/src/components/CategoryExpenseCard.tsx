@@ -3,26 +3,7 @@ import styled from "styled-components";
 import type { Transaction } from "@budget-app/shared";
 import { ProgressBar } from "./ProgressBar.js";
 
-const COLOR_PALETTE = [
-  "#6366f1", // indigo
-  "#0891b2", // cyan
-  "#059669", // emerald
-  "#d97706", // amber
-  "#7c3aed", // violet
-  "#0284c7", // sky
-  "#0d9488", // teal
-  "#c2410c", // orange
-];
-
-function getCategoryColor(name: string): string {
-  let hash = 0;
-  for (const char of name) {
-    hash = (hash * 31 + char.charCodeAt(0)) % COLOR_PALETTE.length;
-  }
-  return COLOR_PALETTE[Math.abs(hash)];
-}
-
-const Card = styled.div<{ $color: string }>`
+const Card = styled.div`
   background: ${(p) => p.theme.colors.card};
   border-radius: ${(p) => p.theme.radii.lg};
   box-shadow: ${(p) => p.theme.shadows.card};
@@ -37,19 +18,19 @@ const Card = styled.div<{ $color: string }>`
   }
 `;
 
-const CardHeader = styled.button<{ $color: string }>`
+const CardHeader = styled.button`
   width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
-  background: ${(p) => `${p.$color}08`};
+  background: ${(p) => p.theme.colors.card};
   border: none;
   cursor: pointer;
   text-align: left;
 
   &:hover {
-    background: ${(p) => `${p.$color}12`};
+    background: ${(p) => p.theme.colors.background};
   }
 `;
 
@@ -59,11 +40,11 @@ const CategoryNameRow = styled.div`
   gap: 10px;
 `;
 
-const ColorDot = styled.div<{ $color: string }>`
-  width: 10px;
-  height: 10px;
+const ColorDot = styled.div`
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: ${(p) => p.$color};
+  background: ${(p) => p.theme.colors.textMuted};
   flex-shrink: 0;
 `;
 
@@ -72,16 +53,28 @@ const CategoryName = styled.span`
   font-size: 16px;
 `;
 
+const UnbudgetedBadge = styled.span`
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: ${(p) => p.theme.colors.textMuted};
+  background: ${(p) => p.theme.colors.background};
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid ${(p) => p.theme.colors.border};
+`;
+
 const CategoryInfo = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
 `;
 
-const Amount = styled.span<{ $color: string }>`
+const Amount = styled.span`
   font-weight: 700;
   font-size: 16px;
-  color: ${(p) => p.$color};
+  color: ${(p) => p.theme.colors.text};
 `;
 
 const Count = styled.span`
@@ -136,8 +129,8 @@ const TransactionLabel = styled.span`
   }
 `;
 
-const TransactionAmount = styled.span<{ $color: string }>`
-  color: ${(p) => p.$color};
+const TransactionAmount = styled.span`
+  color: ${(p) => p.theme.colors.text};
   font-weight: 500;
 `;
 
@@ -160,6 +153,7 @@ interface CategoryExpenseCardProps {
   transactionCount: number;
   transactions: Transaction[];
   budgetAmountCents?: number;
+  unbudgeted?: boolean;
 }
 
 export function CategoryExpenseCard({
@@ -168,20 +162,21 @@ export function CategoryExpenseCard({
   transactionCount,
   transactions,
   budgetAmountCents,
+  unbudgeted = false,
 }: CategoryExpenseCardProps) {
   const [expanded, setExpanded] = useState(false);
-  const color = getCategoryColor(name);
 
   return (
-    <Card $color={color}>
-      <CardHeader $color={color} onClick={() => setExpanded(!expanded)}>
+    <Card>
+      <CardHeader onClick={() => setExpanded(!expanded)}>
         <CategoryNameRow>
-          <ColorDot $color={color} />
+          <ColorDot />
           <CategoryName>{name}</CategoryName>
+          {unbudgeted && <UnbudgetedBadge>Unbudgeted</UnbudgetedBadge>}
         </CategoryNameRow>
         <CategoryInfo>
           <Count>{transactionCount} transactions</Count>
-          <Amount $color={color}>
+          <Amount>
             {formatAmount(totalAmount)}
             {budgetAmountCents ? ` / ${formatAmount(budgetAmountCents)}` : ""}
           </Amount>
@@ -200,9 +195,7 @@ export function CategoryExpenseCard({
               <TransactionLabel>
                 {tx.displayName || tx.labelSimplified}
               </TransactionLabel>
-              <TransactionAmount $color={color}>
-                {formatAmount(tx.amount)}
-              </TransactionAmount>
+              <TransactionAmount>{formatAmount(tx.amount)}</TransactionAmount>
             </TransactionRow>
           ))}
         </TransactionList>

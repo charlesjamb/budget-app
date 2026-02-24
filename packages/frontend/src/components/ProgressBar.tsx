@@ -1,15 +1,36 @@
-import styled from "styled-components";
+import styled, { useTheme } from "styled-components";
 
-function getGradient(ratio: number): string {
-  if (ratio > 1) return "linear-gradient(90deg, #ef4444 0%, #f87171 100%)";
-  if (ratio > 0.75) return "linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%)";
-  return "linear-gradient(90deg, #10b981 0%, #14b8a6 100%)";
+function getFillColor(
+  ratio: number,
+  theme: {
+    colors: {
+      danger: string;
+      warning: string;
+      success: string;
+      textMuted: string;
+    };
+  },
+): string {
+  if (ratio > 1) return theme.colors.danger;
+  if (ratio > 0.75) return theme.colors.warning;
+  return theme.colors.success;
 }
 
-function getLabelColor(ratio: number): string {
-  if (ratio > 1) return "#ef4444";
-  if (ratio > 0.75) return "#f59e0b";
-  return "#10b981";
+function getLabelColor(
+  ratio: number,
+  theme: {
+    colors: {
+      danger: string;
+      warning: string;
+      success: string;
+      textMuted: string;
+    };
+  },
+): string {
+  if (ratio > 1) return theme.colors.danger;
+  if (ratio > 0.75) return theme.colors.warning;
+  if (ratio > 0) return theme.colors.success;
+  return theme.colors.textMuted;
 }
 
 const Container = styled.div`
@@ -18,18 +39,19 @@ const Container = styled.div`
 
 const Track = styled.div`
   width: 100%;
-  height: 10px;
-  background: ${(p) => p.theme.colors.background};
+  height: 4px;
+  background: ${(p) => p.theme.colors.border};
   border-radius: ${(p) => p.theme.radii.pill};
   overflow: hidden;
 `;
 
-const Fill = styled.div<{ $width: number; $gradient: string }>`
+const Fill = styled.div<{ $width: number; $color: string }>`
   height: 100%;
   width: ${(p) => Math.min(p.$width, 100)}%;
-  background: ${(p) => p.$gradient};
+  background: ${(p) => p.$color};
   border-radius: ${(p) => p.theme.radii.pill};
   transition: width 0.3s ease;
+  opacity: 0.7;
 `;
 
 const Label = styled.div<{ $color: string }>`
@@ -46,17 +68,18 @@ interface ProgressBarProps {
 }
 
 export function ProgressBar({ spent, budget, showLabel }: ProgressBarProps) {
+  const theme = useTheme();
   if (budget <= 0) return null;
 
   const ratio = spent / budget;
   const percent = ratio * 100;
-  const gradient = getGradient(ratio);
-  const labelColor = getLabelColor(ratio);
+  const fillColor = getFillColor(ratio, theme);
+  const labelColor = getLabelColor(ratio, theme);
 
   return (
     <Container>
       <Track>
-        <Fill $width={percent} $gradient={gradient} />
+        <Fill $width={percent} $color={fillColor} />
       </Track>
       {showLabel && <Label $color={labelColor}>{Math.round(percent)}%</Label>}
     </Container>

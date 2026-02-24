@@ -118,4 +118,76 @@ describe("Dashboard Page", () => {
     expect(screen.getAllByText("800.00 \u20AC").length).toBeGreaterThan(0);
     expect(screen.getAllByText("700.00 \u20AC").length).toBeGreaterThan(0);
   });
+
+  it("should show Unbudgeted badge for categories with spending but no budget", async () => {
+    setupAuthenticatedUser();
+    server.use(
+      http.get("/api/transactions/monthly-summary", () => {
+        return HttpResponse.json({
+          month: "2026-02",
+          totalAmount: 5000,
+          categories: [
+            {
+              id: 1,
+              name: "Health",
+              totalAmount: 5000,
+              transactionCount: 1,
+              type: "variable",
+              budgetAmountCents: undefined,
+            },
+          ],
+          uncategorized: { totalAmount: 0, transactionCount: 0 },
+        });
+      }),
+      http.get("/api/transactions", () => {
+        return HttpResponse.json({ transactions: [] });
+      }),
+    );
+
+    render(<TestWrapper initialPath="/" />);
+
+    expect(await screen.findByText("Health")).toBeInTheDocument();
+    expect(screen.getByText("Unbudgeted")).toBeInTheDocument();
+  });
+
+  it("should show Unbudgeted spending card when there are unbudgeted expenses", async () => {
+    setupAuthenticatedUser();
+    server.use(
+      http.get("/api/transactions/monthly-summary", () => {
+        return HttpResponse.json({
+          month: "2026-02",
+          totalAmount: 12345,
+          categories: [
+            {
+              id: 1,
+              name: "Health",
+              totalAmount: 3750,
+              transactionCount: 1,
+              type: "variable",
+              budgetAmountCents: undefined,
+            },
+            {
+              id: 2,
+              name: "Food",
+              totalAmount: 8595,
+              transactionCount: 5,
+              type: "variable",
+              budgetAmountCents: 10000,
+            },
+          ],
+          uncategorized: { totalAmount: 0, transactionCount: 0 },
+        });
+      }),
+      http.get("/api/transactions", () => {
+        return HttpResponse.json({ transactions: [] });
+      }),
+    );
+
+    render(<TestWrapper initialPath="/" />);
+
+    expect(await screen.findByText("Unbudgeted spending")).toBeInTheDocument();
+    expect(screen.getAllByText("37.50 \u20AC").length).toBeGreaterThanOrEqual(
+      1,
+    );
+  });
 });

@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import styled from "styled-components";
+import styled, { useTheme } from "styled-components";
 import type { CategorySummary } from "@budget-app/shared";
 import {
   useMonthlySummary,
@@ -71,7 +71,7 @@ const TotalSummary = styled.div`
     background: ${(p) => p.theme.colors.card};
     border-radius: ${(p) => p.theme.radii.lg};
     box-shadow: ${(p) => p.theme.shadows.card};
-    border-left: 4px solid ${(p) => p.theme.colors.success};
+    border-left: 4px solid ${(p) => p.theme.colors.primary};
     padding: 12px 16px;
   }
 `;
@@ -79,7 +79,7 @@ const TotalSummary = styled.div`
 const TotalAmount = styled.div`
   font-size: 28px;
   font-weight: 700;
-  color: ${(p) => p.theme.colors.success};
+  color: ${(p) => p.theme.colors.text};
   white-space: nowrap;
 
   @media (max-width: 640px) {
@@ -103,7 +103,7 @@ const CardList = styled.div`
   gap: 12px;
 `;
 
-const SectionTitle = styled.h2<{ $dotColor?: string }>`
+const SectionTitle = styled.h2`
   font-size: 14px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -118,7 +118,7 @@ const SectionTitle = styled.h2<{ $dotColor?: string }>`
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: ${(p) => p.$dotColor ?? p.theme.colors.primary};
+    background: ${(p) => p.theme.colors.textMuted};
   }
 `;
 
@@ -148,6 +148,7 @@ export const Route = createFileRoute("/_authenticated/")({
 });
 
 function DashboardPage() {
+  const theme = useTheme();
   const [month, setMonth] = useState(getCurrentMonth);
   const summaryQuery = useMonthlySummary(month);
   const transactionsQuery = useTransactions(month);
@@ -199,12 +200,11 @@ function DashboardPage() {
     title: string,
     categories: CategorySummary[],
     subtotal: number,
-    dotColor?: string,
   ) =>
     categories.length > 0 ? (
       <>
         <SectionHeader>
-          <SectionTitle $dotColor={dotColor}>{title}</SectionTitle>
+          <SectionTitle>{title}</SectionTitle>
           <SectionSubtotal>{formatAmount(subtotal)}</SectionSubtotal>
         </SectionHeader>
         <CardList>
@@ -218,16 +218,26 @@ function DashboardPage() {
                 (tx) => tx.budgetCategoryId === cat.id,
               )}
               budgetAmountCents={cat.budgetAmountCents}
+              unbudgeted={
+                !(cat.budgetAmountCents != null && cat.budgetAmountCents > 0) &&
+                cat.totalAmount > 0
+              }
             />
           ))}
         </CardList>
       </>
     ) : null;
 
-  const totalTxCount = summary.categories.reduce(
-    (s, c) => s + c.transactionCount,
-    0,
-  );
+  const unbudgetedSpendingTotal =
+    summary.categories
+      .filter(
+        (c) =>
+          !(c.budgetAmountCents != null && c.budgetAmountCents > 0) &&
+          c.totalAmount > 0,
+      )
+      .reduce((s, c) => s + c.totalAmount, 0) +
+    summary.uncategorized.totalAmount;
+
   const budgetRemaining =
     summary.globalBudgetCents != null && summary.globalBudgetCents > 0
       ? summary.globalBudgetCents - summary.totalAmount
@@ -260,42 +270,38 @@ function DashboardPage() {
       </Header>
 
       <StatCards>
-        <StatCard $accent="#10b981">
-          <StatLabel>Total spent</StatLabel>
-          <StatValue $color="#10b981">
-            {formatAmount(summary.totalAmount)}
-          </StatValue>
-        </StatCard>
         {budgetRemaining != null && (
-          <StatCard $accent={budgetRemaining >= 0 ? "#6366f1" : "#ef4444"}>
+          <StatCard
+            $accent={
+              budgetRemaining >= 0 ? theme.colors.primary : theme.colors.danger
+            }
+          >
             <StatLabel>Budget remaining</StatLabel>
-            <StatValue $color={budgetRemaining >= 0 ? "#6366f1" : "#ef4444"}>
+            <StatValue
+              $color={budgetRemaining >= 0 ? undefined : theme.colors.danger}
+            >
               {formatAmount(Math.max(0, budgetRemaining))}
             </StatValue>
           </StatCard>
         )}
-        <StatCard $accent="#8b5cf6">
-          <StatLabel>Transactions</StatLabel>
-          <StatValue>{totalTxCount}</StatValue>
-        </StatCard>
+        {unbudgetedSpendingTotal > 0 && (
+          <StatCard $accent={theme.colors.textMuted}>
+            <StatLabel>Unbudgeted spending</StatLabel>
+            <StatValue>{formatAmount(unbudgetedSpendingTotal)}</StatValue>
+          </StatCard>
+        )}
       </StatCards>
 
       {renderCategorySection(
         "Variable expenses",
         variableCategories,
         variableTotal,
-        "#8b5cf6",
       )}
-      {renderCategorySection(
-        "Fixed expenses",
-        fixedCategories,
-        fixedTotal,
-        "#6366f1",
-      )}
+      {renderCategorySection("Fixed expenses", fixedCategories, fixedTotal)}
 
       {summary.uncategorized.transactionCount > 0 && (
         <>
-          <SectionTitle $dotColor="#f59e0b">Uncategorized</SectionTitle>
+          <SectionTitle>Uncategorized</SectionTitle>
           <CategoryExpenseCard
             name="Uncategorized"
             totalAmount={summary.uncategorized.totalAmount}
