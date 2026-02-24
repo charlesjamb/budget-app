@@ -1,9 +1,14 @@
 import styled from "styled-components";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const Container = styled.div`
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
+  background: ${(p) => p.theme.colors.background};
+  padding: 8px 16px;
+  border-radius: ${(p) => p.theme.radii.pill};
+  box-shadow: ${(p) => p.theme.shadows.card};
 
   @media (max-width: 640px) {
     width: 100%;
@@ -12,19 +17,22 @@ const Container = styled.div`
 `;
 
 const ArrowButton = styled.button`
-  background: #f0f0f0;
-  border: none;
-  border-radius: 6px;
+  background: ${(p) => p.theme.colors.card};
+  border: 1px solid ${(p) => p.theme.colors.border};
+  border-radius: ${(p) => p.theme.radii.pill};
   width: 36px;
   height: 36px;
   cursor: pointer;
-  font-size: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: ${(p) => p.theme.colors.textMuted};
+  transition: all 0.15s;
 
   &:hover {
-    background: #e0e0e0;
+    background: ${(p) => p.theme.colors.primary};
+    color: #fff;
+    border-color: ${(p) => p.theme.colors.primary};
   }
 `;
 
@@ -33,6 +41,7 @@ const MonthDisplay = styled.span`
   font-weight: 600;
   min-width: 160px;
   text-align: center;
+  color: ${(p) => p.theme.colors.primary};
 `;
 
 function formatMonth(month: string): string {
@@ -56,11 +65,11 @@ export function MonthPicker({ month, onChange }: MonthPickerProps) {
   return (
     <Container>
       <ArrowButton onClick={() => onChange(addMonths(month, -1))}>
-        &larr;
+        <ChevronLeft size={20} strokeWidth={2} />
       </ArrowButton>
       <MonthDisplay>{formatMonth(month)}</MonthDisplay>
       <ArrowButton onClick={() => onChange(addMonths(month, 1))}>
-        &rarr;
+        <ChevronRight size={20} strokeWidth={2} />
       </ArrowButton>
     </Container>
   );

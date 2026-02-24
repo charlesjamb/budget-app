@@ -1,24 +1,25 @@
 import { useRef } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import styled from "styled-components";
+import { Upload } from "lucide-react";
 import { useImport } from "../../hooks/useImport.js";
-
-const Title = styled.h1`
-  font-size: 24px;
-  margin-bottom: 24px;
-`;
+import { Button, PageTitle, TitleRow } from "../../components/ui.js";
 
 const UploadArea = styled.div`
-  background: #fff;
-  border: 2px dashed #d1d5db;
-  border-radius: 12px;
+  background: ${(p) => p.theme.colors.card};
+  border: 2px dashed ${(p) => p.theme.colors.borderLight};
+  border-radius: ${(p) => p.theme.radii.lg};
   padding: 48px;
   text-align: center;
   cursor: pointer;
-  transition: border-color 0.15s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.2s;
+  box-shadow: ${(p) => p.theme.shadows.card};
 
   &:hover {
-    border-color: #3b82f6;
+    border-color: ${(p) => p.theme.colors.primary};
+    box-shadow: ${(p) => p.theme.shadows.cardHover};
   }
 `;
 
@@ -27,41 +28,20 @@ const HiddenInput = styled.input`
 `;
 
 const UploadText = styled.p`
-  color: #6b7280;
+  color: ${(p) => p.theme.colors.textMuted};
   font-size: 16px;
   margin-bottom: 8px;
 `;
 
 const UploadHint = styled.p`
-  color: #9ca3af;
+  color: ${(p) => p.theme.colors.textLight};
   font-size: 13px;
 `;
 
-const Button = styled.button`
-  background: #1a1a2e;
-  color: #fff;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 16px;
-
-  &:hover {
-    background: #16213e;
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-`;
-
 const ResultCard = styled.div`
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  background: ${(p) => p.theme.colors.card};
+  border-radius: ${(p) => p.theme.radii.lg};
+  box-shadow: ${(p) => p.theme.shadows.card};
   padding: 24px;
   margin-top: 24px;
 `;
@@ -75,7 +55,7 @@ const StatRow = styled.div`
   display: flex;
   justify-content: space-between;
   padding: 8px 0;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid ${(p) => p.theme.colors.border};
   font-size: 15px;
 
   &:last-child {
@@ -84,7 +64,7 @@ const StatRow = styled.div`
 `;
 
 const StatLabel = styled.span`
-  color: #6b7280;
+  color: ${(p) => p.theme.colors.textMuted};
 `;
 
 const StatValue = styled.span`
@@ -94,7 +74,7 @@ const StatValue = styled.span`
 const ClassifyLink = styled(Link)`
   display: inline-block;
   margin-top: 16px;
-  color: #3b82f6;
+  color: ${(p) => p.theme.colors.primary};
   font-weight: 500;
   text-decoration: none;
 
@@ -120,7 +100,10 @@ function ImportPage() {
 
   return (
     <>
-      <Title>📥 Import CSV</Title>
+      <TitleRow>
+        <Upload size={28} strokeWidth={2} />
+        <PageTitle>Import CSV</PageTitle>
+      </TitleRow>
 
       <UploadArea onClick={() => fileInputRef.current?.click()}>
         <UploadText>Click to upload your bank CSV file</UploadText>
@@ -131,7 +114,11 @@ function ImportPage() {
           accept=".csv"
           onChange={handleFileChange}
         />
-        <Button type="button" disabled={importMutation.isPending}>
+        <Button
+          type="button"
+          disabled={importMutation.isPending}
+          style={{ marginTop: 16 }}
+        >
           {importMutation.isPending ? "Importing..." : "Select CSV File"}
         </Button>
       </UploadArea>

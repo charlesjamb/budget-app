@@ -4,6 +4,15 @@ import styled from "styled-components";
 import { GLOBAL_CAP_CATEGORY_ID } from "@budget-app/shared";
 import { MonthPicker } from "../../components/MonthPicker.js";
 import { ProgressBar } from "../../components/ProgressBar.js";
+import { Wallet } from "lucide-react";
+import {
+  Button,
+  SecondaryButton,
+  AmountInput,
+  EmptyState,
+  PageTitle,
+  TitleRow,
+} from "../../components/ui.js";
 import { useCategories } from "../../hooks/useCategories.js";
 import { useMonthlySummary } from "../../hooks/useTransactions.js";
 import {
@@ -11,11 +20,6 @@ import {
   useUpsertBudgets,
   useCopyBudget,
 } from "../../hooks/useBudgets.js";
-
-const PageTitle = styled.h1`
-  font-size: 24px;
-  margin-bottom: 20px;
-`;
 
 const Header = styled.div`
   display: flex;
@@ -32,53 +36,13 @@ const HeaderActions = styled.div`
   align-items: center;
 `;
 
-const Button = styled.button`
-  background: #1a1a2e;
-  color: #fff;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-
-  &:hover {
-    background: #16213e;
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-`;
-
-const SecondaryButton = styled.button`
-  background: #fff;
-  color: #1a1a2e;
-  border: 1px solid #d1d5db;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-
-  &:hover {
-    background: #f9fafb;
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-`;
-
 const GlobalCapSection = styled.div`
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-left: 4px solid #059669;
-  border-radius: 8px;
+  background: ${(p) => p.theme.colors.card};
+  border-radius: ${(p) => p.theme.radii.lg};
+  box-shadow: ${(p) => p.theme.shadows.card};
   padding: 16px 20px;
   margin-bottom: 24px;
+  border-left: 4px solid ${(p) => p.theme.colors.success};
 `;
 
 const GlobalCapRow = styled.div`
@@ -96,7 +60,7 @@ const GlobalCapLabel = styled.span`
 
 const SpentVsBudget = styled.span`
   font-size: 14px;
-  color: #6b7280;
+  color: ${(p) => p.theme.colors.textMuted};
 `;
 
 const GroupSection = styled.div`
@@ -114,18 +78,18 @@ const GroupTitle = styled.h2`
   font-size: 14px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #6b7280;
+  color: ${(p) => p.theme.colors.textMuted};
 `;
 
 const GroupSubtotal = styled.span`
   font-size: 13px;
-  color: #6b7280;
+  color: ${(p) => p.theme.colors.textMuted};
 `;
 
 const CategoryList = styled.div`
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  background: ${(p) => p.theme.colors.card};
+  border-radius: ${(p) => p.theme.radii.lg};
+  box-shadow: ${(p) => p.theme.shadows.card};
   overflow: hidden;
 `;
 
@@ -133,7 +97,7 @@ const CategoryRow = styled.div`
   display: flex;
   align-items: center;
   padding: 12px 16px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid ${(p) => p.theme.colors.border};
   gap: 12px;
 
   &:last-child {
@@ -151,24 +115,9 @@ const CategoryName = styled.span`
   min-width: 120px;
 `;
 
-const AmountInput = styled.input`
-  width: 100px;
-  padding: 6px 8px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 14px;
-  text-align: right;
-
-  &:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-  }
-`;
-
 const SpentAmount = styled.span`
   font-size: 13px;
-  color: #6b7280;
+  color: ${(p) => p.theme.colors.textMuted};
   width: 90px;
   text-align: right;
   flex-shrink: 0;
@@ -183,16 +132,10 @@ const ProgressWrapper = styled.div`
   }
 `;
 
-const EmptyState = styled.p`
-  text-align: center;
-  color: #6b7280;
-  padding: 48px 0;
-  font-size: 16px;
-`;
-
 const SaveStatus = styled.span<{ $success?: boolean }>`
   font-size: 13px;
-  color: ${(p) => (p.$success ? "#059669" : "#6b7280")};
+  color: ${(p) =>
+    p.$success ? p.theme.colors.success : p.theme.colors.textMuted};
 `;
 
 function formatAmount(cents: number): string {
@@ -358,7 +301,10 @@ function BudgetPage() {
 
   return (
     <>
-      <PageTitle>📊 Budget</PageTitle>
+      <TitleRow>
+        <Wallet size={28} strokeWidth={2} />
+        <PageTitle>Budget</PageTitle>
+      </TitleRow>
 
       <Header>
         <MonthPicker month={month} onChange={handleMonthChange} />

@@ -9,6 +9,8 @@ import {
 import { MonthPicker } from "../../components/MonthPicker.js";
 import { CategoryExpenseCard } from "../../components/CategoryExpenseCard.js";
 import { ProgressBar } from "../../components/ProgressBar.js";
+import { LayoutDashboard } from "lucide-react";
+import { PageTitle, EmptyState, TitleRow } from "../../components/ui.js";
 
 const Header = styled.div`
   display: flex;
@@ -23,16 +25,53 @@ const Header = styled.div`
   }
 `;
 
+const StatCards = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+`;
+
+const StatCard = styled.div<{ $accent: string }>`
+  background: ${(p) => p.theme.colors.card};
+  border-radius: ${(p) => p.theme.radii.lg};
+  box-shadow: ${(p) => p.theme.shadows.card};
+  padding: 16px 20px;
+  border-left: 4px solid ${(p) => p.$accent};
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: ${(p) => p.theme.shadows.cardHover};
+  }
+`;
+
+const StatLabel = styled.div`
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: ${(p) => p.theme.colors.textMuted};
+  margin-bottom: 4px;
+`;
+
+const StatValue = styled.div<{ $color?: string }>`
+  font-size: 22px;
+  font-weight: 700;
+  color: ${(p) => p.$color ?? p.theme.colors.text};
+`;
+
 const TotalSummary = styled.div`
   @media (max-width: 640px) {
     width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    border-left: 4px solid #059669;
-    border-radius: 8px;
+    background: ${(p) => p.theme.colors.card};
+    border-radius: ${(p) => p.theme.radii.lg};
+    box-shadow: ${(p) => p.theme.shadows.card};
+    border-left: 4px solid ${(p) => p.theme.colors.success};
     padding: 12px 16px;
   }
 `;
@@ -40,7 +79,7 @@ const TotalSummary = styled.div`
 const TotalAmount = styled.div`
   font-size: 28px;
   font-weight: 700;
-  color: #059669;
+  color: ${(p) => p.theme.colors.success};
   white-space: nowrap;
 
   @media (max-width: 640px) {
@@ -50,7 +89,7 @@ const TotalAmount = styled.div`
 
 const TotalLabel = styled.div`
   font-size: 13px;
-  color: #6b7280;
+  color: ${(p) => p.theme.colors.textMuted};
   text-align: right;
 
   @media (max-width: 640px) {
@@ -64,12 +103,23 @@ const CardList = styled.div`
   gap: 12px;
 `;
 
-const SectionTitle = styled.h2`
+const SectionTitle = styled.h2<{ $dotColor?: string }>`
   font-size: 14px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #6b7280;
+  color: ${(p) => p.theme.colors.textMuted};
   margin: 24px 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: ${(p) => p.$dotColor ?? p.theme.colors.primary};
+  }
 `;
 
 const SectionHeader = styled.div`
@@ -81,19 +131,7 @@ const SectionHeader = styled.div`
 
 const SectionSubtotal = styled.span`
   font-size: 13px;
-  color: #6b7280;
-`;
-
-const PageTitle = styled.h1`
-  font-size: 24px;
-  margin-bottom: 20px;
-`;
-
-const EmptyState = styled.p`
-  text-align: center;
-  color: #6b7280;
-  padding: 48px 0;
-  font-size: 16px;
+  color: ${(p) => p.theme.colors.textMuted};
 `;
 
 function formatAmount(cents: number): string {
@@ -139,7 +177,10 @@ function DashboardPage() {
   if (!summary || summary.totalAmount === 0) {
     return (
       <>
-        <PageTitle>Dashboard</PageTitle>
+        <TitleRow>
+          <LayoutDashboard size={28} strokeWidth={2} />
+          <PageTitle>Dashboard</PageTitle>
+        </TitleRow>
         <Header>
           <MonthPicker month={month} onChange={setMonth} />
         </Header>
@@ -158,11 +199,12 @@ function DashboardPage() {
     title: string,
     categories: CategorySummary[],
     subtotal: number,
+    dotColor?: string,
   ) =>
     categories.length > 0 ? (
       <>
         <SectionHeader>
-          <SectionTitle>{title}</SectionTitle>
+          <SectionTitle $dotColor={dotColor}>{title}</SectionTitle>
           <SectionSubtotal>{formatAmount(subtotal)}</SectionSubtotal>
         </SectionHeader>
         <CardList>
@@ -182,9 +224,21 @@ function DashboardPage() {
       </>
     ) : null;
 
+  const totalTxCount = summary.categories.reduce(
+    (s, c) => s + c.transactionCount,
+    0,
+  );
+  const budgetRemaining =
+    summary.globalBudgetCents != null && summary.globalBudgetCents > 0
+      ? summary.globalBudgetCents - summary.totalAmount
+      : null;
+
   return (
     <>
-      <PageTitle>Dashboard</PageTitle>
+      <TitleRow>
+        <LayoutDashboard size={28} strokeWidth={2} />
+        <PageTitle>Dashboard</PageTitle>
+      </TitleRow>
       <Header>
         <MonthPicker month={month} onChange={setMonth} />
         <TotalSummary>
@@ -205,16 +259,43 @@ function DashboardPage() {
         </TotalSummary>
       </Header>
 
+      <StatCards>
+        <StatCard $accent="#10b981">
+          <StatLabel>Total spent</StatLabel>
+          <StatValue $color="#10b981">
+            {formatAmount(summary.totalAmount)}
+          </StatValue>
+        </StatCard>
+        {budgetRemaining != null && (
+          <StatCard $accent={budgetRemaining >= 0 ? "#6366f1" : "#ef4444"}>
+            <StatLabel>Budget remaining</StatLabel>
+            <StatValue $color={budgetRemaining >= 0 ? "#6366f1" : "#ef4444"}>
+              {formatAmount(Math.max(0, budgetRemaining))}
+            </StatValue>
+          </StatCard>
+        )}
+        <StatCard $accent="#8b5cf6">
+          <StatLabel>Transactions</StatLabel>
+          <StatValue>{totalTxCount}</StatValue>
+        </StatCard>
+      </StatCards>
+
       {renderCategorySection(
         "Variable expenses",
         variableCategories,
         variableTotal,
+        "#8b5cf6",
       )}
-      {renderCategorySection("Fixed expenses", fixedCategories, fixedTotal)}
+      {renderCategorySection(
+        "Fixed expenses",
+        fixedCategories,
+        fixedTotal,
+        "#6366f1",
+      )}
 
       {summary.uncategorized.transactionCount > 0 && (
         <>
-          <SectionTitle>Uncategorized</SectionTitle>
+          <SectionTitle $dotColor="#f59e0b">Uncategorized</SectionTitle>
           <CategoryExpenseCard
             name="Uncategorized"
             totalAmount={summary.uncategorized.totalAmount}

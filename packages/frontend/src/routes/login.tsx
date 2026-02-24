@@ -1,83 +1,47 @@
 import { useState } from "react";
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 import styled from "styled-components";
+import { Wallet } from "lucide-react";
 import { useAuth, useLogin } from "../hooks/useAuth.js";
+import { Button, Input, Label, ErrorMessage } from "../components/ui.js";
 
 const Page = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: #f5f5f5;
+  background: ${(p) => p.theme.gradients.primary};
+  padding: 24px;
 `;
 
 const Card = styled.div`
-  background: #fff;
+  background: ${(p) => p.theme.colors.card};
   padding: 40px;
-  border-radius: 12px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  border-radius: ${(p) => p.theme.radii.lg};
+  box-shadow: ${(p) => p.theme.shadows.cardHover};
   width: 100%;
   max-width: 400px;
 `;
 
+const IconWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+  color: ${(p) => p.theme.colors.primary};
+`;
+
 const Title = styled.h1`
   font-size: 24px;
+  font-weight: 700;
   margin-bottom: 24px;
   text-align: center;
+  color: ${(p) => p.theme.colors.text};
 `;
 
 const Form = styled.form`
   display: flex;
   flex-direction: column;
   gap: 16px;
-`;
-
-const Label = styled.label`
-  font-size: 14px;
-  font-weight: 500;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-`;
-
-const Input = styled.input`
-  padding: 10px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 14px;
-
-  &:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-  }
-`;
-
-const Button = styled.button`
-  background: #1a1a2e;
-  color: #fff;
-  border: none;
-  padding: 12px;
-  border-radius: 6px;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 8px;
-
-  &:hover {
-    background: #16213e;
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-`;
-
-const ErrorMessage = styled.p`
-  color: #dc2626;
-  font-size: 14px;
-  text-align: center;
 `;
 
 export const Route = createFileRoute("/login")({
@@ -106,6 +70,9 @@ function LoginPage() {
   return (
     <Page>
       <Card>
+        <IconWrapper>
+          <Wallet size={48} strokeWidth={1.5} />
+        </IconWrapper>
         <Title>Budget Tracker</Title>
         <Form onSubmit={handleSubmit}>
           <Label>
@@ -129,7 +96,11 @@ function LoginPage() {
           {loginMutation.isError && (
             <ErrorMessage>Invalid email or password</ErrorMessage>
           )}
-          <Button type="submit" disabled={loginMutation.isPending}>
+          <Button
+            type="submit"
+            disabled={loginMutation.isPending}
+            style={{ marginTop: 8 }}
+          >
             {loginMutation.isPending ? "Logging in..." : "Log in"}
           </Button>
         </Form>

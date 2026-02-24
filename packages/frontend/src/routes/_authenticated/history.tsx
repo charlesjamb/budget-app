@@ -3,10 +3,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import styled from "styled-components";
 import { useHistory } from "../../hooks/useTransactions.js";
 
-const Title = styled.h1`
-  font-size: 24px;
-  margin-bottom: 24px;
-`;
+import { BarChart3 } from "lucide-react";
+import { PageTitle, TitleRow } from "../../components/ui.js";
 
 const Controls = styled.div`
   display: flex;
@@ -22,7 +20,7 @@ const Controls = styled.div`
 
 const Label = styled.label`
   font-size: 14px;
-  color: #6b7280;
+  color: ${(p) => p.theme.colors.textMuted};
   display: flex;
   align-items: center;
   gap: 6px;
@@ -30,16 +28,23 @@ const Label = styled.label`
 
 const MonthInput = styled.input`
   padding: 6px 10px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
+  border: 1px solid ${(p) => p.theme.colors.borderLight};
+  border-radius: ${(p) => p.theme.radii.md};
   font-size: 14px;
+  background: ${(p) => p.theme.colors.card};
+
+  &:focus {
+    outline: none;
+    border-color: ${(p) => p.theme.colors.primary};
+    box-shadow: ${(p) => p.theme.shadows.focus};
+  }
 `;
 
 const TableWrapper = styled.div`
   overflow-x: auto;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  background: ${(p) => p.theme.colors.card};
+  border-radius: ${(p) => p.theme.radii.lg};
+  box-shadow: ${(p) => p.theme.shadows.card};
 `;
 
 const Table = styled.table`
@@ -51,40 +56,40 @@ const Table = styled.table`
 const Th = styled.th`
   text-align: left;
   padding: 12px 16px;
-  background: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
+  background: ${(p) => p.theme.colors.background};
+  border-bottom: 1px solid ${(p) => p.theme.colors.border};
   font-size: 13px;
   white-space: nowrap;
 
   &:first-child {
     position: sticky;
     left: 0;
-    background: #f9fafb;
+    background: ${(p) => p.theme.colors.background};
     z-index: 1;
   }
 `;
 
 const Td = styled.td<{ $highlight?: boolean }>`
   padding: 10px 16px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid ${(p) => p.theme.colors.border};
   font-size: 14px;
   text-align: right;
   white-space: nowrap;
-  color: ${(p) => (p.$highlight ? "#059669" : "inherit")};
+  color: ${(p) => (p.$highlight ? p.theme.colors.success : "inherit")};
 
   &:first-child {
     text-align: left;
     font-weight: 500;
     position: sticky;
     left: 0;
-    background: #fff;
+    background: ${(p) => p.theme.colors.card};
     z-index: 1;
   }
 `;
 
 const EmptyState = styled.p`
   text-align: center;
-  color: #6b7280;
+  color: ${(p) => p.theme.colors.textMuted};
   padding: 48px;
   font-size: 16px;
 `;
@@ -121,7 +126,10 @@ function HistoryPage() {
 
   return (
     <>
-      <Title>📊 Spending History</Title>
+      <TitleRow>
+        <BarChart3 size={28} strokeWidth={2} />
+        <PageTitle>Spending History</PageTitle>
+      </TitleRow>
 
       <Controls>
         <Label>

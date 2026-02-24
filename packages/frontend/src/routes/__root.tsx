@@ -1,6 +1,7 @@
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
-import { createGlobalStyle } from "styled-components";
+import { createGlobalStyle, ThemeProvider } from "styled-components";
 import type { QueryClient } from "@tanstack/react-query";
+import { theme } from "../theme.js";
 
 const GlobalStyle = createGlobalStyle`
   *, *::before, *::after {
@@ -10,14 +11,14 @@ const GlobalStyle = createGlobalStyle`
   }
 
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background: #f5f5f5;
-    color: #111827;
+    font-family: ${(p) => p.theme.font.family};
+    background: ${(p) => p.theme.colors.background};
+    color: ${(p) => p.theme.colors.text};
     line-height: 1.5;
   }
 `;
 
-interface RouterContext {
+export interface RouterContext {
   queryClient: QueryClient;
 }
 
@@ -27,9 +28,9 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 
 function RootComponent() {
   return (
-    <>
+    <ThemeProvider theme={theme}>
       <GlobalStyle />
       <Outlet />
-    </>
+    </ThemeProvider>
   );
 }

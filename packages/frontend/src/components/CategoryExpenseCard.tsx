@@ -23,27 +23,48 @@ function getCategoryColor(name: string): string {
 }
 
 const Card = styled.div<{ $color: string }>`
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-left: 4px solid ${(p) => p.$color};
-  border-radius: 8px;
+  background: ${(p) => p.theme.colors.card};
+  border-radius: ${(p) => p.theme.radii.lg};
+  box-shadow: ${(p) => p.theme.shadows.card};
   overflow: hidden;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: ${(p) => p.theme.shadows.cardHover};
+  }
 `;
 
-const CardHeader = styled.button`
+const CardHeader = styled.button<{ $color: string }>`
   width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
-  background: none;
+  background: ${(p) => `${p.$color}08`};
   border: none;
   cursor: pointer;
   text-align: left;
 
   &:hover {
-    background: #f9fafb;
+    background: ${(p) => `${p.$color}12`};
   }
+`;
+
+const CategoryNameRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+`;
+
+const ColorDot = styled.div<{ $color: string }>`
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: ${(p) => p.$color};
+  flex-shrink: 0;
 `;
 
 const CategoryName = styled.span`
@@ -64,12 +85,12 @@ const Amount = styled.span<{ $color: string }>`
 `;
 
 const Count = styled.span`
-  color: #6b7280;
+  color: ${(p) => p.theme.colors.textMuted};
   font-size: 13px;
 `;
 
 const TransactionList = styled.div`
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid ${(p) => p.theme.colors.border};
   padding: 0;
 `;
 
@@ -78,7 +99,7 @@ const TransactionRow = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 10px 20px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid ${(p) => p.theme.colors.border};
   font-size: 14px;
   min-width: 0;
 
@@ -92,7 +113,7 @@ const TransactionRow = styled.div`
 `;
 
 const TransactionDate = styled.span`
-  color: #6b7280;
+  color: ${(p) => p.theme.colors.textMuted};
   min-width: 90px;
   flex-shrink: 0;
 
@@ -153,8 +174,11 @@ export function CategoryExpenseCard({
 
   return (
     <Card $color={color}>
-      <CardHeader onClick={() => setExpanded(!expanded)}>
-        <CategoryName>{name}</CategoryName>
+      <CardHeader $color={color} onClick={() => setExpanded(!expanded)}>
+        <CategoryNameRow>
+          <ColorDot $color={color} />
+          <CategoryName>{name}</CategoryName>
+        </CategoryNameRow>
         <CategoryInfo>
           <Count>{transactionCount} transactions</Count>
           <Amount $color={color}>

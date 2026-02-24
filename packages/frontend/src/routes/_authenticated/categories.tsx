@@ -2,6 +2,17 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import styled from "styled-components";
 import type { CategoryType } from "@budget-app/shared";
+import { FolderOpen } from "lucide-react";
+import {
+  Button,
+  Input,
+  DangerButton,
+  EditInput,
+  Select,
+  ErrorMessage,
+  PageTitle,
+  TitleRow,
+} from "../../components/ui.js";
 import {
   useCategories,
   useCreateCategory,
@@ -9,68 +20,20 @@ import {
   useDeleteCategory,
 } from "../../hooks/useCategories.js";
 
-const Title = styled.h1`
-  font-size: 24px;
-  margin-bottom: 24px;
-`;
-
 const AddForm = styled.form`
   display: flex;
   gap: 8px;
   margin-bottom: 24px;
 `;
 
-const Input = styled.input`
-  padding: 8px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 14px;
+const FormInput = styled(Input)`
   flex: 1;
-
-  &:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-  }
-`;
-
-const Button = styled.button`
-  background: #1a1a2e;
-  color: #fff;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-
-  &:hover {
-    background: #16213e;
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-`;
-
-const DangerButton = styled.button`
-  background: none;
-  border: none;
-  color: #dc2626;
-  cursor: pointer;
-  font-size: 13px;
-  padding: 4px 8px;
-
-  &:hover {
-    text-decoration: underline;
-  }
 `;
 
 const List = styled.div`
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  background: ${(p) => p.theme.colors.card};
+  border-radius: ${(p) => p.theme.radii.lg};
+  box-shadow: ${(p) => p.theme.shadows.card};
   overflow: hidden;
 `;
 
@@ -79,7 +42,7 @@ const ListItem = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid ${(p) => p.theme.colors.border};
 
   &:last-child {
     border-bottom: none;
@@ -96,24 +59,17 @@ const Actions = styled.div`
   align-items: center;
 `;
 
-const EditInput = styled.input`
-  padding: 4px 8px;
-  border: 1px solid #3b82f6;
-  border-radius: 4px;
-  font-size: 14px;
-`;
-
 const EmptyState = styled.p`
   text-align: center;
-  color: #6b7280;
+  color: ${(p) => p.theme.colors.textMuted};
   padding: 32px;
   font-size: 15px;
 `;
 
 const GroupBadge = styled.span`
   font-size: 11px;
-  color: #6b7280;
-  background: #f3f4f6;
+  color: ${(p) => p.theme.colors.textMuted};
+  background: ${(p) => p.theme.colors.background};
   padding: 2px 8px;
   border-radius: 10px;
   margin-left: 8px;
@@ -121,26 +77,11 @@ const GroupBadge = styled.span`
 
 const TypeBadge = styled.span`
   font-size: 11px;
-  color: #374151;
-  background: #e5e7eb;
+  color: ${(p) => p.theme.colors.text};
+  background: ${(p) => p.theme.colors.border};
   padding: 2px 8px;
   border-radius: 10px;
   margin-left: 8px;
-`;
-
-const Select = styled.select`
-  padding: 8px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 14px;
-  background: #fff;
-  min-width: 100px;
-`;
-
-const ErrorMessage = styled.p`
-  color: #dc2626;
-  font-size: 13px;
-  margin-top: 4px;
 `;
 
 export const Route = createFileRoute("/_authenticated/categories")({
@@ -208,10 +149,13 @@ function CategoriesPage() {
 
   return (
     <>
-      <Title>Budget Categories</Title>
+      <TitleRow>
+        <FolderOpen size={28} strokeWidth={2} />
+        <PageTitle>Budget Categories</PageTitle>
+      </TitleRow>
 
       <AddForm onSubmit={handleAdd}>
-        <Input
+        <FormInput
           placeholder="New category name..."
           value={newName}
           onChange={(e) => setNewName(e.target.value)}

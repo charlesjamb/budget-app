@@ -1,6 +1,15 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import styled from "styled-components";
+import { Settings as SettingsIcon } from "lucide-react";
+import {
+  Button,
+  Input,
+  DangerButton,
+  EditInput,
+  PageTitle,
+  TitleRow,
+} from "../../components/ui.js";
 import {
   useMappingRules,
   useDeleteMappingRule,
@@ -11,11 +20,6 @@ import {
   useUpdateMerchantAlias,
   useDeleteMerchantAlias,
 } from "../../hooks/useMerchantAliases.js";
-
-const Title = styled.h1`
-  font-size: 24px;
-  margin-bottom: 24px;
-`;
 
 const SectionTitle = styled.h2`
   font-size: 18px;
@@ -31,21 +35,20 @@ const TableScroll = styled.div`
     width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
+    border-radius: ${(p) => p.theme.radii.lg};
+    box-shadow: ${(p) => p.theme.shadows.card};
   }
 `;
 
 const Table = styled.table`
   width: 100%;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  background: ${(p) => p.theme.colors.card};
+  border-radius: ${(p) => p.theme.radii.lg};
   border-collapse: collapse;
   overflow: hidden;
+  box-shadow: ${(p) => p.theme.shadows.card};
 
   @media (max-width: 640px) {
-    border: none;
     border-radius: 0;
     width: max-content;
     min-width: 100%;
@@ -55,31 +58,19 @@ const Table = styled.table`
 const Th = styled.th`
   text-align: left;
   padding: 12px 16px;
-  background: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
+  background: ${(p) => p.theme.colors.background};
+  border-bottom: 1px solid ${(p) => p.theme.colors.border};
   font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #6b7280;
+  color: ${(p) => p.theme.colors.textMuted};
   white-space: nowrap;
 `;
 
 const Td = styled.td`
   padding: 10px 16px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid ${(p) => p.theme.colors.border};
   font-size: 14px;
-`;
-
-const DangerButton = styled.button`
-  background: none;
-  border: none;
-  color: #dc2626;
-  cursor: pointer;
-  font-size: 13px;
-
-  &:hover {
-    text-decoration: underline;
-  }
 `;
 
 const AddForm = styled.form`
@@ -92,31 +83,12 @@ const AddForm = styled.form`
   }
 `;
 
-const Input = styled.input`
-  padding: 8px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 14px;
+const FormInput = styled(Input)`
   flex: 1;
 `;
 
-const Button = styled.button`
-  background: #1a1a2e;
-  color: #fff;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-
-  &:hover {
-    background: #16213e;
-  }
-`;
-
 const EmptyState = styled.p`
-  color: #6b7280;
+  color: ${(p) => p.theme.colors.textMuted};
   padding: 24px;
   text-align: center;
   font-size: 14px;
@@ -124,21 +96,13 @@ const EmptyState = styled.p`
 
 const EditableCell = styled.td`
   padding: 10px 16px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid ${(p) => p.theme.colors.border};
   font-size: 14px;
   cursor: pointer;
 
   &:hover {
-    background: #f9fafb;
+    background: ${(p) => p.theme.colors.background};
   }
-`;
-
-const EditInput = styled.input`
-  padding: 4px 8px;
-  border: 1px solid #3b82f6;
-  border-radius: 4px;
-  font-size: 14px;
-  width: 100%;
 `;
 
 export const Route = createFileRoute("/_authenticated/settings")({
@@ -189,7 +153,10 @@ function SettingsPage() {
 
   return (
     <>
-      <Title>⚙️ Settings</Title>
+      <TitleRow>
+        <SettingsIcon size={28} strokeWidth={2} />
+        <PageTitle>Settings</PageTitle>
+      </TitleRow>
 
       <SectionTitle>Mapping Rules</SectionTitle>
       {rules.length === 0 ? (
@@ -228,12 +195,12 @@ function SettingsPage() {
       <SectionTitle>Merchant Aliases</SectionTitle>
 
       <AddForm onSubmit={handleAddAlias}>
-        <Input
+        <FormInput
           placeholder="Original label (e.g. SARL CHEVALLIER)"
           value={aliasOriginal}
           onChange={(e) => setAliasOriginal(e.target.value)}
         />
-        <Input
+        <FormInput
           placeholder="Display name (e.g. Boulangerie)"
           value={aliasDisplay}
           onChange={(e) => setAliasDisplay(e.target.value)}

@@ -1,24 +1,22 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import styled from "styled-components";
+import { Tags } from "lucide-react";
 import { useUncategorizedSubcategories } from "../../hooks/useTransactions.js";
 import { useCategories } from "../../hooks/useCategories.js";
 import { useClassify } from "../../hooks/useMappingRules.js";
 import type { UncategorizedGroup } from "@budget-app/shared";
 
-const Title = styled.h1`
-  font-size: 24px;
-  margin-bottom: 24px;
-`;
+import { PageTitle, TitleRow } from "../../components/ui.js";
 
 const EmptyState = styled.div`
   text-align: center;
   padding: 48px;
-  color: #6b7280;
+  color: ${(p) => p.theme.colors.textMuted};
   font-size: 16px;
-  background: #fff;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
+  background: ${(p) => p.theme.colors.card};
+  border-radius: ${(p) => p.theme.radii.lg};
+  box-shadow: ${(p) => p.theme.shadows.card};
 `;
 
 const CardList = styled.div`
@@ -28,10 +26,18 @@ const CardList = styled.div`
 `;
 
 const Card = styled.div`
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  background: ${(p) => p.theme.colors.card};
+  border-radius: ${(p) => p.theme.radii.lg};
+  box-shadow: ${(p) => p.theme.shadows.card};
   overflow: hidden;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: ${(p) => p.theme.shadows.cardHover};
+  }
 `;
 
 const CardHeader = styled.div`
@@ -65,29 +71,36 @@ const SubCategoryName = styled.span`
 `;
 
 const Count = styled.span`
-  color: #6b7280;
+  color: ${(p) => p.theme.colors.textMuted};
   font-size: 13px;
 `;
 
 const Select = styled.select`
   padding: 8px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
+  border: 1px solid ${(p) => p.theme.colors.borderLight};
+  border-radius: ${(p) => p.theme.radii.md};
   font-size: 14px;
   min-width: 200px;
   flex-shrink: 0;
+  background: ${(p) => p.theme.colors.card};
+
+  &:focus {
+    outline: none;
+    border-color: ${(p) => p.theme.colors.primary};
+    box-shadow: ${(p) => p.theme.shadows.focus};
+  }
 `;
 
 const TransactionList = styled.div`
-  border-top: 1px solid #e5e7eb;
-  background: #fafafa;
+  border-top: 1px solid ${(p) => p.theme.colors.border};
+  background: ${(p) => p.theme.colors.background};
 `;
 
 const TransactionRow = styled.div`
   display: flex;
   align-items: center;
   padding: 8px 20px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid ${(p) => p.theme.colors.border};
   font-size: 13px;
   gap: 12px;
 
@@ -97,13 +110,13 @@ const TransactionRow = styled.div`
 `;
 
 const TxDate = styled.span`
-  color: #6b7280;
+  color: ${(p) => p.theme.colors.textMuted};
   min-width: 80px;
   flex-shrink: 0;
 `;
 
 const TxSublabel = styled.span`
-  color: #9ca3af;
+  color: ${(p) => p.theme.colors.textLight};
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -113,7 +126,7 @@ const TxSublabel = styled.span`
 `;
 
 const TxAmount = styled.span`
-  color: #059669;
+  color: ${(p) => p.theme.colors.success};
   font-weight: 500;
   flex-shrink: 0;
   min-width: 80px;
@@ -163,7 +176,10 @@ function ClassifyPage() {
 
   return (
     <>
-      <Title>✅ Classify Transactions</Title>
+      <TitleRow>
+        <Tags size={28} strokeWidth={2} />
+        <PageTitle>Classify Transactions</PageTitle>
+      </TitleRow>
 
       {subcategories.length === 0 ? (
         <EmptyState>
