@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import styled from "styled-components";
+import type { CategorySummary } from "@budget-app/shared";
 import {
   useMonthlySummary,
   useTransactions,
@@ -71,6 +72,18 @@ const SectionTitle = styled.h2`
   margin: 24px 0 12px;
 `;
 
+const SectionHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+`;
+
+const SectionSubtotal = styled.span`
+  font-size: 13px;
+  color: #6b7280;
+`;
+
 const PageTitle = styled.h1`
   font-size: 24px;
   margin-bottom: 20px;
@@ -101,6 +114,21 @@ function DashboardPage() {
   const summaryQuery = useMonthlySummary(month);
   const transactionsQuery = useTransactions(month);
 
+  const { fixedCategories, variableCategories } = useMemo(() => {
+    const categories = summaryQuery.data?.categories ?? [];
+    const fixed: CategorySummary[] = [];
+    const variable: CategorySummary[] = [];
+    for (const cat of categories) {
+      const type = cat.type ?? "variable";
+      if (type === "fixed") {
+        fixed.push(cat);
+      } else {
+        variable.push(cat);
+      }
+    }
+    return { fixedCategories: fixed, variableCategories: variable };
+  }, [summaryQuery.data?.categories]);
+
   if (summaryQuery.isLoading) {
     return <EmptyState>Loading...</EmptyState>;
   }
@@ -119,6 +147,40 @@ function DashboardPage() {
       </>
     );
   }
+
+  const fixedTotal = fixedCategories.reduce((s, c) => s + c.totalAmount, 0);
+  const variableTotal = variableCategories.reduce(
+    (s, c) => s + c.totalAmount,
+    0,
+  );
+
+  const renderCategorySection = (
+    title: string,
+    categories: CategorySummary[],
+    subtotal: number,
+  ) =>
+    categories.length > 0 ? (
+      <>
+        <SectionHeader>
+          <SectionTitle>{title}</SectionTitle>
+          <SectionSubtotal>{formatAmount(subtotal)}</SectionSubtotal>
+        </SectionHeader>
+        <CardList>
+          {categories.map((cat) => (
+            <CategoryExpenseCard
+              key={cat.id}
+              name={cat.name}
+              totalAmount={cat.totalAmount}
+              transactionCount={cat.transactionCount}
+              transactions={txList.filter(
+                (tx) => tx.budgetCategoryId === cat.id,
+              )}
+              budgetAmountCents={cat.budgetAmountCents}
+            />
+          ))}
+        </CardList>
+      </>
+    ) : null;
 
   return (
     <>
@@ -143,18 +205,12 @@ function DashboardPage() {
         </TotalSummary>
       </Header>
 
-      <CardList>
-        {summary.categories.map((cat) => (
-          <CategoryExpenseCard
-            key={cat.id}
-            name={cat.name}
-            totalAmount={cat.totalAmount}
-            transactionCount={cat.transactionCount}
-            transactions={txList.filter((tx) => tx.budgetCategoryId === cat.id)}
-            budgetAmountCents={cat.budgetAmountCents}
-          />
-        ))}
-      </CardList>
+      {renderCategorySection(
+        "Variable expenses",
+        variableCategories,
+        variableTotal,
+      )}
+      {renderCategorySection("Fixed expenses", fixedCategories, fixedTotal)}
 
       {summary.uncategorized.transactionCount > 0 && (
         <>

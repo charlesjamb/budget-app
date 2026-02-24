@@ -52,6 +52,7 @@ export const budgetCategories = sqliteTable(
       .references(() => households.id),
     name: text("name").notNull(),
     groupName: text("group_name"),
+    type: text("type").notNull().default("variable"),
     createdAt: text("created_at")
       .notNull()
       .default(sql`(datetime('now'))`),

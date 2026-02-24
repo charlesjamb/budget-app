@@ -20,10 +20,25 @@ function setupBudgetData() {
     http.get("/api/categories", () => {
       return HttpResponse.json({
         categories: [
-          { id: 1, name: "Loyer", groupName: "Dépenses Fixes" },
-          { id: 2, name: "Assurance", groupName: "Dépenses Fixes" },
-          { id: 3, name: "Courses", groupName: "Budget couple" },
-          { id: 4, name: "Divers" },
+          {
+            id: 1,
+            name: "Loyer",
+            groupName: "Dépenses Fixes",
+            type: "fixed",
+          },
+          {
+            id: 2,
+            name: "Assurance",
+            groupName: "Dépenses Fixes",
+            type: "fixed",
+          },
+          {
+            id: 3,
+            name: "Courses",
+            groupName: "Budget couple",
+            type: "variable",
+          },
+          { id: 4, name: "Divers", type: "variable" },
         ],
       });
     }),
@@ -80,15 +95,16 @@ describe("Budget Page", () => {
     expect(screen.getByText("Divers")).toBeInTheDocument();
   });
 
-  it("should show group section headers", async () => {
+  it("should show type and group section headers", async () => {
     setupAuthenticatedUser();
     setupBudgetData();
 
     render(<TestWrapper initialPath="/budget" />);
 
-    expect(await screen.findByText("Dépenses Fixes")).toBeInTheDocument();
+    expect(await screen.findByText("Fixed expenses")).toBeInTheDocument();
+    expect(screen.getByText("Variable expenses")).toBeInTheDocument();
+    expect(screen.getByText("Dépenses Fixes")).toBeInTheDocument();
     expect(screen.getByText("Budget couple")).toBeInTheDocument();
-    expect(screen.getByText("Other")).toBeInTheDocument();
   });
 
   it("should show global monthly cap section", async () => {

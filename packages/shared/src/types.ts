@@ -1,5 +1,7 @@
 // ---- Entities ----
 
+export type CategoryType = "fixed" | "variable";
+
 export interface User {
   id: number;
   email: string;
@@ -9,6 +11,7 @@ export interface BudgetCategory {
   id: number;
   name: string;
   groupName?: string;
+  type: CategoryType;
 }
 
 export interface Transaction {
@@ -65,11 +68,13 @@ export interface CategoriesResponse {
 export interface CreateCategoryRequest {
   name: string;
   groupName?: string;
+  type?: CategoryType;
 }
 
 export interface UpdateCategoryRequest {
   name: string;
   groupName?: string;
+  type?: CategoryType;
 }
 
 export interface ImportResult {
@@ -88,6 +93,7 @@ export interface CategorySummary {
   totalAmount: number;
   transactionCount: number;
   budgetAmountCents?: number;
+  type?: CategoryType;
 }
 
 export interface MonthlySummary {

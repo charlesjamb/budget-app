@@ -62,6 +62,7 @@ export function createTransactionService(db: AppDatabase) {
         .select({
           id: budgetCategories.id,
           name: budgetCategories.name,
+          type: budgetCategories.type,
           totalAmount: sql<number>`sum(${transactions.amount})`.as(
             "total_amount",
           ),
@@ -78,7 +79,11 @@ export function createTransactionService(db: AppDatabase) {
             between(transactions.dateOperation, startDate, endDate),
           ),
         )
-        .groupBy(budgetCategories.id, budgetCategories.name)
+        .groupBy(
+          budgetCategories.id,
+          budgetCategories.name,
+          budgetCategories.type,
+        )
         .all();
 
       // Uncategorized transactions

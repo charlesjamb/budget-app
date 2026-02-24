@@ -10,20 +10,32 @@ export function createCategoryService(db: AppDatabase) {
           id: budgetCategories.id,
           name: budgetCategories.name,
           groupName: budgetCategories.groupName,
+          type: budgetCategories.type,
         })
         .from(budgetCategories)
         .where(eq(budgetCategories.householdId, householdId))
         .all();
     },
 
-    create(householdId: number, name: string, groupName?: string) {
+    create(
+      householdId: number,
+      name: string,
+      groupName?: string,
+      type?: "fixed" | "variable",
+    ) {
       const result = db
         .insert(budgetCategories)
-        .values({ householdId, name, groupName: groupName ?? null })
+        .values({
+          householdId,
+          name,
+          groupName: groupName ?? null,
+          ...(type && { type }),
+        })
         .returning({
           id: budgetCategories.id,
           name: budgetCategories.name,
           groupName: budgetCategories.groupName,
+          type: budgetCategories.type,
         })
         .get();
       return result;
@@ -34,6 +46,7 @@ export function createCategoryService(db: AppDatabase) {
       householdId: number,
       name: string,
       groupName?: string | null,
+      type?: "fixed" | "variable",
     ) {
       const setValues: Record<string, unknown> = {
         name,
@@ -41,6 +54,9 @@ export function createCategoryService(db: AppDatabase) {
       };
       if (groupName !== undefined) {
         setValues.groupName = groupName;
+      }
+      if (type !== undefined) {
+        setValues.type = type;
       }
 
       const result = db
@@ -56,6 +72,7 @@ export function createCategoryService(db: AppDatabase) {
           id: budgetCategories.id,
           name: budgetCategories.name,
           groupName: budgetCategories.groupName,
+          type: budgetCategories.type,
         })
         .get();
       return result ?? null;

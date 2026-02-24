@@ -23,15 +23,21 @@ describe("Categories Page", () => {
       http.get("/api/categories", () => {
         return HttpResponse.json({
           categories: [
-            { id: 1, name: "Food" },
-            { id: 2, name: "Transport" },
+            { id: 1, name: "Food", type: "variable" },
+            { id: 2, name: "Transport", type: "variable" },
           ],
         });
       }),
       http.post("/api/categories", async ({ request }) => {
-        const body = (await request.json()) as { name: string };
+        const body = (await request.json()) as { name: string; type?: string };
         return HttpResponse.json(
-          { category: { id: 3, name: body.name } },
+          {
+            category: {
+              id: 3,
+              name: body.name,
+              type: body.type ?? "variable",
+            },
+          },
           { status: 201 },
         );
       }),

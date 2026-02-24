@@ -214,6 +214,7 @@ interface GroupedCategory {
   id: number;
   name: string;
   groupName: string;
+  type: "fixed" | "variable";
   spent: number;
   budgetCents: number;
 }
@@ -317,30 +318,36 @@ function BudgetPage() {
     );
   };
 
-  // Build grouped categories with spending data
+  // Build grouped categories: first by type (fixed, variable), then by groupName
   const spentMap = new Map(
     (summary?.categories ?? []).map((c) => [c.id, c.totalAmount]),
   );
 
-  const grouped: Record<string, GroupedCategory[]> = {};
+  const groupedByType: Record<
+    "fixed" | "variable",
+    Record<string, GroupedCategory[]>
+  > = { fixed: {}, variable: {} };
+
   for (const cat of categories) {
-    const group = cat.groupName || "Other";
-    if (!grouped[group]) grouped[group] = [];
-    grouped[group].push({
+    const type = cat.type ?? "variable";
+    const group = cat.groupName?.trim() || "";
+    if (!groupedByType[type][group]) groupedByType[type][group] = [];
+    groupedByType[type][group].push({
       id: cat.id,
       name: cat.name,
       groupName: group,
+      type,
       spent: spentMap.get(cat.id) ?? 0,
       budgetCents: budgetMap.get(cat.id) ?? 0,
     });
   }
 
-  // Sort groups: named groups first alphabetically, "Other" last
-  const groupNames = Object.keys(grouped).sort((a, b) => {
-    if (a === "Other") return 1;
-    if (b === "Other") return -1;
-    return a.localeCompare(b);
-  });
+  const sortGroupNames = (names: string[]) =>
+    names.sort((a, b) => {
+      if (a === "") return 1;
+      if (b === "") return -1;
+      return a.localeCompare(b);
+    });
 
   const totalSpent = summary?.totalAmount ?? 0;
   const globalCapCents = budgetMap.get(GLOBAL_CAP_CATEGORY_ID) ?? 0;
@@ -400,48 +407,71 @@ function BudgetPage() {
           No categories yet. Create some in the Categories page first.
         </EmptyState>
       ) : (
-        groupNames.map((groupName) => {
-          const items = grouped[groupName];
-          const groupSpent = items.reduce((s, c) => s + c.spent, 0);
-          const groupBudget = items.reduce((s, c) => s + c.budgetCents, 0);
+        (["variable", "fixed"] as const)
+          .filter((type) => Object.keys(groupedByType[type]).length > 0)
+          .map((type) => {
+            const groups = groupedByType[type];
+            const groupNames = sortGroupNames(Object.keys(groups));
 
-          return (
-            <GroupSection key={groupName}>
-              <GroupHeader>
-                <GroupTitle>{groupName}</GroupTitle>
-                <GroupSubtotal>
-                  {formatAmount(groupSpent)}
-                  {groupBudget > 0 ? ` / ${formatAmount(groupBudget)}` : ""}
-                </GroupSubtotal>
-              </GroupHeader>
-              <CategoryList>
-                {items.map((cat) => (
-                  <CategoryRow key={cat.id}>
-                    <CategoryName>{cat.name}</CategoryName>
-                    <SpentAmount>{formatAmount(cat.spent)}</SpentAmount>
-                    <AmountInput
-                      type="text"
-                      inputMode="decimal"
-                      placeholder="0.00"
-                      value={getInputValue(cat.id)}
-                      onChange={(e) =>
-                        handleInputChange(cat.id, e.target.value)
-                      }
-                    />
-                    <ProgressWrapper>
-                      {(budgetMap.get(cat.id) ?? 0) > 0 && (
-                        <ProgressBar
-                          spent={cat.spent}
-                          budget={budgetMap.get(cat.id)!}
-                        />
+            const typeLabel =
+              type === "fixed" ? "Fixed expenses" : "Variable expenses";
+            return (
+              <GroupSection key={type}>
+                <GroupHeader>
+                  <GroupTitle>{typeLabel}</GroupTitle>
+                </GroupHeader>
+                {groupNames.map((groupName) => {
+                  const items = groups[groupName];
+                  const groupSpent = items.reduce((s, c) => s + c.spent, 0);
+                  const groupBudget = items.reduce(
+                    (s, c) => s + c.budgetCents,
+                    0,
+                  );
+
+                  return (
+                    <GroupSection key={`${type}-${groupName || "_"}`}>
+                      {groupName && (
+                        <GroupHeader>
+                          <GroupTitle>{groupName}</GroupTitle>
+                          <GroupSubtotal>
+                            {formatAmount(groupSpent)}
+                            {groupBudget > 0
+                              ? ` / ${formatAmount(groupBudget)}`
+                              : ""}
+                          </GroupSubtotal>
+                        </GroupHeader>
                       )}
-                    </ProgressWrapper>
-                  </CategoryRow>
-                ))}
-              </CategoryList>
-            </GroupSection>
-          );
-        })
+                      <CategoryList>
+                        {items.map((cat) => (
+                          <CategoryRow key={cat.id}>
+                            <CategoryName>{cat.name}</CategoryName>
+                            <SpentAmount>{formatAmount(cat.spent)}</SpentAmount>
+                            <AmountInput
+                              type="text"
+                              inputMode="decimal"
+                              placeholder="0.00"
+                              value={getInputValue(cat.id)}
+                              onChange={(e) =>
+                                handleInputChange(cat.id, e.target.value)
+                              }
+                            />
+                            <ProgressWrapper>
+                              {(budgetMap.get(cat.id) ?? 0) > 0 && (
+                                <ProgressBar
+                                  spent={cat.spent}
+                                  budget={budgetMap.get(cat.id)!}
+                                />
+                              )}
+                            </ProgressWrapper>
+                          </CategoryRow>
+                        ))}
+                      </CategoryList>
+                    </GroupSection>
+                  );
+                })}
+              </GroupSection>
+            );
+          })
       )}
     </>
   );

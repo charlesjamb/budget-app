@@ -39,6 +39,7 @@ function initSchema(sqlite: Database.Database, ifNotExists: boolean) {
       household_id INTEGER NOT NULL REFERENCES households(id),
       name TEXT NOT NULL,
       group_name TEXT,
+      type TEXT NOT NULL DEFAULT 'variable',
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       updated_at TEXT NOT NULL DEFAULT (datetime('now')),
       UNIQUE(household_id, name)
@@ -94,12 +95,16 @@ function initSchema(sqlite: Database.Database, ifNotExists: boolean) {
 }
 
 function runMigrations(sqlite: Database.Database) {
-  // Add group_name column to budget_categories if missing
   const cols = sqlite.prepare("PRAGMA table_info(budget_categories)").all() as {
     name: string;
   }[];
   if (!cols.some((c) => c.name === "group_name")) {
     sqlite.exec("ALTER TABLE budget_categories ADD COLUMN group_name TEXT");
+  }
+  if (!cols.some((c) => c.name === "type")) {
+    sqlite.exec(
+      "ALTER TABLE budget_categories ADD COLUMN type TEXT NOT NULL DEFAULT 'variable'",
+    );
   }
 }
 

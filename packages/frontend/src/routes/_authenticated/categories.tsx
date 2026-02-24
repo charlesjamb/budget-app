@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import styled from "styled-components";
+import type { CategoryType } from "@budget-app/shared";
 import {
   useCategories,
   useCreateCategory,
@@ -118,6 +119,24 @@ const GroupBadge = styled.span`
   margin-left: 8px;
 `;
 
+const TypeBadge = styled.span`
+  font-size: 11px;
+  color: #374151;
+  background: #e5e7eb;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-left: 8px;
+`;
+
+const Select = styled.select`
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  background: #fff;
+  min-width: 100px;
+`;
+
 const ErrorMessage = styled.p`
   color: #dc2626;
   font-size: 13px;
@@ -131,9 +150,11 @@ export const Route = createFileRoute("/_authenticated/categories")({
 function CategoriesPage() {
   const [newName, setNewName] = useState("");
   const [newGroupName, setNewGroupName] = useState("");
+  const [newType, setNewType] = useState<CategoryType>("variable");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editName, setEditName] = useState("");
   const [editGroupName, setEditGroupName] = useState("");
+  const [editType, setEditType] = useState<CategoryType>("variable");
 
   const categoriesQuery = useCategories();
   const createMutation = useCreateCategory();
@@ -146,7 +167,11 @@ function CategoriesPage() {
     e.preventDefault();
     if (!newName.trim()) return;
     createMutation.mutate(
-      { name: newName.trim(), groupName: newGroupName.trim() || undefined },
+      {
+        name: newName.trim(),
+        groupName: newGroupName.trim() || undefined,
+        type: newType,
+      },
       {
         onSuccess: () => {
           setNewName("");
@@ -156,10 +181,16 @@ function CategoriesPage() {
     );
   };
 
-  const handleStartEdit = (id: number, name: string, groupName?: string) => {
+  const handleStartEdit = (
+    id: number,
+    name: string,
+    groupName?: string,
+    type: CategoryType = "variable",
+  ) => {
     setEditingId(id);
     setEditName(name);
     setEditGroupName(groupName ?? "");
+    setEditType(type);
   };
 
   const handleSaveEdit = (id: number) => {
@@ -168,7 +199,8 @@ function CategoriesPage() {
       {
         id,
         name: editName.trim(),
-        groupName: editGroupName.trim() || undefined,
+        groupName: editGroupName.trim(),
+        type: editType,
       },
       { onSuccess: () => setEditingId(null) },
     );
@@ -190,6 +222,13 @@ function CategoriesPage() {
           onChange={(e) => setNewGroupName(e.target.value)}
           style={{ flex: "0 0 160px" }}
         />
+        <Select
+          value={newType}
+          onChange={(e) => setNewType(e.target.value as CategoryType)}
+        >
+          <option value="variable">Variable</option>
+          <option value="fixed">Fixed</option>
+        </Select>
         <Button type="submit" disabled={createMutation.isPending}>
           Add
         </Button>
@@ -227,6 +266,15 @@ function CategoriesPage() {
                       if (e.key === "Escape") setEditingId(null);
                     }}
                   />
+                  <Select
+                    value={editType}
+                    onChange={(e) =>
+                      setEditType(e.target.value as CategoryType)
+                    }
+                  >
+                    <option value="variable">Variable</option>
+                    <option value="fixed">Fixed</option>
+                  </Select>
                   <Actions>
                     <Button
                       onClick={() => handleSaveEdit(cat.id)}
@@ -243,12 +291,20 @@ function CategoriesPage() {
                 <>
                   <CategoryName>
                     {cat.name}
+                    <TypeBadge>
+                      {cat.type === "fixed" ? "Fixed" : "Variable"}
+                    </TypeBadge>
                     {cat.groupName && <GroupBadge>{cat.groupName}</GroupBadge>}
                   </CategoryName>
                   <Actions>
                     <Button
                       onClick={() =>
-                        handleStartEdit(cat.id, cat.name, cat.groupName)
+                        handleStartEdit(
+                          cat.id,
+                          cat.name,
+                          cat.groupName,
+                          cat.type,
+                        )
                       }
                     >
                       Edit

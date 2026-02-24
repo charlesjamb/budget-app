@@ -75,6 +75,36 @@ describe("Category Routes", () => {
 
       expect(res.status).toBe(400);
     });
+
+    it("should create a category with type fixed", async () => {
+      const res = await request(app)
+        .post("/api/categories")
+        .set("Cookie", ctx.sessionCookie)
+        .send({ name: "Rent", type: "fixed" });
+
+      expect(res.status).toBe(201);
+      expect(res.body.category.name).toBe("Rent");
+      expect(res.body.category.type).toBe("fixed");
+    });
+
+    it("should default type to variable when not provided", async () => {
+      const res = await request(app)
+        .post("/api/categories")
+        .set("Cookie", ctx.sessionCookie)
+        .send({ name: "Groceries" });
+
+      expect(res.status).toBe(201);
+      expect(res.body.category.type).toBe("variable");
+    });
+
+    it("should reject invalid type", async () => {
+      const res = await request(app)
+        .post("/api/categories")
+        .set("Cookie", ctx.sessionCookie)
+        .send({ name: "Test", type: "invalid" });
+
+      expect(res.status).toBe(400);
+    });
   });
 
   describe("PUT /api/categories/:id", () => {
@@ -97,6 +127,18 @@ describe("Category Routes", () => {
         .send({ name: "Test" });
 
       expect(res.status).toBe(404);
+    });
+
+    it("should update a category type", async () => {
+      const cat = createCategory(ctx.db, ctx.householdId, "Food");
+
+      const res = await request(app)
+        .put(`/api/categories/${cat.id}`)
+        .set("Cookie", ctx.sessionCookie)
+        .send({ name: "Food", type: "fixed" });
+
+      expect(res.status).toBe(200);
+      expect(res.body.category.type).toBe("fixed");
     });
   });
 

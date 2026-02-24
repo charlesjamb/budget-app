@@ -51,10 +51,11 @@ export function createCategory(
   db: AppDatabase,
   householdId: number,
   name: string,
+  type?: "fixed" | "variable",
 ) {
   return db
     .insert(budgetCategories)
-    .values({ householdId, name })
+    .values({ householdId, name, ...(type && { type }) })
     .returning()
     .get();
 }

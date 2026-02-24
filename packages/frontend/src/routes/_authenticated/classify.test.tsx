@@ -83,8 +83,8 @@ describe("Classify Page", () => {
       http.get("/api/categories", () => {
         return HttpResponse.json({
           categories: [
-            { id: 1, name: "Food" },
-            { id: 2, name: "Going Out" },
+            { id: 1, name: "Food", type: "variable" },
+            { id: 2, name: "Going Out", type: "variable" },
           ],
         });
       }),
