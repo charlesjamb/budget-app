@@ -169,6 +169,7 @@ export function createMappingRuleService(db: AppDatabase) {
           and(
             eq(transactions.householdId, householdId),
             isNull(transactions.budgetCategoryId),
+            eq(transactions.excluded, 0),
           ),
         )
         .orderBy(transactions.dateOperation)

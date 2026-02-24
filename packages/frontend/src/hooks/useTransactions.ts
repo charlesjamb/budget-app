@@ -1,10 +1,12 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getTransactions,
   getMonthlySummary,
   getHistory,
   getUncategorizedSubcategories,
+  excludeTransaction,
 } from "../api/transactions.js";
+import type { ExcludeTransactionRequest } from "@budget-app/shared";
 
 export function useTransactions(month: string) {
   return useQuery({
@@ -31,5 +33,21 @@ export function useUncategorizedSubcategories() {
   return useQuery({
     queryKey: ["transactions", "uncategorized"],
     queryFn: getUncategorizedSubcategories,
+  });
+}
+
+export function useExcludeTransaction() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      body,
+    }: {
+      id: number;
+      body: ExcludeTransactionRequest;
+    }) => excludeTransaction(id, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+    },
   });
 }

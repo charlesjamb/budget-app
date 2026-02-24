@@ -9,6 +9,7 @@ import {
   Tags,
   FolderOpen,
   BarChart3,
+  Receipt,
   Settings,
   LogOut,
   ChevronLeft,
@@ -22,13 +23,21 @@ const navItems = [
   { to: "/budget", label: "Budget", icon: Wallet },
   { to: "/import", label: "Import", icon: Upload },
   { to: "/classify", label: "Classify", icon: Tags },
+  { to: "/transactions", label: "Transactions", icon: Receipt },
   { to: "/categories", label: "Categories", icon: FolderOpen },
   { to: "/history", label: "History", icon: BarChart3 },
   { to: "/settings", label: "Settings", icon: Settings },
 ] as const;
 
 const primaryNavItems = navItems.filter((item) =>
-  ["/", "/budget", "/import", "/classify", "/settings"].includes(item.to),
+  [
+    "/",
+    "/budget",
+    "/import",
+    "/classify",
+    "/transactions",
+    "/settings",
+  ].includes(item.to),
 );
 const moreNavItems = navItems.filter((item) =>
   ["/categories", "/history"].includes(item.to),

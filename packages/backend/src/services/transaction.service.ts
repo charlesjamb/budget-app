@@ -28,6 +28,8 @@ export function createTransactionService(db: AppDatabase) {
           reference: transactions.reference,
           additionalInfo: transactions.additionalInfo,
           operationType: transactions.operationType,
+          excluded: transactions.excluded,
+          excludedReason: transactions.excludedReason,
         })
         .from(transactions)
         .leftJoin(
@@ -50,7 +52,10 @@ export function createTransactionService(db: AppDatabase) {
         .orderBy(transactions.dateOperation)
         .all();
 
-      return results;
+      return results.map((r) => ({
+        ...r,
+        excluded: r.excluded === 1,
+      }));
     },
 
     getMonthlySummary(householdId: number, month: string) {
@@ -77,6 +82,7 @@ export function createTransactionService(db: AppDatabase) {
           and(
             eq(transactions.householdId, householdId),
             between(transactions.dateOperation, startDate, endDate),
+            eq(transactions.excluded, 0),
           ),
         )
         .groupBy(
@@ -100,6 +106,7 @@ export function createTransactionService(db: AppDatabase) {
             eq(transactions.householdId, householdId),
             between(transactions.dateOperation, startDate, endDate),
             isNull(transactions.budgetCategoryId),
+            eq(transactions.excluded, 0),
           ),
         )
         .get()!;
@@ -164,6 +171,7 @@ export function createTransactionService(db: AppDatabase) {
           and(
             eq(transactions.householdId, householdId),
             between(transactions.dateOperation, startDate, endDate),
+            eq(transactions.excluded, 0),
           ),
         )
         .groupBy(
@@ -194,6 +202,74 @@ export function createTransactionService(db: AppDatabase) {
         months,
         categories: Array.from(categoryMap.values()),
       };
+    },
+
+    updateExclude(
+      householdId: number,
+      transactionId: number,
+      excluded: boolean,
+      reason?: string,
+    ) {
+      const updated = db
+        .update(transactions)
+        .set({
+          excluded: excluded ? 1 : 0,
+          excludedReason: excluded ? (reason ?? null) : null,
+        })
+        .where(
+          and(
+            eq(transactions.id, transactionId),
+            eq(transactions.householdId, householdId),
+          ),
+        )
+        .returning()
+        .get();
+      if (!updated) return null;
+
+      // Fetch full transaction with joins for response
+      const full = db
+        .select({
+          id: transactions.id,
+          dateOperation: transactions.dateOperation,
+          labelSimplified: transactions.labelSimplified,
+          labelOperation: transactions.labelOperation,
+          amount: transactions.amount,
+          bankCategory: transactions.bankCategory,
+          bankSubCategory: transactions.bankSubCategory,
+          budgetCategoryId: transactions.budgetCategoryId,
+          budgetCategoryName: budgetCategories.name,
+          displayName: merchantAliases.displayName,
+          reference: transactions.reference,
+          additionalInfo: transactions.additionalInfo,
+          operationType: transactions.operationType,
+          excluded: transactions.excluded,
+          excludedReason: transactions.excludedReason,
+        })
+        .from(transactions)
+        .leftJoin(
+          budgetCategories,
+          eq(transactions.budgetCategoryId, budgetCategories.id),
+        )
+        .leftJoin(
+          merchantAliases,
+          and(
+            eq(transactions.labelSimplified, merchantAliases.originalLabel),
+            eq(merchantAliases.householdId, householdId),
+          ),
+        )
+        .where(
+          and(
+            eq(transactions.id, transactionId),
+            eq(transactions.householdId, householdId),
+          ),
+        )
+        .get();
+      return full
+        ? {
+            ...full,
+            excluded: full.excluded === 1,
+          }
+        : null;
     },
   };
 }

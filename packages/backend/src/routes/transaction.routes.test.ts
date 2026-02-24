@@ -17,6 +17,62 @@ describe("Transaction Routes", () => {
     app = createApp(ctx.db);
   });
 
+  describe("PATCH /api/transactions/:id/exclude", () => {
+    it("should exclude a transaction with optional reason", async () => {
+      const cat = createCategory(ctx.db, ctx.householdId, "Food");
+      const tx = createTransaction(ctx.db, ctx.householdId, {
+        dateOperation: "2026-02-13",
+        budgetCategoryId: cat.id,
+      });
+
+      const res = await request(app)
+        .patch(`/api/transactions/${tx.id}/exclude`)
+        .set("Cookie", ctx.sessionCookie)
+        .send({ excluded: true, reason: "Reimbursed by bank" });
+
+      expect(res.status).toBe(200);
+      expect(res.body.excluded).toBe(true);
+      expect(res.body.excludedReason).toBe("Reimbursed by bank");
+    });
+
+    it("should un-exclude a transaction and clear reason", async () => {
+      const tx = createTransaction(ctx.db, ctx.householdId, {
+        dateOperation: "2026-02-13",
+        excluded: 1,
+        excludedReason: "Was reimbursed",
+      });
+
+      const res = await request(app)
+        .patch(`/api/transactions/${tx.id}/exclude`)
+        .set("Cookie", ctx.sessionCookie)
+        .send({ excluded: false });
+
+      expect(res.status).toBe(200);
+      expect(res.body.excluded).toBe(false);
+      expect(res.body.excludedReason).toBeNull();
+    });
+
+    it("should return 404 for non-existent transaction", async () => {
+      const res = await request(app)
+        .patch("/api/transactions/99999/exclude")
+        .set("Cookie", ctx.sessionCookie)
+        .send({ excluded: true });
+
+      expect(res.status).toBe(404);
+    });
+
+    it("should return 400 for invalid body", async () => {
+      const tx = createTransaction(ctx.db, ctx.householdId);
+
+      const res = await request(app)
+        .patch(`/api/transactions/${tx.id}/exclude`)
+        .set("Cookie", ctx.sessionCookie)
+        .send({ excluded: "yes" });
+
+      expect(res.status).toBe(400);
+    });
+  });
+
   describe("GET /api/transactions", () => {
     it("should return transactions for a month", async () => {
       const cat = createCategory(ctx.db, ctx.householdId, "Food");
@@ -45,6 +101,26 @@ describe("Transaction Routes", () => {
         .set("Cookie", ctx.sessionCookie);
 
       expect(res.status).toBe(400);
+    });
+
+    it("should include excluded transactions with excluded flag", async () => {
+      const tx = createTransaction(ctx.db, ctx.householdId, {
+        dateOperation: "2026-02-13",
+        excluded: 1,
+        excludedReason: "Reimbursed",
+      });
+
+      const res = await request(app)
+        .get("/api/transactions?month=2026-02")
+        .set("Cookie", ctx.sessionCookie);
+
+      expect(res.status).toBe(200);
+      const found = res.body.transactions.find(
+        (t: { id: number }) => t.id === tx.id,
+      );
+      expect(found).toBeDefined();
+      expect(found.excluded).toBe(true);
+      expect(found.excludedReason).toBe("Reimbursed");
     });
   });
 
@@ -91,6 +167,33 @@ describe("Transaction Routes", () => {
 
       expect(res.body.uncategorized.totalAmount).toBe(800);
       expect(res.body.uncategorized.transactionCount).toBe(1);
+    });
+
+    it("should exclude excluded transactions from summary", async () => {
+      const food = createCategory(ctx.db, ctx.householdId, "Food");
+      createTransaction(ctx.db, ctx.householdId, {
+        dateOperation: "2026-02-10",
+        amount: 1500,
+        budgetCategoryId: food.id,
+      });
+      createTransaction(ctx.db, ctx.householdId, {
+        dateOperation: "2026-02-15",
+        amount: 2000,
+        budgetCategoryId: food.id,
+        excluded: 1,
+      });
+
+      const res = await request(app)
+        .get("/api/transactions/monthly-summary?month=2026-02")
+        .set("Cookie", ctx.sessionCookie);
+
+      expect(res.status).toBe(200);
+      expect(res.body.totalAmount).toBe(1500);
+      const foodCat = res.body.categories.find(
+        (c: { name: string }) => c.name === "Food",
+      );
+      expect(foodCat.totalAmount).toBe(1500);
+      expect(foodCat.transactionCount).toBe(1);
     });
 
     it("should compute globalBudgetCents from sum of per-category budgets", async () => {
@@ -155,6 +258,29 @@ describe("Transaction Routes", () => {
       expect(res.body.categories[0].amounts["2026-01"]).toBe(1000);
       expect(res.body.categories[0].amounts["2026-02"]).toBe(2000);
     });
+
+    it("should exclude excluded transactions from history", async () => {
+      const food = createCategory(ctx.db, ctx.householdId, "Food");
+      createTransaction(ctx.db, ctx.householdId, {
+        dateOperation: "2026-01-15",
+        amount: 1000,
+        budgetCategoryId: food.id,
+      });
+      createTransaction(ctx.db, ctx.householdId, {
+        dateOperation: "2026-02-15",
+        amount: 2000,
+        budgetCategoryId: food.id,
+        excluded: 1,
+      });
+
+      const res = await request(app)
+        .get("/api/transactions/history?from=2026-01&to=2026-02")
+        .set("Cookie", ctx.sessionCookie);
+
+      expect(res.status).toBe(200);
+      expect(res.body.categories[0].amounts["2026-01"]).toBe(1000);
+      expect(res.body.categories[0].amounts["2026-02"]).toBeUndefined();
+    });
   });
 
   describe("GET /api/transactions/uncategorized-subcategories", () => {
@@ -210,6 +336,33 @@ describe("Transaction Routes", () => {
       );
       expect(uber.bankSubCategory).toBe("Restaurant");
       expect(uber.count).toBe(1);
+    });
+
+    it("should exclude excluded transactions from uncategorized groups", async () => {
+      createTransaction(ctx.db, ctx.householdId, {
+        bankSubCategory: "Hyper/supermarche",
+        labelSimplified: "CARREFOUR",
+        amount: 1277,
+        budgetCategoryId: null,
+      });
+      createTransaction(ctx.db, ctx.householdId, {
+        bankSubCategory: "Hyper/supermarche",
+        labelSimplified: "CARREFOUR",
+        amount: 900,
+        budgetCategoryId: null,
+        excluded: 1,
+      });
+
+      const res = await request(app)
+        .get("/api/transactions/uncategorized-subcategories")
+        .set("Cookie", ctx.sessionCookie);
+
+      expect(res.status).toBe(200);
+      const carrefour = res.body.subcategories.find(
+        (s: { labelSimplified: string }) => s.labelSimplified === "CARREFOUR",
+      );
+      expect(carrefour.count).toBe(1);
+      expect(carrefour.transactions).toHaveLength(1);
     });
   });
 });

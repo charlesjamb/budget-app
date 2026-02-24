@@ -66,6 +66,8 @@ async function seed() {
       additional_info TEXT,
       operation_type TEXT NOT NULL,
       dedup_hash TEXT NOT NULL UNIQUE,
+      excluded INTEGER NOT NULL DEFAULT 0,
+      excluded_reason TEXT,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 

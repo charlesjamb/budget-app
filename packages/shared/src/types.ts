@@ -28,6 +28,8 @@ export interface Transaction {
   reference: string | null;
   additionalInfo: string | null;
   operationType: string;
+  excluded: boolean;
+  excludedReason: string | null;
 }
 
 export interface MappingRule {
@@ -200,3 +202,8 @@ export interface CopyBudgetRequest {
 export interface CopyBudgetResponse {
   copiedCount: number;
 }
+
+export type ExcludeTransactionRequest = {
+  excluded: boolean;
+  reason?: string;
+};

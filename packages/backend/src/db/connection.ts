@@ -70,6 +70,8 @@ function initSchema(sqlite: Database.Database, ifNotExists: boolean) {
       additional_info TEXT,
       operation_type TEXT NOT NULL,
       dedup_hash TEXT NOT NULL UNIQUE,
+      excluded INTEGER NOT NULL DEFAULT 0,
+      excluded_reason TEXT,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
@@ -105,6 +107,18 @@ function runMigrations(sqlite: Database.Database) {
     sqlite.exec(
       "ALTER TABLE budget_categories ADD COLUMN type TEXT NOT NULL DEFAULT 'variable'",
     );
+  }
+
+  const txCols = sqlite.prepare("PRAGMA table_info(transactions)").all() as {
+    name: string;
+  }[];
+  if (!txCols.some((c) => c.name === "excluded")) {
+    sqlite.exec(
+      "ALTER TABLE transactions ADD COLUMN excluded INTEGER NOT NULL DEFAULT 0",
+    );
+  }
+  if (!txCols.some((c) => c.name === "excluded_reason")) {
+    sqlite.exec("ALTER TABLE transactions ADD COLUMN excluded_reason TEXT");
   }
 }
 

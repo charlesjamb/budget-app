@@ -1,5 +1,8 @@
 import { Router } from "express";
-import { GLOBAL_CAP_CATEGORY_ID } from "@budget-app/shared";
+import {
+  GLOBAL_CAP_CATEGORY_ID,
+  type ExcludeTransactionRequest,
+} from "@budget-app/shared";
 import { type AppDatabase } from "../db/connection.js";
 import { createTransactionService } from "../services/transaction.service.js";
 import { createMappingRuleService } from "../services/mapping-rule.service.js";
@@ -10,6 +13,30 @@ export function transactionRoutes(db: AppDatabase): Router {
   const transactionService = createTransactionService(db);
   const mappingRuleService = createMappingRuleService(db);
   const budgetService = createBudgetService(db);
+
+  router.patch("/:id/exclude", (req, res) => {
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) {
+      res.status(400).json({ error: "Invalid transaction ID" });
+      return;
+    }
+    const body = req.body as ExcludeTransactionRequest;
+    if (typeof body?.excluded !== "boolean") {
+      res.status(400).json({ error: "excluded must be a boolean" });
+      return;
+    }
+    const updated = transactionService.updateExclude(
+      req.householdId!,
+      id,
+      body.excluded,
+      body.reason,
+    );
+    if (!updated) {
+      res.status(404).json({ error: "Transaction not found" });
+      return;
+    }
+    res.json(updated);
+  });
 
   router.get("/", (req, res) => {
     const month = req.query.month as string;

@@ -4,10 +4,22 @@ import type {
   MonthlySummary,
   HistoryData,
   UncategorizedSubcategoriesResponse,
+  Transaction,
+  ExcludeTransactionRequest,
 } from "@budget-app/shared";
 
 export function getTransactions(month: string): Promise<TransactionsResponse> {
   return apiRequest(`/api/transactions?month=${month}`);
+}
+
+export function excludeTransaction(
+  id: number,
+  body: ExcludeTransactionRequest,
+): Promise<Transaction> {
+  return apiRequest(`/api/transactions/${id}/exclude`, {
+    method: "PATCH",
+    body: JSON.stringify(body),
+  });
 }
 
 export function getMonthlySummary(month: string): Promise<MonthlySummary> {

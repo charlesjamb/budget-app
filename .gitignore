@@ -7,5 +7,6 @@ dist/
 *.sqlite
 .DS_Store
 coverage/
+*.tsbuildinfo
 .playwright-mcp/
 sample-expenses-extract.csv
