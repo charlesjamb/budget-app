@@ -12,15 +12,20 @@ const Layout = styled.div`
 
 const Main = styled.main<{ $sidebarWidth: number }>`
   flex: 1;
-  max-width: 1024px;
-  width: 100%;
-  margin: 0 auto;
   margin-left: ${(p) => p.$sidebarWidth}px;
-  padding: 24px;
   min-height: 100vh;
 
   @media (max-width: 640px) {
     margin-left: 0;
+  }
+`;
+
+const ContentWrapper = styled.div`
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 24px;
+
+  @media (max-width: 640px) {
     padding: 16px 16px 80px;
   }
 `;
@@ -64,7 +69,9 @@ function MainContent() {
   const sidebarWidth = collapsed ? 72 : 240;
   return (
     <Main $sidebarWidth={sidebarWidth}>
-      <Outlet />
+      <ContentWrapper>
+        <Outlet />
+      </ContentWrapper>
     </Main>
   );
 }
