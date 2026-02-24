@@ -59,17 +59,34 @@ export function createMappingRuleService(db: AppDatabase) {
     },
 
     delete(id: number, householdId: number) {
-      const result = db
-        .delete(mappingRules)
+      const rule = db
+        .select()
+        .from(mappingRules)
         .where(
           and(
             eq(mappingRules.id, id),
             eq(mappingRules.householdId, householdId),
           ),
         )
-        .returning()
         .get();
-      return !!result;
+
+      if (!rule) return false;
+
+      db.delete(mappingRules).where(eq(mappingRules.id, rule.id)).run();
+
+      db.update(transactions)
+        .set({ budgetCategoryId: null })
+        .where(
+          and(
+            eq(transactions.householdId, householdId),
+            eq(transactions.bankSubCategory, rule.bankSubCategory),
+            eq(transactions.labelSimplified, rule.labelSimplified),
+            eq(transactions.budgetCategoryId, rule.budgetCategoryId),
+          ),
+        )
+        .run();
+
+      return true;
     },
 
     classify(

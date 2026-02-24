@@ -50,6 +50,7 @@ export function useDeleteMappingRule() {
     mutationFn: deleteMappingRule,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["mapping-rules"] });
+      queryClient.invalidateQueries({ queryKey: ["transactions"] });
     },
   });
 }
