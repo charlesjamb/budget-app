@@ -1,12 +1,21 @@
 import { Router } from "express";
+import rateLimit from "express-rate-limit";
 import { type AppDatabase } from "../db/connection.js";
 import { createAuthService } from "../services/auth.service.js";
+
+const loginRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  message: { error: "Too many login attempts, please try again later." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 export function authRoutes(db: AppDatabase): Router {
   const router = Router();
   const authService = createAuthService(db);
 
-  router.post("/login", async (req, res) => {
+  router.post("/login", loginRateLimiter, async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
