@@ -17,6 +17,7 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 import { useLogout } from "../hooks/useAuth.js";
+import { PiggyBankIcon } from "./PiggyBankIcon.js";
 
 const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -71,11 +72,9 @@ const SidebarBrand = styled.div<{ $collapsed: boolean }>`
   flex-shrink: 0;
 `;
 
-const BrandIcon = styled(Wallet)`
+const BrandIcon = styled(PiggyBankIcon)`
   color: #fff;
   flex-shrink: 0;
-  width: 28px;
-  height: 28px;
 `;
 
 const BrandText = styled.span<{ $visible: boolean }>`
@@ -292,7 +291,7 @@ export function NavBar() {
     <>
       <SidebarWrapper $collapsed={collapsed}>
         <SidebarBrand $collapsed={collapsed}>
-          <BrandIcon />
+          <BrandIcon size={28} />
           <BrandText $visible={!collapsed}>Budget</BrandText>
         </SidebarBrand>
         <NavList>
