@@ -9,7 +9,7 @@
 ## Step 1 — SSH into your VPS
 
 ```bash
-ssh root@your-domain.example
+ssh ubuntu@YOUR_VPS_IP -p YOUR_SSH_PORT
 ```
 
 ## Step 2 — Stop the old app
@@ -38,9 +38,9 @@ cd budget-app
 **Option B — From your local machine (run this locally, not on the VPS):**
 
 ```bash
-rsync -avz --exclude node_modules --exclude .git \
+rsync -avz -e "ssh -p YOUR_SSH_PORT" --exclude node_modules --exclude .git \
   ~/workspace/budget-app/ \
-  root@your-domain.example:~/budget-app/
+  ubuntu@YOUR_VPS_IP:~/budget-app/
 ```
 
 Then on the VPS:
@@ -77,15 +77,17 @@ First build takes a few minutes (downloading images, installing deps, compiling)
 ## Step 6 — Create user accounts
 
 ```bash
-CHARLES_EMAIL=charles@example.com CHARLES_PASSWORD=yourpassword \
-MATHILDE_EMAIL=mathilde@example.com MATHILDE_PASSWORD=yourpassword \
+export CHARLES_EMAIL='charles@example.com'
+export CHARLES_PASSWORD='yourpassword'
+export MATHILDE_EMAIL='mathilde@example.com'
+export MATHILDE_PASSWORD='yourpassword'
 docker compose exec -e CHARLES_EMAIL -e CHARLES_PASSWORD \
   -e MATHILDE_EMAIL -e MATHILDE_PASSWORD \
   -e DB_PATH=/app/data/budget.db \
   app node packages/backend/dist/scripts/seed.js
 ```
 
-Replace the email and password values with your real ones. This only needs to be run once.
+Replace the email and password values with your real ones. Use single quotes around values to avoid bash interpreting special characters (`!`, `@`, etc.). This only needs to be run once.
 
 ## Step 7 — Verify
 

@@ -13,10 +13,10 @@
     "test:frontend": "npm run --workspace=packages/frontend test",
     "dev:backend": "npm run --workspace=packages/backend dev",
     "dev:frontend": "npm run --workspace=packages/frontend dev",
-    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev": "npm run --workspace=packages/shared build && concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "build": "npm run --workspace=packages/shared build && npm run --workspace=packages/backend build && npm run --workspace=packages/frontend build",
     "seed": "npm run --workspace=packages/backend seed",
-    "prepare": "husky"
+    "prepare": ""
   },
   "devDependencies": {
     "@eslint/js": "^9.18.0",
@@ -24,8 +24,6 @@
     "eslint": "^9.18.0",
     "eslint-plugin-react-hooks": "^5.1.0",
     "globals": "^15.14.0",
-    "husky": "^9.1.7",
-    "lint-staged": "^15.4.3",
     "prettier": "^3.4.2",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.22.0"

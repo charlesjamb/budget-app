@@ -14,6 +14,9 @@ COPY packages/shared/ ./packages/shared/
 COPY packages/backend/ ./packages/backend/
 COPY packages/frontend/ ./packages/frontend/
 
+# Build shared
+RUN npx --workspace=packages/shared tsc
+
 # Build frontend
 RUN npm run --workspace=packages/frontend build
 
@@ -30,7 +33,7 @@ COPY packages/backend/package.json ./packages/backend/
 COPY packages/frontend/package.json ./packages/frontend/
 RUN npm ci --omit=dev
 
-COPY --from=base /app/packages/shared/src/ ./packages/shared/src/
+COPY --from=base /app/packages/shared/dist/ ./packages/shared/dist/
 COPY --from=base /app/packages/backend/dist/ ./packages/backend/dist/
 COPY --from=base /app/packages/frontend/dist/ ./packages/frontend/dist/
 
