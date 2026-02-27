@@ -85,7 +85,7 @@ const darkShadows = {
 
 export const lightTheme = {
   ...baseTheme,
-  colorScheme: "light" as const,
+  colorScheme: "light" as "light" | "dark",
   gradients: lightGradients,
   colors: lightColors,
   shadows: lightShadows,
@@ -93,7 +93,7 @@ export const lightTheme = {
 
 export const darkTheme = {
   ...baseTheme,
-  colorScheme: "dark" as const,
+  colorScheme: "dark" as "light" | "dark",
   gradients: darkGradients,
   colors: darkColors,
   shadows: darkShadows,
