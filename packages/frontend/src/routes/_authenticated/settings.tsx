@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import styled from "styled-components";
-import { Settings as SettingsIcon } from "lucide-react";
+import { Settings as SettingsIcon, Sun, Moon, Monitor } from "lucide-react";
+import { useThemeMode } from "../../contexts/ThemeModeContext.js";
 import {
   Button,
   Input,
@@ -105,11 +106,46 @@ const EditableCell = styled.td`
   }
 `;
 
+const ThemeSegmentedControl = styled.div`
+  display: flex;
+  gap: 0;
+  border-radius: ${(p) => p.theme.radii.md};
+  overflow: hidden;
+  border: 1px solid ${(p) => p.theme.colors.border};
+  width: fit-content;
+`;
+
+const ThemeOption = styled.button<{ $active: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: ${(p) =>
+    p.$active ? p.theme.colors.primary : p.theme.colors.card};
+  color: ${(p) => (p.$active ? "#fff" : p.theme.colors.text)};
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover:not(:disabled) {
+    background: ${(p) =>
+      p.$active ? p.theme.colors.primaryDark : p.theme.colors.background};
+    color: ${(p) => (p.$active ? "#fff" : p.theme.colors.text)};
+  }
+
+  &:not(:last-child) {
+    border-right: 1px solid ${(p) => p.theme.colors.border};
+  }
+`;
+
 export const Route = createFileRoute("/_authenticated/settings")({
   component: SettingsPage,
 });
 
 function SettingsPage() {
+  const { mode, setMode } = useThemeMode();
   const [aliasOriginal, setAliasOriginal] = useState("");
   const [aliasDisplay, setAliasDisplay] = useState("");
   const [editingAlias, setEditingAlias] = useState<number | null>(null);
@@ -157,6 +193,34 @@ function SettingsPage() {
         <SettingsIcon size={28} strokeWidth={2} />
         <PageTitle>Settings</PageTitle>
       </TitleRow>
+
+      <SectionTitle>Appearance</SectionTitle>
+      <ThemeSegmentedControl>
+        <ThemeOption
+          type="button"
+          $active={mode === "light"}
+          onClick={() => setMode("light")}
+        >
+          <Sun size={18} strokeWidth={2} />
+          Light
+        </ThemeOption>
+        <ThemeOption
+          type="button"
+          $active={mode === "dark"}
+          onClick={() => setMode("dark")}
+        >
+          <Moon size={18} strokeWidth={2} />
+          Dark
+        </ThemeOption>
+        <ThemeOption
+          type="button"
+          $active={mode === "system"}
+          onClick={() => setMode("system")}
+        >
+          <Monitor size={18} strokeWidth={2} />
+          System
+        </ThemeOption>
+      </ThemeSegmentedControl>
 
       <SectionTitle>Mapping Rules</SectionTitle>
       {rules.length === 0 ? (

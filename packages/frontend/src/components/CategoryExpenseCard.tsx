@@ -25,13 +25,11 @@ const CardHeader = styled.button`
   align-items: center;
   padding: 16px 20px;
   background: ${(p) => p.theme.colors.card};
+  color: ${(p) => p.theme.colors.text};
   border: none;
   cursor: pointer;
   text-align: left;
 
-  &:hover {
-    background: ${(p) => p.theme.colors.background};
-  }
 `;
 
 const CategoryNameRow = styled.div`
@@ -116,6 +114,7 @@ const TransactionLabel = styled.span`
   text-overflow: ellipsis;
   white-space: nowrap;
   min-width: 0;
+  color: ${(p) => p.theme.colors.text};
 
   @media (max-width: 640px) {
     margin: 0 8px;

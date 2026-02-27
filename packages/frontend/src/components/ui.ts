@@ -60,6 +60,7 @@ export const Input = styled.input`
   border-radius: ${(p) => p.theme.radii.md};
   font-size: 14px;
   background: ${(p) => p.theme.colors.card};
+  color: ${(p) => p.theme.colors.text};
 
   &:focus {
     outline: none;
@@ -74,6 +75,7 @@ export const EditInput = styled.input`
   border-radius: ${(p) => p.theme.radii.sm};
   font-size: 14px;
   background: ${(p) => p.theme.colors.card};
+  color: ${(p) => p.theme.colors.text};
 
   &:focus {
     outline: none;
@@ -96,6 +98,7 @@ export const Select = styled.select`
   border-radius: ${(p) => p.theme.radii.md};
   font-size: 14px;
   background: ${(p) => p.theme.colors.card};
+  color: ${(p) => p.theme.colors.text};
 
   &:focus {
     outline: none;

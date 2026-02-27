@@ -47,7 +47,7 @@ const moreNavItems = navItems.filter((item) =>
 const SidebarWrapper = styled.aside<{ $collapsed: boolean }>`
   width: ${(p) => (p.$collapsed ? 72 : 240)}px;
   min-width: ${(p) => (p.$collapsed ? 72 : 240)}px;
-  background: ${(p) => p.theme.gradients.primary};
+  background: ${(p) => p.theme.gradients.sidebar};
   display: flex;
   flex-direction: column;
   transition: width 0.2s ease;
@@ -67,8 +67,9 @@ const SidebarBrand = styled.div<{ $collapsed: boolean }>`
   height: 56px;
   display: flex;
   align-items: center;
-  padding: 0 ${(p) => (p.$collapsed ? 16 : 20)}px;
-  gap: 12px;
+  justify-content: ${(p) => (p.$collapsed ? "center" : "flex-start")};
+  padding: 0 ${(p) => (p.$collapsed ? 0 : 20)}px;
+  gap: ${(p) => (p.$collapsed ? 0 : 12)}px;
   flex-shrink: 0;
 `;
 
@@ -103,7 +104,7 @@ const NavLink = styled(Link)<{ $active?: boolean; $collapsed?: boolean }>`
   display: flex;
   align-items: center;
   justify-content: ${(p) => (p.$collapsed ? "center" : "flex-start")};
-  gap: 12px;
+  gap: ${(p) => (p.$collapsed ? 0 : 12)}px;
   padding: 10px ${(p) => (p.$collapsed ? 10 : 16)}px;
   border-radius: ${(p) => p.theme.radii.md};
   color: ${(p) => (p.$active ? "#fff" : "rgba(255, 255, 255, 0.85)")};

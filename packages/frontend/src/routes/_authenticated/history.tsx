@@ -32,6 +32,8 @@ const MonthInput = styled.input`
   border-radius: ${(p) => p.theme.radii.md};
   font-size: 14px;
   background: ${(p) => p.theme.colors.card};
+  color: ${(p) => p.theme.colors.text};
+  color-scheme: ${(p) => p.theme.colorScheme};
 
   &:focus {
     outline: none;

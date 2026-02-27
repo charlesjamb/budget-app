@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ThemeModeProvider } from "./contexts/ThemeModeContext.js";
 import { routeTree } from "./routeTree.gen";
 
 export const queryClient = new QueryClient({
@@ -30,7 +31,9 @@ const root = createRoot(rootElement);
 root.render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <ThemeModeProvider>
+        <RouterProvider router={router} />
+      </ThemeModeProvider>
     </QueryClientProvider>
   </StrictMode>,
 );

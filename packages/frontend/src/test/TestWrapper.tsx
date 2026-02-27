@@ -4,6 +4,7 @@ import {
   createRouter,
   createMemoryHistory,
 } from "@tanstack/react-router";
+import { ThemeModeProvider } from "../contexts/ThemeModeContext.js";
 import { routeTree } from "../routeTree.gen.js";
 
 interface TestWrapperProps {
@@ -27,7 +28,9 @@ export function TestWrapper({ initialPath = "/" }: TestWrapperProps) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router as never} />
+      <ThemeModeProvider>
+        <RouterProvider router={router as never} />
+      </ThemeModeProvider>
     </QueryClientProvider>
   );
 }
