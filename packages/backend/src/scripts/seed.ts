@@ -129,10 +129,9 @@ async function seed() {
   db.insert(householdMembers).values({ userId: 2, householdId: 1 }).run();
   console.log("Added both users to household");
 
-  console.log("\nSeed complete! You can now login with:");
-  for (const { email, password } of USERS) {
-    console.log(`  Email: ${email} / Password: ${password}`);
-  }
+  console.log(
+    "\nSeed complete! Users created. Login with the credentials you provided via environment variables.",
+  );
 }
 
 seed().catch(console.error);

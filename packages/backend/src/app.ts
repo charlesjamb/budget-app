@@ -1,5 +1,6 @@
 import express from "express";
 import cookieParser from "cookie-parser";
+import helmet from "helmet";
 import path from "path";
 import { fileURLToPath } from "url";
 import { type AppDatabase } from "./db/connection.js";
@@ -15,6 +16,7 @@ import { authMiddleware } from "./middleware/auth.js";
 export function createApp(db: AppDatabase) {
   const app = express();
 
+  app.use(helmet());
   app.use(express.json());
   app.use(cookieParser());
 

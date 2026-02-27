@@ -3,7 +3,10 @@ import multer from "multer";
 import { type AppDatabase } from "../db/connection.js";
 import { createImportService } from "../services/import.service.js";
 
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+});
 
 export function importRoutes(db: AppDatabase): Router {
   const router = Router();

@@ -1,4 +1,4 @@
-import { eq, and, gt } from "drizzle-orm";
+import { eq, and, gt, lte } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
 import { type AppDatabase } from "../db/connection.js";
@@ -7,8 +7,15 @@ import { users, sessions, householdMembers } from "../db/schema.js";
 const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 export function createAuthService(db: AppDatabase) {
+  function cleanupExpiredSessions() {
+    const now = new Date().toISOString();
+    db.delete(sessions).where(lte(sessions.expiresAt, now)).run();
+  }
+
   return {
     async login(email: string, password: string) {
+      cleanupExpiredSessions();
+
       const user = db.select().from(users).where(eq(users.email, email)).get();
 
       if (!user) {

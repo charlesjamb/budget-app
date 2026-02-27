@@ -34,8 +34,12 @@ COPY --from=base /app/packages/shared/src/ ./packages/shared/src/
 COPY --from=base /app/packages/backend/dist/ ./packages/backend/dist/
 COPY --from=base /app/packages/frontend/dist/ ./packages/frontend/dist/
 
+RUN mkdir -p /app/data && chown -R node:node /app/data
+
 ENV NODE_ENV=production
 ENV PORT=3000
+
+USER node
 
 EXPOSE 3000
 
