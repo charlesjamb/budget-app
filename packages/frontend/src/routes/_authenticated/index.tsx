@@ -109,17 +109,6 @@ const SectionTitle = styled.h2`
   letter-spacing: 0.05em;
   color: ${(p) => p.theme.colors.textMuted};
   margin: 24px 0 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  &::before {
-    content: "";
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: ${(p) => p.theme.colors.textMuted};
-  }
 `;
 
 const SectionHeader = styled.div`

@@ -15,5 +15,8 @@ export default defineConfig({
         changeOrigin: true,
       },
     },
+    watch: {
+      ignored: ["**/routeTree.gen.ts"],
+    },
   },
 });

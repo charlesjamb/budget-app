@@ -40,13 +40,6 @@ const CategoryNameRow = styled.div`
   gap: 10px;
 `;
 
-const ColorDot = styled.div`
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: ${(p) => p.theme.colors.textMuted};
-  flex-shrink: 0;
-`;
 
 const CategoryName = styled.span`
   font-weight: 600;
@@ -170,7 +163,6 @@ export function CategoryExpenseCard({
     <Card>
       <CardHeader onClick={() => setExpanded(!expanded)}>
         <CategoryNameRow>
-          <ColorDot />
           <CategoryName>{name}</CategoryName>
           {unbudgeted && <UnbudgetedBadge>Unbudgeted</UnbudgetedBadge>}
         </CategoryNameRow>
