@@ -77,8 +77,15 @@ First build takes a few minutes (downloading images, installing deps, compiling)
 ## Step 6 — Create user accounts
 
 ```bash
-docker compose exec app node packages/backend/dist/scripts/seed.js
+CHARLES_EMAIL=charles@example.com CHARLES_PASSWORD=yourpassword \
+MATHILDE_EMAIL=mathilde@example.com MATHILDE_PASSWORD=yourpassword \
+docker compose exec -e CHARLES_EMAIL -e CHARLES_PASSWORD \
+  -e MATHILDE_EMAIL -e MATHILDE_PASSWORD \
+  -e DB_PATH=/app/data/budget.db \
+  app node packages/backend/dist/scripts/seed.js
 ```
+
+Replace the email and password values with your real ones. This only needs to be run once.
 
 ## Step 7 — Verify
 

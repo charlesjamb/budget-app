@@ -4,13 +4,33 @@ import Database from "better-sqlite3";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import * as schema from "../db/schema.js";
 
+const requiredEnvVars = [
+  "CHARLES_EMAIL",
+  "CHARLES_PASSWORD",
+  "MATHILDE_EMAIL",
+  "MATHILDE_PASSWORD",
+];
+
+for (const key of requiredEnvVars) {
+  if (!process.env[key]) {
+    console.error(`Missing required environment variable: ${key}`);
+    process.exit(1);
+  }
+}
+
 const USERS = [
-  { email: "charles@budget.app", password: "password123" },
-  { email: "constance@budget.app", password: "password123" },
+  {
+    email: process.env.CHARLES_EMAIL as string,
+    password: process.env.CHARLES_PASSWORD as string,
+  },
+  {
+    email: process.env.MATHILDE_EMAIL as string,
+    password: process.env.MATHILDE_PASSWORD as string,
+  },
 ];
 
 async function seed() {
-  const sqlite = new Database("budget.db");
+  const sqlite = new Database(process.env.DB_PATH ?? "budget.db");
   sqlite.pragma("journal_mode = WAL");
   sqlite.pragma("foreign_keys = ON");
 
