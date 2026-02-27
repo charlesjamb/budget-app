@@ -207,3 +207,21 @@ export type ExcludeTransactionRequest = {
   excluded: boolean;
   reason?: string;
 };
+
+// ---- Contributions (Monthly Split) ----
+
+export interface ContributionMember {
+  userId: number;
+  email: string;
+  revenueCents: number;
+}
+
+export interface MonthlyContributionsResponse {
+  month: string;
+  members: ContributionMember[];
+}
+
+export interface UpsertContributionsRequest {
+  month: string;
+  contributions: { userId: number; revenueCents: number }[];
+}

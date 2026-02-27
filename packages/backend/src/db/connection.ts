@@ -85,6 +85,17 @@ function initSchema(sqlite: Database.Database, ifNotExists: boolean) {
       UNIQUE(household_id, bank_sub_category, label_simplified)
     );
 
+    CREATE TABLE ${modifier} monthly_contributions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      household_id INTEGER NOT NULL REFERENCES households(id),
+      month TEXT NOT NULL,
+      user_id INTEGER NOT NULL REFERENCES users(id),
+      revenue_cents INTEGER NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+      UNIQUE(household_id, month, user_id)
+    );
+
     CREATE TABLE ${modifier} merchant_aliases (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       household_id INTEGER NOT NULL REFERENCES households(id),

@@ -133,6 +133,28 @@ export const mappingRules = sqliteTable(
   ],
 );
 
+export const monthlyContributions = sqliteTable(
+  "monthly_contributions",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    householdId: integer("household_id")
+      .notNull()
+      .references(() => households.id),
+    month: text("month").notNull(),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id),
+    revenueCents: integer("revenue_cents").notNull(),
+    createdAt: text("created_at")
+      .notNull()
+      .default(sql`(datetime('now'))`),
+    updatedAt: text("updated_at")
+      .notNull()
+      .default(sql`(datetime('now'))`),
+  },
+  (table) => [unique().on(table.householdId, table.month, table.userId)],
+);
+
 export const merchantAliases = sqliteTable(
   "merchant_aliases",
   {

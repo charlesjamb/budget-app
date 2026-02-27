@@ -5,6 +5,7 @@ import { useSidebar } from "../contexts/SidebarContext.js";
 import {
   LayoutDashboard,
   Wallet,
+  Scale,
   Upload,
   Tags,
   FolderOpen,
@@ -22,6 +23,7 @@ import { PiggyBankIcon } from "./PiggyBankIcon.js";
 const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/budget", label: "Budget", icon: Wallet },
+  { to: "/split", label: "Split", icon: Scale },
   { to: "/import", label: "Import", icon: Upload },
   { to: "/classify", label: "Classify", icon: Tags },
   { to: "/transactions", label: "Transactions", icon: Receipt },
@@ -34,6 +36,7 @@ const primaryNavItems = navItems.filter((item) =>
   [
     "/",
     "/budget",
+    "/split",
     "/import",
     "/classify",
     "/transactions",
