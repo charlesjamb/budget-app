@@ -30,6 +30,8 @@ export interface Transaction {
   operationType: string;
   excluded: boolean;
   excludedReason: string | null;
+  reimbursedAmount: number;
+  reimbursementNote: string | null;
 }
 
 export interface MappingRule {
@@ -207,6 +209,11 @@ export type ExcludeTransactionRequest = {
   excluded: boolean;
   reason?: string;
 };
+
+export interface ReimbursementRequest {
+  amount: number;
+  note?: string;
+}
 
 // ---- Contributions (Monthly Split) ----
 

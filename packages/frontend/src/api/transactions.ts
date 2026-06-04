@@ -6,6 +6,7 @@ import type {
   UncategorizedSubcategoriesResponse,
   Transaction,
   ExcludeTransactionRequest,
+  ReimbursementRequest,
 } from "@budget-app/shared";
 
 export function getTransactions(month: string): Promise<TransactionsResponse> {
@@ -32,4 +33,20 @@ export function getHistory(from: string, to: string): Promise<HistoryData> {
 
 export function getUncategorizedSubcategories(): Promise<UncategorizedSubcategoriesResponse> {
   return apiRequest("/api/transactions/uncategorized-subcategories");
+}
+
+export function setReimbursement(
+  id: number,
+  body: ReimbursementRequest,
+): Promise<Transaction> {
+  return apiRequest(`/api/transactions/${id}/reimbursement`, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
+}
+
+export function clearReimbursement(id: number): Promise<Transaction> {
+  return apiRequest(`/api/transactions/${id}/reimbursement`, {
+    method: "DELETE",
+  });
 }

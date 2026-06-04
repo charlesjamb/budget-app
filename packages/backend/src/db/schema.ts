@@ -103,6 +103,8 @@ export const transactions = sqliteTable("transactions", {
   dedupHash: text("dedup_hash").notNull().unique(),
   excluded: integer("excluded").notNull().default(0),
   excludedReason: text("excluded_reason"),
+  reimbursedAmount: integer("reimbursed_amount").notNull().default(0),
+  reimbursementNote: text("reimbursement_note"),
   createdAt: text("created_at")
     .notNull()
     .default(sql`(datetime('now'))`),

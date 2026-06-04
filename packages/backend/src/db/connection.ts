@@ -72,6 +72,8 @@ function initSchema(sqlite: Database.Database, ifNotExists: boolean) {
       dedup_hash TEXT NOT NULL UNIQUE,
       excluded INTEGER NOT NULL DEFAULT 0,
       excluded_reason TEXT,
+      reimbursed_amount INTEGER NOT NULL DEFAULT 0,
+      reimbursement_note TEXT,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
@@ -130,6 +132,14 @@ function runMigrations(sqlite: Database.Database) {
   }
   if (!txCols.some((c) => c.name === "excluded_reason")) {
     sqlite.exec("ALTER TABLE transactions ADD COLUMN excluded_reason TEXT");
+  }
+  if (!txCols.some((c) => c.name === "reimbursed_amount")) {
+    sqlite.exec(
+      "ALTER TABLE transactions ADD COLUMN reimbursed_amount INTEGER NOT NULL DEFAULT 0",
+    );
+  }
+  if (!txCols.some((c) => c.name === "reimbursement_note")) {
+    sqlite.exec("ALTER TABLE transactions ADD COLUMN reimbursement_note TEXT");
   }
 }
 

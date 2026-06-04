@@ -126,6 +126,19 @@ const TransactionAmount = styled.span`
   font-weight: 500;
 `;
 
+const TransactionOriginalAmount = styled.span`
+  text-decoration: line-through;
+  color: ${(p) => p.theme.colors.textMuted};
+  font-size: 12px;
+  margin-right: 6px;
+`;
+
+const ReimbursedIndicator = styled.span`
+  font-size: 11px;
+  color: ${(p) => p.theme.colors.success};
+  margin-left: 4px;
+`;
+
 const ProgressWrapper = styled.div`
   padding: 0 20px 12px;
 `;
@@ -186,7 +199,19 @@ export function CategoryExpenseCard({
               <TransactionLabel>
                 {tx.displayName || tx.labelSimplified}
               </TransactionLabel>
-              <TransactionAmount>{formatAmount(tx.amount)}</TransactionAmount>
+              <TransactionAmount>
+                {tx.reimbursedAmount > 0 && (
+                  <TransactionOriginalAmount>
+                    {formatAmount(tx.amount)}
+                  </TransactionOriginalAmount>
+                )}
+                {formatAmount(tx.amount - tx.reimbursedAmount)}
+                {tx.reimbursedAmount > 0 && (
+                  <ReimbursedIndicator title={tx.reimbursementNote ?? "Reimbursed"}>
+                    *
+                  </ReimbursedIndicator>
+                )}
+              </TransactionAmount>
             </TransactionRow>
           ))}
         </TransactionList>

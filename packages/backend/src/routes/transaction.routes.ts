@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   GLOBAL_CAP_CATEGORY_ID,
   type ExcludeTransactionRequest,
+  type ReimbursementRequest,
 } from "@budget-app/shared";
 import { type AppDatabase } from "../db/connection.js";
 import { createTransactionService } from "../services/transaction.service.js";
@@ -30,6 +31,53 @@ export function transactionRoutes(db: AppDatabase): Router {
       id,
       body.excluded,
       body.reason,
+    );
+    if (!updated) {
+      res.status(404).json({ error: "Transaction not found" });
+      return;
+    }
+    res.json(updated);
+  });
+
+  router.put("/:id/reimbursement", (req, res) => {
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) {
+      res.status(400).json({ error: "Invalid transaction ID" });
+      return;
+    }
+    const body = req.body as ReimbursementRequest;
+    if (typeof body?.amount !== "number" || body.amount <= 0) {
+      res.status(400).json({ error: "amount must be a positive number" });
+      return;
+    }
+    const result = transactionService.updateReimbursement(
+      req.householdId!,
+      id,
+      body.amount,
+      body.note,
+    );
+    if ("error" in result) {
+      if (result.error === "not_found") {
+        res.status(404).json({ error: "Transaction not found" });
+      } else {
+        res
+          .status(400)
+          .json({ error: "amount must be positive and <= transaction amount" });
+      }
+      return;
+    }
+    res.json(result.data);
+  });
+
+  router.delete("/:id/reimbursement", (req, res) => {
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) {
+      res.status(400).json({ error: "Invalid transaction ID" });
+      return;
+    }
+    const updated = transactionService.clearReimbursement(
+      req.householdId!,
+      id,
     );
     if (!updated) {
       res.status(404).json({ error: "Transaction not found" });

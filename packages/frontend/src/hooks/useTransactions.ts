@@ -5,8 +5,13 @@ import {
   getHistory,
   getUncategorizedSubcategories,
   excludeTransaction,
+  setReimbursement,
+  clearReimbursement,
 } from "../api/transactions.js";
-import type { ExcludeTransactionRequest } from "@budget-app/shared";
+import type {
+  ExcludeTransactionRequest,
+  ReimbursementRequest,
+} from "@budget-app/shared";
 
 export function useTransactions(month: string) {
   return useQuery({
@@ -46,6 +51,32 @@ export function useExcludeTransaction() {
       id: number;
       body: ExcludeTransactionRequest;
     }) => excludeTransaction(id, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+    },
+  });
+}
+
+export function useSetReimbursement() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      body,
+    }: {
+      id: number;
+      body: ReimbursementRequest;
+    }) => setReimbursement(id, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+    },
+  });
+}
+
+export function useClearReimbursement() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => clearReimbursement(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
     },

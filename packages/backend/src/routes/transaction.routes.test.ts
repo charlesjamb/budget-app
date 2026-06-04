@@ -73,6 +73,87 @@ describe("Transaction Routes", () => {
     });
   });
 
+  describe("PUT /api/transactions/:id/reimbursement", () => {
+    it("should set reimbursement amount and note", async () => {
+      const cat = createCategory(ctx.db, ctx.householdId, "Vet");
+      const tx = createTransaction(ctx.db, ctx.householdId, {
+        dateOperation: "2026-02-13",
+        amount: 5000,
+        budgetCategoryId: cat.id,
+      });
+
+      const res = await request(app)
+        .put(`/api/transactions/${tx.id}/reimbursement`)
+        .set("Cookie", ctx.sessionCookie)
+        .send({ amount: 3000, note: "Insurance" });
+
+      expect(res.status).toBe(200);
+      expect(res.body.reimbursedAmount).toBe(3000);
+      expect(res.body.reimbursementNote).toBe("Insurance");
+    });
+
+    it("should reject amount <= 0", async () => {
+      const tx = createTransaction(ctx.db, ctx.householdId, {
+        amount: 5000,
+      });
+
+      const res = await request(app)
+        .put(`/api/transactions/${tx.id}/reimbursement`)
+        .set("Cookie", ctx.sessionCookie)
+        .send({ amount: 0 });
+
+      expect(res.status).toBe(400);
+    });
+
+    it("should reject amount > transaction amount", async () => {
+      const tx = createTransaction(ctx.db, ctx.householdId, {
+        amount: 5000,
+      });
+
+      const res = await request(app)
+        .put(`/api/transactions/${tx.id}/reimbursement`)
+        .set("Cookie", ctx.sessionCookie)
+        .send({ amount: 6000 });
+
+      expect(res.status).toBe(400);
+    });
+
+    it("should return 404 for non-existent transaction", async () => {
+      const res = await request(app)
+        .put("/api/transactions/99999/reimbursement")
+        .set("Cookie", ctx.sessionCookie)
+        .send({ amount: 1000 });
+
+      expect(res.status).toBe(404);
+    });
+  });
+
+  describe("DELETE /api/transactions/:id/reimbursement", () => {
+    it("should clear reimbursement", async () => {
+      const tx = createTransaction(ctx.db, ctx.householdId, {
+        amount: 5000,
+        reimbursedAmount: 3000,
+        reimbursementNote: "Insurance",
+      });
+
+      const res = await request(app)
+        .delete(`/api/transactions/${tx.id}/reimbursement`)
+        .set("Cookie", ctx.sessionCookie);
+
+      expect(res.status).toBe(200);
+      expect(res.body.reimbursedAmount).toBe(0);
+      expect(res.body.reimbursementNote).toBeNull();
+    });
+
+    it("should return 404 for non-existent transaction", async () => {
+      const res = await request(app)
+        .delete("/api/transactions/99999/reimbursement")
+        .set("Cookie", ctx.sessionCookie);
+
+      expect(res.status).toBe(404);
+    });
+  });
+
   describe("GET /api/transactions", () => {
     it("should return transactions for a month", async () => {
       const cat = createCategory(ctx.db, ctx.householdId, "Food");
@@ -101,6 +182,22 @@ describe("Transaction Routes", () => {
         .set("Cookie", ctx.sessionCookie);
 
       expect(res.status).toBe(400);
+    });
+
+    it("should return reimbursement fields", async () => {
+      createTransaction(ctx.db, ctx.householdId, {
+        dateOperation: "2026-02-13",
+        reimbursedAmount: 500,
+        reimbursementNote: "Dog insurance",
+      });
+
+      const res = await request(app)
+        .get("/api/transactions?month=2026-02")
+        .set("Cookie", ctx.sessionCookie);
+
+      expect(res.status).toBe(200);
+      expect(res.body.transactions[0].reimbursedAmount).toBe(500);
+      expect(res.body.transactions[0].reimbursementNote).toBe("Dog insurance");
     });
 
     it("should include excluded transactions with excluded flag", async () => {
@@ -194,6 +291,35 @@ describe("Transaction Routes", () => {
       );
       expect(foodCat.totalAmount).toBe(1500);
       expect(foodCat.transactionCount).toBe(1);
+    });
+
+    it("should subtract reimbursedAmount from summary totals", async () => {
+      const food = createCategory(ctx.db, ctx.householdId, "Food");
+      createTransaction(ctx.db, ctx.householdId, {
+        dateOperation: "2026-02-10",
+        amount: 5000,
+        budgetCategoryId: food.id,
+        reimbursedAmount: 2000,
+      });
+      createTransaction(ctx.db, ctx.householdId, {
+        dateOperation: "2026-02-15",
+        amount: 1000,
+        budgetCategoryId: null,
+        reimbursedAmount: 300,
+      });
+
+      const res = await request(app)
+        .get("/api/transactions/monthly-summary?month=2026-02")
+        .set("Cookie", ctx.sessionCookie);
+
+      expect(res.status).toBe(200);
+      // Food: 5000 - 2000 = 3000, Uncategorized: 1000 - 300 = 700
+      expect(res.body.totalAmount).toBe(3700);
+      const foodCat = res.body.categories.find(
+        (c: { name: string }) => c.name === "Food",
+      );
+      expect(foodCat.totalAmount).toBe(3000);
+      expect(res.body.uncategorized.totalAmount).toBe(700);
     });
 
     it("should compute globalBudgetCents from sum of per-category budgets", async () => {

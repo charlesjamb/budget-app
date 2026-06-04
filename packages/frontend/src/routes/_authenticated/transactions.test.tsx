@@ -33,6 +33,8 @@ function setupTransactions(
     operationType: string;
     excluded: boolean;
     excludedReason: string | null;
+    reimbursedAmount: number;
+    reimbursementNote: string | null;
   }>,
 ) {
   server.use(
@@ -42,28 +44,35 @@ function setupTransactions(
   );
 }
 
+const baseTx = {
+  bankCategory: "Alimentation",
+  bankSubCategory: "Hyper/supermarche",
+  budgetCategoryId: 1,
+  budgetCategoryName: "Food",
+  displayName: null,
+  reference: null,
+  additionalInfo: null,
+  operationType: "Carte bancaire",
+  excluded: false,
+  excludedReason: null,
+  reimbursedAmount: 0,
+  reimbursementNote: null,
+};
+
 describe("Transactions Page", () => {
   it("should display transactions for the selected month", async () => {
     setupAuthenticatedUser();
     setupTransactions([
       {
+        ...baseTx,
         id: 1,
         dateOperation: "2026-02-13",
         labelSimplified: "CARREFOUR",
         labelOperation: "CB CARREFOUR",
         amount: 1277,
-        bankCategory: "Alimentation",
-        bankSubCategory: "Hyper/supermarche",
-        budgetCategoryId: 1,
-        budgetCategoryName: "Food",
-        displayName: null,
-        reference: null,
-        additionalInfo: null,
-        operationType: "Carte bancaire",
-        excluded: false,
-        excludedReason: null,
       },
       {
+        ...baseTx,
         id: 2,
         dateOperation: "2026-02-15",
         labelSimplified: "UBER EATS",
@@ -71,14 +80,6 @@ describe("Transactions Page", () => {
         amount: 2820,
         bankCategory: "Restaurant",
         bankSubCategory: "Restaurant",
-        budgetCategoryId: 1,
-        budgetCategoryName: "Food",
-        displayName: null,
-        reference: null,
-        additionalInfo: null,
-        operationType: "Carte bancaire",
-        excluded: false,
-        excludedReason: null,
       },
     ]);
 
@@ -109,21 +110,12 @@ describe("Transactions Page", () => {
     setupAuthenticatedUser();
     setupTransactions([
       {
+        ...baseTx,
         id: 1,
         dateOperation: "2026-02-13",
         labelSimplified: "CARREFOUR",
         labelOperation: "CB CARREFOUR",
         amount: 1277,
-        bankCategory: "Alimentation",
-        bankSubCategory: "Hyper/supermarche",
-        budgetCategoryId: 1,
-        budgetCategoryName: "Food",
-        displayName: null,
-        reference: null,
-        additionalInfo: null,
-        operationType: "Carte bancaire",
-        excluded: false,
-        excludedReason: null,
       },
     ]);
 
@@ -136,6 +128,7 @@ describe("Transactions Page", () => {
     setupAuthenticatedUser();
     setupTransactions([
       {
+        ...baseTx,
         id: 1,
         dateOperation: "2026-02-13",
         labelSimplified: "BANK FEE",
@@ -145,9 +138,6 @@ describe("Transactions Page", () => {
         bankSubCategory: "Frais",
         budgetCategoryId: null,
         budgetCategoryName: null,
-        displayName: null,
-        reference: null,
-        additionalInfo: null,
         operationType: "Prélèvement",
         excluded: true,
         excludedReason: "Reimbursed by bank",
@@ -165,21 +155,12 @@ describe("Transactions Page", () => {
     setupAuthenticatedUser();
     setupTransactions([
       {
+        ...baseTx,
         id: 1,
         dateOperation: "2026-02-13",
         labelSimplified: "CARREFOUR",
         labelOperation: "CB CARREFOUR",
         amount: 1277,
-        bankCategory: "Alimentation",
-        bankSubCategory: "Hyper/supermarche",
-        budgetCategoryId: 1,
-        budgetCategoryName: "Food",
-        displayName: null,
-        reference: null,
-        additionalInfo: null,
-        operationType: "Carte bancaire",
-        excluded: false,
-        excludedReason: null,
       },
     ]);
 
@@ -195,5 +176,57 @@ describe("Transactions Page", () => {
     expect(screen.getByRole("button", { name: "Cancel" })).toBeInTheDocument();
     const excludeButtons = screen.getAllByRole("button", { name: "Exclude" });
     expect(excludeButtons.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("should show reimbursement badge when reimbursedAmount > 0", async () => {
+    setupAuthenticatedUser();
+    setupTransactions([
+      {
+        ...baseTx,
+        id: 1,
+        dateOperation: "2026-02-13",
+        labelSimplified: "VET CLINIC",
+        labelOperation: "CB VET CLINIC",
+        amount: 5000,
+        reimbursedAmount: 3000,
+        reimbursementNote: "Dog insurance",
+      },
+    ]);
+
+    render(<TestWrapper initialPath="/transactions" />);
+
+    expect(await screen.findByText("VET CLINIC")).toBeInTheDocument();
+    expect(screen.getByText("(Dog insurance)")).toBeInTheDocument();
+    // Effective amount shown
+    expect(screen.getByText("20.00 €")).toBeInTheDocument();
+    // Original amount shown struck-through
+    expect(screen.getByText("50.00 €")).toBeInTheDocument();
+    // Clear button visible
+    expect(screen.getByText("Clear")).toBeInTheDocument();
+  });
+
+  it("should open reimburse modal when clicking Reimburse", async () => {
+    const user = userEvent.setup();
+    setupAuthenticatedUser();
+    setupTransactions([
+      {
+        ...baseTx,
+        id: 1,
+        dateOperation: "2026-02-13",
+        labelSimplified: "VET CLINIC",
+        labelOperation: "CB VET CLINIC",
+        amount: 5000,
+      },
+    ]);
+
+    render(<TestWrapper initialPath="/transactions" />);
+
+    const reimburseButton = await screen.findByText("Reimburse");
+    await user.click(reimburseButton);
+
+    expect(screen.getByText("Add reimbursement")).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText("e.g. Insurance reimbursement"),
+    ).toBeInTheDocument();
   });
 });

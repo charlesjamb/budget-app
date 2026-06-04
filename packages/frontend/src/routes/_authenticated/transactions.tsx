@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import styled from "styled-components";
-import { Receipt, EyeOff, Eye } from "lucide-react";
+import { Receipt, EyeOff, Eye, RotateCcw, X } from "lucide-react";
 import { MonthPicker } from "../../components/MonthPicker.js";
 import {
   PageTitle,
@@ -15,6 +15,8 @@ import {
 import {
   useTransactions,
   useExcludeTransaction,
+  useSetReimbursement,
+  useClearReimbursement,
 } from "../../hooks/useTransactions.js";
 import type { Transaction } from "@budget-app/shared";
 
@@ -77,14 +79,14 @@ const TdLabel = styled(Td)<{ $excluded?: boolean }>`
   color: ${(p) => (p.$excluded ? p.theme.colors.textMuted : "inherit")};
 `;
 
-const ExcludeButton = styled.button`
+const ActionButton = styled.button`
   background: none;
   border: none;
   color: ${(p) => p.theme.colors.textMuted};
   cursor: pointer;
   padding: 4px 8px;
   border-radius: ${(p) => p.theme.radii.sm};
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 4px;
   font-size: 13px;
@@ -93,6 +95,11 @@ const ExcludeButton = styled.button`
     background: ${(p) => p.theme.colors.background};
     color: ${(p) => p.theme.colors.primary};
   }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 `;
 
 const ExcludedBadge = styled.span`
@@ -100,6 +107,24 @@ const ExcludedBadge = styled.span`
   color: ${(p) => p.theme.colors.textMuted};
   font-weight: 500;
   margin-left: 4px;
+`;
+
+const ReimbursedBadge = styled.span`
+  font-size: 11px;
+  color: ${(p) => p.theme.colors.success};
+  font-weight: 500;
+  margin-left: 4px;
+`;
+
+const OriginalAmount = styled.span`
+  text-decoration: line-through;
+  color: ${(p) => p.theme.colors.textMuted};
+  font-size: 12px;
+  margin-right: 6px;
+`;
+
+const ActionsCell = styled(Td)`
+  text-decoration: none;
 `;
 
 const ModalOverlay = styled.div`
@@ -165,9 +190,16 @@ function TransactionsPage() {
     transaction: Transaction;
     reason: string;
   } | null>(null);
+  const [reimburseModal, setReimburseModal] = useState<{
+    transaction: Transaction;
+    amount: string;
+    note: string;
+  } | null>(null);
 
   const transactionsQuery = useTransactions(month);
   const excludeMutation = useExcludeTransaction();
+  const reimburseMutation = useSetReimbursement();
+  const clearReimburseMutation = useClearReimbursement();
 
   const transactions = transactionsQuery.data?.transactions ?? [];
 
@@ -203,6 +235,40 @@ function TransactionsPage() {
 
   const handleExcludeCancel = () => {
     setExcludeModal(null);
+  };
+
+  const handleReimburse = (transaction: Transaction) => {
+    setReimburseModal({
+      transaction,
+      amount: "",
+      note: "",
+    });
+  };
+
+  const handleReimburseConfirm = () => {
+    if (!reimburseModal) return;
+    const amountCents = Math.round(parseFloat(reimburseModal.amount) * 100);
+    if (isNaN(amountCents) || amountCents <= 0) return;
+    reimburseMutation.mutate(
+      {
+        id: reimburseModal.transaction.id,
+        body: {
+          amount: amountCents,
+          note: reimburseModal.note.trim() || undefined,
+        },
+      },
+      {
+        onSuccess: () => setReimburseModal(null),
+      },
+    );
+  };
+
+  const handleReimburseCancel = () => {
+    setReimburseModal(null);
+  };
+
+  const handleClearReimbursement = (transaction: Transaction) => {
+    clearReimburseMutation.mutate(transaction.id);
   };
 
   return (
@@ -245,32 +311,69 @@ function TransactionsPage() {
                         ({tx.excludedReason})
                       </ExcludedBadge>
                     )}
+                    {tx.reimbursedAmount > 0 && tx.reimbursementNote && (
+                      <ReimbursedBadge title={tx.reimbursementNote}>
+                        ({tx.reimbursementNote})
+                      </ReimbursedBadge>
+                    )}
                   </TdLabel>
                   <Td $excluded={tx.excluded}>
                     {tx.budgetCategoryName ?? "—"}
                   </Td>
-                  <Td $excluded={tx.excluded}>{formatAmount(tx.amount)}</Td>
-                  <Td>
+                  <Td $excluded={tx.excluded}>
+                    {tx.reimbursedAmount > 0 ? (
+                      <>
+                        <OriginalAmount>
+                          {formatAmount(tx.amount)}
+                        </OriginalAmount>
+                        {formatAmount(tx.amount - tx.reimbursedAmount)}
+                      </>
+                    ) : (
+                      formatAmount(tx.amount)
+                    )}
+                  </Td>
+                  <ActionsCell>
                     {tx.excluded ? (
-                      <ExcludeButton
+                      <ActionButton
                         onClick={() => handleUnExclude(tx)}
                         disabled={excludeMutation.isPending}
                         title="Include in budget"
                       >
                         <Eye size={16} />
                         Include
-                      </ExcludeButton>
+                      </ActionButton>
                     ) : (
-                      <ExcludeButton
-                        onClick={() => handleExclude(tx)}
-                        disabled={excludeMutation.isPending}
-                        title="Exclude from budget"
-                      >
-                        <EyeOff size={16} />
-                        Exclude
-                      </ExcludeButton>
+                      <>
+                        <ActionButton
+                          onClick={() => handleExclude(tx)}
+                          disabled={excludeMutation.isPending}
+                          title="Exclude from budget"
+                        >
+                          <EyeOff size={16} />
+                          Exclude
+                        </ActionButton>
+                        {tx.reimbursedAmount > 0 ? (
+                          <ActionButton
+                            onClick={() => handleClearReimbursement(tx)}
+                            disabled={clearReimburseMutation.isPending}
+                            title="Clear reimbursement"
+                          >
+                            <X size={16} />
+                            Clear
+                          </ActionButton>
+                        ) : (
+                          <ActionButton
+                            onClick={() => handleReimburse(tx)}
+                            disabled={reimburseMutation.isPending}
+                            title="Add reimbursement"
+                          >
+                            <RotateCcw size={16} />
+                            Reimburse
+                          </ActionButton>
+                        )}
+                      </>
                     )}
-                  </Td>
+                  </ActionsCell>
                 </tr>
               ))}
             </tbody>
@@ -314,6 +417,68 @@ function TransactionsPage() {
                 disabled={excludeMutation.isPending}
               >
                 {excludeMutation.isPending ? "Excluding..." : "Exclude"}
+              </Button>
+            </ModalActions>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+
+      {reimburseModal && (
+        <ModalOverlay onClick={handleReimburseCancel}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <ModalTitle>Add reimbursement</ModalTitle>
+            <ModalDescription>
+              Transaction: "
+              {reimburseModal.transaction.displayName ??
+                reimburseModal.transaction.labelSimplified}
+              " ({formatAmount(reimburseModal.transaction.amount)})
+            </ModalDescription>
+            <Label>
+              Reimbursed amount (EUR)
+              <Input
+                type="number"
+                step="0.01"
+                min="0.01"
+                max={(reimburseModal.transaction.amount / 100).toFixed(2)}
+                placeholder={`Max ${(reimburseModal.transaction.amount / 100).toFixed(2)}`}
+                value={reimburseModal.amount}
+                onChange={(e) =>
+                  setReimburseModal((prev) =>
+                    prev ? { ...prev, amount: e.target.value } : null,
+                  )
+                }
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleReimburseConfirm();
+                  if (e.key === "Escape") handleReimburseCancel();
+                }}
+              />
+            </Label>
+            <Label>
+              Note (optional)
+              <Input
+                type="text"
+                placeholder="e.g. Insurance reimbursement"
+                value={reimburseModal.note}
+                onChange={(e) =>
+                  setReimburseModal((prev) =>
+                    prev ? { ...prev, note: e.target.value } : null,
+                  )
+                }
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleReimburseConfirm();
+                  if (e.key === "Escape") handleReimburseCancel();
+                }}
+              />
+            </Label>
+            <ModalActions>
+              <SecondaryButton onClick={handleReimburseCancel}>
+                Cancel
+              </SecondaryButton>
+              <Button
+                onClick={handleReimburseConfirm}
+                disabled={reimburseMutation.isPending}
+              >
+                {reimburseMutation.isPending ? "Saving..." : "Save"}
               </Button>
             </ModalActions>
           </ModalContent>
