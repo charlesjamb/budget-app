@@ -88,6 +88,16 @@ Work in a separate worktree and branch. One commit per step.
 - Record test files / tests passed per package (21 test files today).
 - Record frontend `dist/assets` size.
 
+Recorded 2026-10-16 in the `chore/void0-migration` worktree (Node 24.8.0, npm workspaces):
+
+- Backend: 11 test files, 106 tests passed
+- Frontend: 10 test files, 42 tests passed (after `test:` commit pinning system time in
+  `split.test.tsx` — it had been failing since March because the app derives the month from
+  the current date while the fixtures hardcode `2026-02`)
+- Total: 21 test files, 148 tests
+- ESLint: clean (0 errors)
+- Frontend bundle: `dist/assets/index-*.js` 421.37 kB (gzip 128.51 kB), `dist/assets` 412 kB on disk
+
 ### Phase 1: prerequisites
 
 | Step | Commit                                                                                     |
