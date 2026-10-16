@@ -29,7 +29,7 @@ Oxlint, Oxfmt and the Vite Task runner.
 | --- | ----------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
 | 1   | Scope       | Vite+ all-in, in two phases (upstream upgrades first, then `vp migrate`)                                         | One CLI/config for a small monorepo; isolates upgrade breakage from tooling breakage                    |
 | 2   | Runtime     | Node 26: `.node-version`, `engines: ">=26"`, `node:26-slim` in both Docker stages                                | Vite+ needs `^22.18 \|\| ^24.11 \|\| >=26`; 26 becomes LTS in Oct 2026                                    |
-| 2b  | Native deps | `better-sqlite3` 11 → 13                                                                                          | 11.x has no Node 26 prebuild and `node:26-slim` has no compiler; 13.x uses Node-API. `bcrypt` 5 already uses Node-API |
+| 2b  | Native deps | `better-sqlite3` 11 → 13, `bcrypt` 5 → 6                                                                            | 11.x has no Node 26 prebuild *and* no longer compiles (removed V8 APIs); 13.x uses Node-API. `bcrypt` 5 uses per-ABI `node-pre-gyp` prebuilds — no Node 26 build; 6.0 is the N-API version |
 | 3   | Hooks       | None. Delete `.husky/`, `.lintstagedrc`; `git config --unset core.hooksPath`                                     | Keep it simple; a `prepare` script breaks `install --prod` in Docker (same reason Husky was removed)    |
 | 4   | Builds      | Keep `tsc` for shared and backend, `tsx watch` for backend dev                                                   | Already works; tsdown adds bundling risk (native deps, runtime paths) for no gain                       |
 | 5   | Types       | TypeScript 7 everywhere. `vp check` (typeAware + typeCheck) for dev, `tsc` stays in builds as the Docker gate     | TS 7 stable since 2026-07; nothing left needs the TS API once ESLint is gone; one Go-based checker     |
@@ -100,11 +100,14 @@ Recorded 2026-10-16 in the `chore/void0-migration` worktree (Node 24.8.0, npm wo
 
 ### Phase 1: prerequisites
 
+Executed order swaps native deps before the Node switch: better-sqlite3 11 / bcrypt 5 cannot be
+built against Node 26 at all, so the Node 26 commit would have no working backend otherwise.
+
 | Step | Commit                                                                                     |
 | ---- | ------------------------------------------------------------------------------------------ |
-| 1a   | `build:` Node 26 (`.node-version`, `engines`, Docker base image)                           |
-| 1b   | `build:` npm → pnpm (`pnpm import`, workspace yaml, `allowBuilds`, `workspace:*`, Docker, scripts) |
-| 1c   | `build:` better-sqlite3 11 → 13                                                            |
+| 1a   | `build:` native deps: better-sqlite3 11 → 13, bcrypt 5 → 6                                  |
+| 1b   | `build:` Node 26 (`.node-version`, `engines`, Volta pin, Docker base image)                 |
+| 1c   | `build:` npm → pnpm (`pnpm import`, workspace yaml, `allowBuilds`, `workspace:*`, Docker, scripts) |
 | 1d   | `build:` TypeScript 5.9 → 7 (+ backend `types: ["node"]`; frontend `vite/client` if needed) |
 | 1e   | `build:` Vite 7 → 8 (+ plugin-react compatible with Vite 8)                               |
 | 1f   | `build:` Vitest 3 → 4                                                                      |
