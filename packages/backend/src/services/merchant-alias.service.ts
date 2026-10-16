@@ -33,12 +33,7 @@ export function createMerchantAliasService(db: AppDatabase) {
       const result = db
         .update(merchantAliases)
         .set({ displayName })
-        .where(
-          and(
-            eq(merchantAliases.id, id),
-            eq(merchantAliases.householdId, householdId),
-          ),
-        )
+        .where(and(eq(merchantAliases.id, id), eq(merchantAliases.householdId, householdId)))
         .returning({
           id: merchantAliases.id,
           originalLabel: merchantAliases.originalLabel,
@@ -51,12 +46,7 @@ export function createMerchantAliasService(db: AppDatabase) {
     delete(id: number, householdId: number) {
       const result = db
         .delete(merchantAliases)
-        .where(
-          and(
-            eq(merchantAliases.id, id),
-            eq(merchantAliases.householdId, householdId),
-          ),
-        )
+        .where(and(eq(merchantAliases.id, id), eq(merchantAliases.householdId, householdId)))
         .returning()
         .get();
       return !!result;

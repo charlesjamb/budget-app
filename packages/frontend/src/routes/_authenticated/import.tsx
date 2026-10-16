@@ -108,17 +108,8 @@ function ImportPage() {
       <UploadArea onClick={() => fileInputRef.current?.click()}>
         <UploadText>Click to upload your bank CSV file</UploadText>
         <UploadHint>Banque Populaire format (semicolon-separated)</UploadHint>
-        <HiddenInput
-          ref={fileInputRef}
-          type="file"
-          accept=".csv"
-          onChange={handleFileChange}
-        />
-        <Button
-          type="button"
-          disabled={importMutation.isPending}
-          style={{ marginTop: 16 }}
-        >
+        <HiddenInput ref={fileInputRef} type="file" accept=".csv" onChange={handleFileChange} />
+        <Button type="button" disabled={importMutation.isPending} style={{ marginTop: 16 }}>
           {importMutation.isPending ? "Importing..." : "Select CSV File"}
         </Button>
       </UploadArea>
@@ -140,9 +131,7 @@ function ImportPage() {
                 <StatLabel>Unmapped transactions</StatLabel>
                 <StatValue>{importMutation.data.unmappedCount}</StatValue>
               </StatRow>
-              <ClassifyLink to="/classify">
-                Classify unmapped transactions &rarr;
-              </ClassifyLink>
+              <ClassifyLink to="/classify">Classify unmapped transactions &rarr;</ClassifyLink>
             </>
           )}
         </ResultCard>

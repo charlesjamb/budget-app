@@ -1,12 +1,7 @@
 import { apiRequest } from "./client.js";
-import type {
-  MonthlyContributionsResponse,
-  UpsertContributionsRequest,
-} from "@budget-app/shared";
+import type { MonthlyContributionsResponse, UpsertContributionsRequest } from "@budget-app/shared";
 
-export function getContributions(
-  month: string,
-): Promise<MonthlyContributionsResponse> {
+export function getContributions(month: string): Promise<MonthlyContributionsResponse> {
   return apiRequest(`/api/contributions?month=${month}`);
 }
 

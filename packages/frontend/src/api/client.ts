@@ -8,10 +8,7 @@ export class ApiError extends Error {
   }
 }
 
-export async function apiRequest<T>(
-  url: string,
-  options: RequestInit = {},
-): Promise<T> {
+export async function apiRequest<T>(url: string, options: RequestInit = {}): Promise<T> {
   const res = await fetch(url, {
     credentials: "include",
     headers: {
@@ -33,10 +30,7 @@ export async function apiRequest<T>(
   return res.json();
 }
 
-export async function apiUpload<T>(
-  url: string,
-  formData: FormData,
-): Promise<T> {
+export async function apiUpload<T>(url: string, formData: FormData): Promise<T> {
   const res = await fetch(url, {
     method: "POST",
     credentials: "include",

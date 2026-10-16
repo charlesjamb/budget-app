@@ -166,10 +166,7 @@ function CategoriesPage() {
           onChange={(e) => setNewGroupName(e.target.value)}
           style={{ flex: "0 0 160px" }}
         />
-        <Select
-          value={newType}
-          onChange={(e) => setNewType(e.target.value as CategoryType)}
-        >
+        <Select value={newType} onChange={(e) => setNewType(e.target.value as CategoryType)}>
           <option value="variable">Variable</option>
           <option value="fixed">Fixed</option>
         </Select>
@@ -179,9 +176,7 @@ function CategoriesPage() {
       </AddForm>
 
       {createMutation.isError && (
-        <ErrorMessage>
-          Failed to create category. Name may already exist.
-        </ErrorMessage>
+        <ErrorMessage>Failed to create category. Name may already exist.</ErrorMessage>
       )}
 
       {categories.length === 0 ? (
@@ -212,9 +207,7 @@ function CategoriesPage() {
                   />
                   <Select
                     value={editType}
-                    onChange={(e) =>
-                      setEditType(e.target.value as CategoryType)
-                    }
+                    onChange={(e) => setEditType(e.target.value as CategoryType)}
                   >
                     <option value="variable">Variable</option>
                     <option value="fixed">Fixed</option>
@@ -226,30 +219,19 @@ function CategoriesPage() {
                     >
                       Save
                     </Button>
-                    <DangerButton onClick={() => setEditingId(null)}>
-                      Cancel
-                    </DangerButton>
+                    <DangerButton onClick={() => setEditingId(null)}>Cancel</DangerButton>
                   </Actions>
                 </>
               ) : (
                 <>
                   <CategoryName>
                     {cat.name}
-                    <TypeBadge>
-                      {cat.type === "fixed" ? "Fixed" : "Variable"}
-                    </TypeBadge>
+                    <TypeBadge>{cat.type === "fixed" ? "Fixed" : "Variable"}</TypeBadge>
                     {cat.groupName && <GroupBadge>{cat.groupName}</GroupBadge>}
                   </CategoryName>
                   <Actions>
                     <Button
-                      onClick={() =>
-                        handleStartEdit(
-                          cat.id,
-                          cat.name,
-                          cat.groupName,
-                          cat.type,
-                        )
-                      }
+                      onClick={() => handleStartEdit(cat.id, cat.name, cat.groupName, cat.type)}
                     >
                       Edit
                     </Button>
@@ -265,9 +247,7 @@ function CategoriesPage() {
       )}
 
       {deleteMutation.isError && (
-        <ErrorMessage>
-          Cannot delete: transactions reference this category.
-        </ErrorMessage>
+        <ErrorMessage>Cannot delete: transactions reference this category.</ErrorMessage>
       )}
     </>
   );

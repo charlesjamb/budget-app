@@ -301,15 +301,11 @@ function TransactionsPage() {
             <tbody>
               {transactions.map((tx) => (
                 <tr key={tx.id}>
-                  <Td $excluded={tx.excluded}>
-                    {formatDate(tx.dateOperation)}
-                  </Td>
+                  <Td $excluded={tx.excluded}>{formatDate(tx.dateOperation)}</Td>
                   <TdLabel $excluded={tx.excluded}>
                     {tx.displayName ?? tx.labelSimplified}
                     {tx.excluded && tx.excludedReason && (
-                      <ExcludedBadge title={tx.excludedReason}>
-                        ({tx.excludedReason})
-                      </ExcludedBadge>
+                      <ExcludedBadge title={tx.excludedReason}>({tx.excludedReason})</ExcludedBadge>
                     )}
                     {tx.reimbursedAmount > 0 && tx.reimbursementNote && (
                       <ReimbursedBadge title={tx.reimbursementNote}>
@@ -317,15 +313,11 @@ function TransactionsPage() {
                       </ReimbursedBadge>
                     )}
                   </TdLabel>
-                  <Td $excluded={tx.excluded}>
-                    {tx.budgetCategoryName ?? "—"}
-                  </Td>
+                  <Td $excluded={tx.excluded}>{tx.budgetCategoryName ?? "—"}</Td>
                   <Td $excluded={tx.excluded}>
                     {tx.reimbursedAmount > 0 ? (
                       <>
-                        <OriginalAmount>
-                          {formatAmount(tx.amount)}
-                        </OriginalAmount>
+                        <OriginalAmount>{formatAmount(tx.amount)}</OriginalAmount>
                         {formatAmount(tx.amount - tx.reimbursedAmount)}
                       </>
                     ) : (
@@ -386,10 +378,8 @@ function TransactionsPage() {
           <ModalContent onClick={(e) => e.stopPropagation()}>
             <ModalTitle>Exclude transaction</ModalTitle>
             <ModalDescription>
-              "
-              {excludeModal.transaction.displayName ??
-                excludeModal.transaction.labelSimplified}
-              " will not count in your budget.
+              "{excludeModal.transaction.displayName ?? excludeModal.transaction.labelSimplified}"
+              will not count in your budget.
             </ModalDescription>
             <Label>
               Reason (optional)
@@ -398,9 +388,7 @@ function TransactionsPage() {
                 placeholder="e.g. Reimbursed by bank"
                 value={excludeModal.reason}
                 onChange={(e) =>
-                  setExcludeModal((prev) =>
-                    prev ? { ...prev, reason: e.target.value } : null,
-                  )
+                  setExcludeModal((prev) => (prev ? { ...prev, reason: e.target.value } : null))
                 }
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleExcludeConfirm();
@@ -409,13 +397,8 @@ function TransactionsPage() {
               />
             </Label>
             <ModalActions>
-              <SecondaryButton onClick={handleExcludeCancel}>
-                Cancel
-              </SecondaryButton>
-              <Button
-                onClick={handleExcludeConfirm}
-                disabled={excludeMutation.isPending}
-              >
+              <SecondaryButton onClick={handleExcludeCancel}>Cancel</SecondaryButton>
+              <Button onClick={handleExcludeConfirm} disabled={excludeMutation.isPending}>
                 {excludeMutation.isPending ? "Excluding..." : "Exclude"}
               </Button>
             </ModalActions>
@@ -429,8 +412,7 @@ function TransactionsPage() {
             <ModalTitle>Add reimbursement</ModalTitle>
             <ModalDescription>
               Transaction: "
-              {reimburseModal.transaction.displayName ??
-                reimburseModal.transaction.labelSimplified}
+              {reimburseModal.transaction.displayName ?? reimburseModal.transaction.labelSimplified}
               " ({formatAmount(reimburseModal.transaction.amount)})
             </ModalDescription>
             <Label>
@@ -443,9 +425,7 @@ function TransactionsPage() {
                 placeholder={`Max ${(reimburseModal.transaction.amount / 100).toFixed(2)}`}
                 value={reimburseModal.amount}
                 onChange={(e) =>
-                  setReimburseModal((prev) =>
-                    prev ? { ...prev, amount: e.target.value } : null,
-                  )
+                  setReimburseModal((prev) => (prev ? { ...prev, amount: e.target.value } : null))
                 }
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleReimburseConfirm();
@@ -460,9 +440,7 @@ function TransactionsPage() {
                 placeholder="e.g. Insurance reimbursement"
                 value={reimburseModal.note}
                 onChange={(e) =>
-                  setReimburseModal((prev) =>
-                    prev ? { ...prev, note: e.target.value } : null,
-                  )
+                  setReimburseModal((prev) => (prev ? { ...prev, note: e.target.value } : null))
                 }
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleReimburseConfirm();
@@ -471,13 +449,8 @@ function TransactionsPage() {
               />
             </Label>
             <ModalActions>
-              <SecondaryButton onClick={handleReimburseCancel}>
-                Cancel
-              </SecondaryButton>
-              <Button
-                onClick={handleReimburseConfirm}
-                disabled={reimburseMutation.isPending}
-              >
+              <SecondaryButton onClick={handleReimburseCancel}>Cancel</SecondaryButton>
+              <Button onClick={handleReimburseConfirm} disabled={reimburseMutation.isPending}>
                 {reimburseMutation.isPending ? "Saving..." : "Save"}
               </Button>
             </ModalActions>

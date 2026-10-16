@@ -14,10 +14,7 @@ export function createMappingRuleService(db: AppDatabase) {
           budgetCategoryName: budgetCategories.name,
         })
         .from(mappingRules)
-        .leftJoin(
-          budgetCategories,
-          eq(mappingRules.budgetCategoryId, budgetCategories.id),
-        )
+        .leftJoin(budgetCategories, eq(mappingRules.budgetCategoryId, budgetCategories.id))
         .where(eq(mappingRules.householdId, householdId))
         .all();
 
@@ -47,12 +44,7 @@ export function createMappingRuleService(db: AppDatabase) {
       const result = db
         .update(mappingRules)
         .set({ budgetCategoryId })
-        .where(
-          and(
-            eq(mappingRules.id, id),
-            eq(mappingRules.householdId, householdId),
-          ),
-        )
+        .where(and(eq(mappingRules.id, id), eq(mappingRules.householdId, householdId)))
         .returning()
         .get();
       return result ?? null;
@@ -62,12 +54,7 @@ export function createMappingRuleService(db: AppDatabase) {
       const rule = db
         .select()
         .from(mappingRules)
-        .where(
-          and(
-            eq(mappingRules.id, id),
-            eq(mappingRules.householdId, householdId),
-          ),
-        )
+        .where(and(eq(mappingRules.id, id), eq(mappingRules.householdId, householdId)))
         .get();
 
       if (!rule) return false;

@@ -29,7 +29,6 @@ const CardHeader = styled.button`
   border: none;
   cursor: pointer;
   text-align: left;
-
 `;
 
 const CategoryNameRow = styled.div`
@@ -37,7 +36,6 @@ const CategoryNameRow = styled.div`
   align-items: center;
   gap: 10px;
 `;
-
 
 const CategoryName = styled.span`
   font-weight: 600;
@@ -196,14 +194,10 @@ export function CategoryExpenseCard({
           {transactions.map((tx) => (
             <TransactionRow key={tx.id}>
               <TransactionDate>{formatDate(tx.dateOperation)}</TransactionDate>
-              <TransactionLabel>
-                {tx.displayName || tx.labelSimplified}
-              </TransactionLabel>
+              <TransactionLabel>{tx.displayName || tx.labelSimplified}</TransactionLabel>
               <TransactionAmount>
                 {tx.reimbursedAmount > 0 && (
-                  <TransactionOriginalAmount>
-                    {formatAmount(tx.amount)}
-                  </TransactionOriginalAmount>
+                  <TransactionOriginalAmount>{formatAmount(tx.amount)}</TransactionOriginalAmount>
                 )}
                 {formatAmount(tx.amount - tx.reimbursedAmount)}
                 {tx.reimbursedAmount > 0 && (

@@ -31,21 +31,21 @@ A couple defines a monthly budget by category in a spreadsheet. Their bank trans
 
 #### CSV Format (Banque Populaire)
 
-| Column | Example |
-|---|---|
-| Date de comptabilisation | 14/02/2026 |
-| Libelle simplifie | dr HOARAU sc |
-| Libelle operation | CB dr HOARAU sc FACT 130226 |
-| Reference | (optional) |
-| Informations complementaires | (optional) |
-| Type operation | Carte bancaire |
-| Categorie | Sante |
-| Sous categorie | Consultation medicale |
-| Debit | -35,00 |
-| Credit | +43,00 |
-| Date operation | 13/02/2026 |
-| Date de valeur | 16/02/2026 |
-| Pointage operation | 0 |
+| Column                       | Example                     |
+| ---------------------------- | --------------------------- |
+| Date de comptabilisation     | 14/02/2026                  |
+| Libelle simplifie            | dr HOARAU sc                |
+| Libelle operation            | CB dr HOARAU sc FACT 130226 |
+| Reference                    | (optional)                  |
+| Informations complementaires | (optional)                  |
+| Type operation               | Carte bancaire              |
+| Categorie                    | Sante                       |
+| Sous categorie               | Consultation medicale       |
+| Debit                        | -35,00                      |
+| Credit                       | +43,00                      |
+| Date operation               | 13/02/2026                  |
+| Date de valeur               | 16/02/2026                  |
+| Pointage operation           | 0                           |
 
 ### 3. Category Mapping
 
@@ -100,26 +100,31 @@ A couple defines a monthly budget by category in a spreadsheet. Their bank trans
 ## Tech Stack
 
 ### Frontend
+
 - **Vite** + React + TypeScript
 - **TanStack Router** (type-safe routing)
 - **TanStack Query** (data fetching / cache)
 - **styled-components** (styling)
 
 ### Backend
+
 - **Express** + TypeScript
 - REST API
 - **multer** for CSV file upload
 
 ### Database
+
 - **SQLite** via **Drizzle ORM**
 - No DB server — single file on disk
 - Drizzle for typed queries and migrations
 
 ### Auth
+
 - Session-based: bcrypt + HTTP-only cookie
 - DIY, no third-party auth provider
 
 ### Deployment
+
 - **Docker Compose**: single container serving API + static frontend build
 - SQLite volume for persistence
 - Nginx reverse proxy on VPS
@@ -137,32 +142,38 @@ budget-app/
 ### Testing
 
 **Backend**
+
 - **Vitest** for unit and integration tests
 - **Supertest** for HTTP endpoint testing
 - SQLite **in-memory database** for test isolation
 - Cover: CSV parsing, mapping rules, deduplication, API endpoints
 
 **Frontend**
+
 - **Vitest** + **React Testing Library** for component and hook tests
 - **MSW** (Mock Service Worker) to mock API calls
 - Cover: import flow, category mapping UI, monthly view logic
 
 **E2E**
+
 - Skipped for MVP — add Playwright later if needed
 
 ### Code Quality
 
 **ESLint**
+
 - Flat config format (eslint.config.js)
 - **typescript-eslint** for TS rules
 - **eslint-plugin-react-hooks** for hook rules
 - Shared base config at root, per-package overrides if needed
 
 **Prettier**
+
 - Single `.prettierrc` at root
 - Separate from ESLint (Prettier formats, ESLint lints)
 
 **Pre-commit**
+
 - **Husky** + **lint-staged**
 - On staged files: run Prettier, ESLint, and affected tests
 

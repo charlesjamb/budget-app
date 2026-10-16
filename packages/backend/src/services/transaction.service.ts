@@ -1,10 +1,6 @@
 import { eq, and, between, isNull, sql } from "drizzle-orm";
 import { type AppDatabase } from "../db/connection.js";
-import {
-  transactions,
-  budgetCategories,
-  merchantAliases,
-} from "../db/schema.js";
+import { transactions, budgetCategories, merchantAliases } from "../db/schema.js";
 
 export function createTransactionService(db: AppDatabase) {
   function getFullTransaction(householdId: number, transactionId: number) {
@@ -29,10 +25,7 @@ export function createTransactionService(db: AppDatabase) {
         reimbursementNote: transactions.reimbursementNote,
       })
       .from(transactions)
-      .leftJoin(
-        budgetCategories,
-        eq(transactions.budgetCategoryId, budgetCategories.id),
-      )
+      .leftJoin(budgetCategories, eq(transactions.budgetCategoryId, budgetCategories.id))
       .leftJoin(
         merchantAliases,
         and(
@@ -40,12 +33,7 @@ export function createTransactionService(db: AppDatabase) {
           eq(merchantAliases.householdId, householdId),
         ),
       )
-      .where(
-        and(
-          eq(transactions.id, transactionId),
-          eq(transactions.householdId, householdId),
-        ),
-      )
+      .where(and(eq(transactions.id, transactionId), eq(transactions.householdId, householdId)))
       .get();
     return row
       ? {
@@ -82,10 +70,7 @@ export function createTransactionService(db: AppDatabase) {
           reimbursementNote: transactions.reimbursementNote,
         })
         .from(transactions)
-        .leftJoin(
-          budgetCategories,
-          eq(transactions.budgetCategoryId, budgetCategories.id),
-        )
+        .leftJoin(budgetCategories, eq(transactions.budgetCategoryId, budgetCategories.id))
         .leftJoin(
           merchantAliases,
           and(
@@ -125,10 +110,7 @@ export function createTransactionService(db: AppDatabase) {
           transactionCount: sql<number>`count(*)`.as("transaction_count"),
         })
         .from(transactions)
-        .innerJoin(
-          budgetCategories,
-          eq(transactions.budgetCategoryId, budgetCategories.id),
-        )
+        .innerJoin(budgetCategories, eq(transactions.budgetCategoryId, budgetCategories.id))
         .where(
           and(
             eq(transactions.householdId, householdId),
@@ -136,11 +118,7 @@ export function createTransactionService(db: AppDatabase) {
             eq(transactions.excluded, 0),
           ),
         )
-        .groupBy(
-          budgetCategories.id,
-          budgetCategories.name,
-          budgetCategories.type,
-        )
+        .groupBy(budgetCategories.id, budgetCategories.name, budgetCategories.type)
         .all();
 
       // Uncategorized transactions
@@ -164,8 +142,7 @@ export function createTransactionService(db: AppDatabase) {
         .get()!;
 
       const totalAmount =
-        categorized.reduce((sum, c) => sum + c.totalAmount, 0) +
-        uncategorized.totalAmount;
+        categorized.reduce((sum, c) => sum + c.totalAmount, 0) + uncategorized.totalAmount;
 
       return {
         month,
@@ -187,10 +164,7 @@ export function createTransactionService(db: AppDatabase) {
       let currentYear = fromYear;
       let currentMonth = fromMonth;
 
-      while (
-        currentYear < toYear ||
-        (currentYear === toYear && currentMonth <= toMonth)
-      ) {
+      while (currentYear < toYear || (currentYear === toYear && currentMonth <= toMonth)) {
         months.push(`${currentYear}-${String(currentMonth).padStart(2, "0")}`);
         currentMonth++;
         if (currentMonth > 12) {
@@ -207,19 +181,14 @@ export function createTransactionService(db: AppDatabase) {
         .select({
           categoryId: budgetCategories.id,
           categoryName: budgetCategories.name,
-          month: sql<string>`substr(${transactions.dateOperation}, 1, 7)`.as(
-            "month",
-          ),
+          month: sql<string>`substr(${transactions.dateOperation}, 1, 7)`.as("month"),
           totalAmount:
             sql<number>`sum(${transactions.amount} - ${transactions.reimbursedAmount})`.as(
               "total_amount",
             ),
         })
         .from(transactions)
-        .innerJoin(
-          budgetCategories,
-          eq(transactions.budgetCategoryId, budgetCategories.id),
-        )
+        .innerJoin(budgetCategories, eq(transactions.budgetCategoryId, budgetCategories.id))
         .where(
           and(
             eq(transactions.householdId, householdId),
@@ -257,24 +226,14 @@ export function createTransactionService(db: AppDatabase) {
       };
     },
 
-    updateExclude(
-      householdId: number,
-      transactionId: number,
-      excluded: boolean,
-      reason?: string,
-    ) {
+    updateExclude(householdId: number, transactionId: number, excluded: boolean, reason?: string) {
       const updated = db
         .update(transactions)
         .set({
           excluded: excluded ? 1 : 0,
           excludedReason: excluded ? (reason ?? null) : null,
         })
-        .where(
-          and(
-            eq(transactions.id, transactionId),
-            eq(transactions.householdId, householdId),
-          ),
-        )
+        .where(and(eq(transactions.id, transactionId), eq(transactions.householdId, householdId)))
         .returning()
         .get();
       if (!updated) return null;
@@ -282,22 +241,12 @@ export function createTransactionService(db: AppDatabase) {
       return getFullTransaction(householdId, transactionId);
     },
 
-    updateReimbursement(
-      householdId: number,
-      transactionId: number,
-      amount: number,
-      note?: string,
-    ) {
+    updateReimbursement(householdId: number, transactionId: number, amount: number, note?: string) {
       // Fetch the transaction first to validate
       const tx = db
         .select({ id: transactions.id, amount: transactions.amount })
         .from(transactions)
-        .where(
-          and(
-            eq(transactions.id, transactionId),
-            eq(transactions.householdId, householdId),
-          ),
-        )
+        .where(and(eq(transactions.id, transactionId), eq(transactions.householdId, householdId)))
         .get();
 
       if (!tx) return { error: "not_found" as const };
@@ -308,12 +257,7 @@ export function createTransactionService(db: AppDatabase) {
           reimbursedAmount: amount,
           reimbursementNote: note ?? null,
         })
-        .where(
-          and(
-            eq(transactions.id, transactionId),
-            eq(transactions.householdId, householdId),
-          ),
-        )
+        .where(and(eq(transactions.id, transactionId), eq(transactions.householdId, householdId)))
         .run();
 
       return { data: getFullTransaction(householdId, transactionId)! };
@@ -323,12 +267,7 @@ export function createTransactionService(db: AppDatabase) {
       const tx = db
         .select({ id: transactions.id })
         .from(transactions)
-        .where(
-          and(
-            eq(transactions.id, transactionId),
-            eq(transactions.householdId, householdId),
-          ),
-        )
+        .where(and(eq(transactions.id, transactionId), eq(transactions.householdId, householdId)))
         .get();
 
       if (!tx) return null;
@@ -338,12 +277,7 @@ export function createTransactionService(db: AppDatabase) {
           reimbursedAmount: 0,
           reimbursementNote: null,
         })
-        .where(
-          and(
-            eq(transactions.id, transactionId),
-            eq(transactions.householdId, householdId),
-          ),
-        )
+        .where(and(eq(transactions.id, transactionId), eq(transactions.householdId, householdId)))
         .run();
 
       return getFullTransaction(householdId, transactionId);

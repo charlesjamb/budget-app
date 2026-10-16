@@ -12,9 +12,7 @@ export function contributionRoutes(db: AppDatabase): Router {
     const month = req.query.month as string;
 
     if (!month || !MONTH_RE.test(month)) {
-      res
-        .status(400)
-        .json({ error: "month query parameter is required (YYYY-MM)" });
+      res.status(400).json({ error: "month query parameter is required (YYYY-MM)" });
       return;
     }
 
@@ -36,10 +34,7 @@ export function contributionRoutes(db: AppDatabase): Router {
     }
 
     for (const c of contributions) {
-      if (
-        typeof c.userId !== "number" ||
-        typeof c.revenueCents !== "number"
-      ) {
+      if (typeof c.userId !== "number" || typeof c.revenueCents !== "number") {
         res.status(400).json({
           error: "Each contribution must have userId and revenueCents as numbers",
         });

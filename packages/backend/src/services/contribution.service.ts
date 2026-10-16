@@ -1,10 +1,6 @@
 import { eq, and, sql } from "drizzle-orm";
 import { type AppDatabase } from "../db/connection.js";
-import {
-  householdMembers,
-  users,
-  monthlyContributions,
-} from "../db/schema.js";
+import { householdMembers, users, monthlyContributions } from "../db/schema.js";
 
 export function createContributionService(db: AppDatabase) {
   return {
@@ -35,12 +31,7 @@ export function createContributionService(db: AppDatabase) {
       }));
     },
 
-    upsert(
-      householdId: number,
-      month: string,
-      userId: number,
-      revenueCents: number,
-    ) {
+    upsert(householdId: number, month: string, userId: number, revenueCents: number) {
       const result = db
         .insert(monthlyContributions)
         .values({ householdId, month, userId, revenueCents })

@@ -33,9 +33,7 @@ export async function setupTestContext(): Promise<TestContext> {
 
   // Create session
   const sessionId = uuidv4();
-  const expiresAt = new Date(
-    Date.now() + 7 * 24 * 60 * 60 * 1000,
-  ).toISOString();
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
   db.insert(sessions).values({ id: sessionId, userId: 1, expiresAt }).run();
 
   return {

@@ -94,9 +94,7 @@ export const transactions = sqliteTable("transactions", {
   amount: integer("amount").notNull(),
   bankCategory: text("bank_category").notNull(),
   bankSubCategory: text("bank_sub_category").notNull(),
-  budgetCategoryId: integer("budget_category_id").references(
-    () => budgetCategories.id,
-  ),
+  budgetCategoryId: integer("budget_category_id").references(() => budgetCategories.id),
   reference: text("reference"),
   additionalInfo: text("additional_info"),
   operationType: text("operation_type").notNull(),
@@ -126,13 +124,7 @@ export const mappingRules = sqliteTable(
       .notNull()
       .default(sql`(datetime('now'))`),
   },
-  (table) => [
-    unique().on(
-      table.householdId,
-      table.bankSubCategory,
-      table.labelSimplified,
-    ),
-  ],
+  (table) => [unique().on(table.householdId, table.bankSubCategory, table.labelSimplified)],
 );
 
 export const monthlyContributions = sqliteTable(

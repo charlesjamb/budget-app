@@ -136,19 +136,11 @@ function HistoryPage() {
       <Controls>
         <Label>
           From
-          <MonthInput
-            type="month"
-            value={from}
-            onChange={(e) => setFrom(e.target.value)}
-          />
+          <MonthInput type="month" value={from} onChange={(e) => setFrom(e.target.value)} />
         </Label>
         <Label>
           To
-          <MonthInput
-            type="month"
-            value={to}
-            onChange={(e) => setTo(e.target.value)}
-          />
+          <MonthInput type="month" value={to} onChange={(e) => setTo(e.target.value)} />
         </Label>
       </Controls>
 

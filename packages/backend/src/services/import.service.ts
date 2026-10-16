@@ -27,21 +27,13 @@ export function createImportService(db: AppDatabase) {
         .all();
 
       const ruleMap = new Map(
-        rules.map((r) => [
-          `${r.bankSubCategory}::${r.labelSimplified}`,
-          r.budgetCategoryId,
-        ]),
+        rules.map((r) => [`${r.bankSubCategory}::${r.labelSimplified}`, r.budgetCategoryId]),
       );
 
       // Compute hashes for all rows
       const rowsWithHash = rows.map((row) => ({
         ...row,
-        dedupHash: computeHash(
-          householdId,
-          row.dateOperation,
-          row.labelOperation,
-          row.amount,
-        ),
+        dedupHash: computeHash(householdId, row.dateOperation, row.labelOperation, row.amount),
       }));
 
       // Check existing hashes

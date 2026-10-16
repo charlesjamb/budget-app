@@ -28,13 +28,9 @@ export function createAuthService(db: AppDatabase) {
       }
 
       const sessionId = uuidv4();
-      const expiresAt = new Date(
-        Date.now() + SESSION_DURATION_MS,
-      ).toISOString();
+      const expiresAt = new Date(Date.now() + SESSION_DURATION_MS).toISOString();
 
-      db.insert(sessions)
-        .values({ id: sessionId, userId: user.id, expiresAt })
-        .run();
+      db.insert(sessions).values({ id: sessionId, userId: user.id, expiresAt }).run();
 
       const membership = db
         .select()
@@ -66,11 +62,7 @@ export function createAuthService(db: AppDatabase) {
         return null;
       }
 
-      const user = db
-        .select()
-        .from(users)
-        .where(eq(users.id, session.userId))
-        .get();
+      const user = db.select().from(users).where(eq(users.id, session.userId)).get();
 
       if (!user) {
         return null;

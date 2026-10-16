@@ -60,9 +60,7 @@ export function transactionRoutes(db: AppDatabase): Router {
       if (result.error === "not_found") {
         res.status(404).json({ error: "Transaction not found" });
       } else {
-        res
-          .status(400)
-          .json({ error: "amount must be positive and <= transaction amount" });
+        res.status(400).json({ error: "amount must be positive and <= transaction amount" });
       }
       return;
     }
@@ -75,10 +73,7 @@ export function transactionRoutes(db: AppDatabase): Router {
       res.status(400).json({ error: "Invalid transaction ID" });
       return;
     }
-    const updated = transactionService.clearReimbursement(
-      req.householdId!,
-      id,
-    );
+    const updated = transactionService.clearReimbursement(req.householdId!, id);
     if (!updated) {
       res.status(404).json({ error: "Transaction not found" });
       return;
@@ -90,9 +85,7 @@ export function transactionRoutes(db: AppDatabase): Router {
     const month = req.query.month as string;
 
     if (!month || !/^\d{4}-\d{2}$/.test(month)) {
-      res
-        .status(400)
-        .json({ error: "month query parameter is required (YYYY-MM)" });
+      res.status(400).json({ error: "month query parameter is required (YYYY-MM)" });
       return;
     }
 
@@ -104,22 +97,15 @@ export function transactionRoutes(db: AppDatabase): Router {
     const month = req.query.month as string;
 
     if (!month || !/^\d{4}-\d{2}$/.test(month)) {
-      res
-        .status(400)
-        .json({ error: "month query parameter is required (YYYY-MM)" });
+      res.status(400).json({ error: "month query parameter is required (YYYY-MM)" });
       return;
     }
 
-    const summary = transactionService.getMonthlySummary(
-      req.householdId!,
-      month,
-    );
+    const summary = transactionService.getMonthlySummary(req.householdId!, month);
 
     // Enrich with budget data
     const budgets = budgetService.getByMonth(req.householdId!, month);
-    const budgetMap = new Map(
-      budgets.map((b) => [b.categoryId, b.amountCents]),
-    );
+    const budgetMap = new Map(budgets.map((b) => [b.categoryId, b.amountCents]));
 
     const enrichedCategories = summary.categories.map((cat) => ({
       ...cat,
@@ -142,15 +128,8 @@ export function transactionRoutes(db: AppDatabase): Router {
     const from = req.query.from as string;
     const to = req.query.to as string;
 
-    if (
-      !from ||
-      !to ||
-      !/^\d{4}-\d{2}$/.test(from) ||
-      !/^\d{4}-\d{2}$/.test(to)
-    ) {
-      res
-        .status(400)
-        .json({ error: "from and to query parameters are required (YYYY-MM)" });
+    if (!from || !to || !/^\d{4}-\d{2}$/.test(from) || !/^\d{4}-\d{2}$/.test(to)) {
+      res.status(400).json({ error: "from and to query parameters are required (YYYY-MM)" });
       return;
     }
 
@@ -159,9 +138,7 @@ export function transactionRoutes(db: AppDatabase): Router {
   });
 
   router.get("/uncategorized-subcategories", (req, res) => {
-    const subcategories = mappingRuleService.getUncategorizedSubCategories(
-      req.householdId!,
-    );
+    const subcategories = mappingRuleService.getUncategorizedSubCategories(req.householdId!);
     res.json({ subcategories });
   });
 

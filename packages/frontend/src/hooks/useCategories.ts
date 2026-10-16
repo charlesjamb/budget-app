@@ -1,8 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type {
-  CreateCategoryRequest,
-  UpdateCategoryRequest,
-} from "@budget-app/shared";
+import type { CreateCategoryRequest, UpdateCategoryRequest } from "@budget-app/shared";
 import {
   getCategories,
   createCategory,

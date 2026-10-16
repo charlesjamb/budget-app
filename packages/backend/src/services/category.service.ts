@@ -17,12 +17,7 @@ export function createCategoryService(db: AppDatabase) {
         .all();
     },
 
-    create(
-      householdId: number,
-      name: string,
-      groupName?: string,
-      type?: "fixed" | "variable",
-    ) {
+    create(householdId: number, name: string, groupName?: string, type?: "fixed" | "variable") {
       const result = db
         .insert(budgetCategories)
         .values({
@@ -62,12 +57,7 @@ export function createCategoryService(db: AppDatabase) {
       const result = db
         .update(budgetCategories)
         .set(setValues)
-        .where(
-          and(
-            eq(budgetCategories.id, id),
-            eq(budgetCategories.householdId, householdId),
-          ),
-        )
+        .where(and(eq(budgetCategories.id, id), eq(budgetCategories.householdId, householdId)))
         .returning({
           id: budgetCategories.id,
           name: budgetCategories.name,
@@ -92,18 +82,11 @@ export function createCategoryService(db: AppDatabase) {
 
       const result = db
         .delete(budgetCategories)
-        .where(
-          and(
-            eq(budgetCategories.id, id),
-            eq(budgetCategories.householdId, householdId),
-          ),
-        )
+        .where(and(eq(budgetCategories.id, id), eq(budgetCategories.householdId, householdId)))
         .returning()
         .get();
 
-      return result
-        ? { success: true as const }
-        : { error: "not_found" as const };
+      return result ? { success: true as const } : { error: "not_found" as const };
     },
   };
 }

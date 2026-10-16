@@ -11,21 +11,11 @@ export function createBudgetService(db: AppDatabase) {
           amountCents: monthlyBudgets.amountCents,
         })
         .from(monthlyBudgets)
-        .where(
-          and(
-            eq(monthlyBudgets.householdId, householdId),
-            eq(monthlyBudgets.month, month),
-          ),
-        )
+        .where(and(eq(monthlyBudgets.householdId, householdId), eq(monthlyBudgets.month, month)))
         .all();
     },
 
-    upsert(
-      householdId: number,
-      month: string,
-      categoryId: number,
-      amountCents: number,
-    ) {
+    upsert(householdId: number, month: string, categoryId: number, amountCents: number) {
       if (amountCents === 0) {
         db.delete(monthlyBudgets)
           .where(
@@ -43,11 +33,7 @@ export function createBudgetService(db: AppDatabase) {
         .insert(monthlyBudgets)
         .values({ householdId, month, categoryId, amountCents })
         .onConflictDoUpdate({
-          target: [
-            monthlyBudgets.householdId,
-            monthlyBudgets.month,
-            monthlyBudgets.categoryId,
-          ],
+          target: [monthlyBudgets.householdId, monthlyBudgets.month, monthlyBudgets.categoryId],
           set: {
             amountCents,
             updatedAt: sql`datetime('now')`,
@@ -72,11 +58,7 @@ export function createBudgetService(db: AppDatabase) {
       }
     },
 
-    copyFromMonth(
-      householdId: number,
-      sourceMonth: string,
-      targetMonth: string,
-    ) {
+    copyFromMonth(householdId: number, sourceMonth: string, targetMonth: string) {
       const sourceBudgets = this.getByMonth(householdId, sourceMonth);
 
       for (const b of sourceBudgets) {

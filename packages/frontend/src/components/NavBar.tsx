@@ -33,19 +33,11 @@ const navItems = [
 ] as const;
 
 const primaryNavItems = navItems.filter((item) =>
-  [
-    "/",
-    "/budget",
-    "/split",
-    "/import",
-    "/classify",
-    "/transactions",
-    "/settings",
-  ].includes(item.to),
+  ["/", "/budget", "/split", "/import", "/classify", "/transactions", "/settings"].includes(
+    item.to,
+  ),
 );
-const moreNavItems = navItems.filter((item) =>
-  ["/categories", "/history"].includes(item.to),
-);
+const moreNavItems = navItems.filter((item) => ["/categories", "/history"].includes(item.to));
 
 const SidebarWrapper = styled.aside<{ $collapsed: boolean }>`
   width: ${(p) => (p.$collapsed ? 72 : 240)}px;
@@ -114,8 +106,7 @@ const NavLink = styled(Link)<{ $active?: boolean; $collapsed?: boolean }>`
   text-decoration: none;
   font-size: 14px;
   font-weight: ${(p) => (p.$active ? 600 : 500)};
-  background: ${(p) =>
-    p.$active ? "rgba(255, 255, 255, 0.2)" : "transparent"};
+  background: ${(p) => (p.$active ? "rgba(255, 255, 255, 0.2)" : "transparent")};
   transition: all 0.15s;
 
   &:hover {
@@ -211,8 +202,7 @@ const BottomNavLink = styled(Link)<{ $active?: boolean }>`
   justify-content: center;
   gap: 2px;
   padding: 8px 4px;
-  color: ${(p) =>
-    p.$active ? p.theme.colors.primary : p.theme.colors.textMuted};
+  color: ${(p) => (p.$active ? p.theme.colors.primary : p.theme.colors.textMuted)};
   text-decoration: none;
   font-size: 10px;
   font-weight: ${(p) => (p.$active ? 600 : 500)};
@@ -235,8 +225,7 @@ const MoreButton = styled.button<{ $active?: boolean }>`
   padding: 8px 4px;
   background: none;
   border: none;
-  color: ${(p) =>
-    p.$active ? p.theme.colors.primary : p.theme.colors.textMuted};
+  color: ${(p) => (p.$active ? p.theme.colors.primary : p.theme.colors.textMuted)};
   font-size: 10px;
   font-weight: ${(p) => (p.$active ? 600 : 500)};
   cursor: pointer;
@@ -287,8 +276,7 @@ export function NavBar() {
   const { collapsed, toggleCollapse } = useSidebar();
   const [moreOpen, setMoreOpen] = useState(false);
 
-  const isActive = (to: string) =>
-    to === "/" ? currentPath === "/" : currentPath.startsWith(to);
+  const isActive = (to: string) => (to === "/" ? currentPath === "/" : currentPath.startsWith(to));
   const isMoreActive = moreNavItems.some((item) => isActive(item.to));
 
   return (
@@ -325,10 +313,7 @@ export function NavBar() {
               </>
             )}
           </CollapseButton>
-          <LogoutButton
-            $collapsed={collapsed}
-            onClick={() => logoutMutation.mutate()}
-          >
+          <LogoutButton $collapsed={collapsed} onClick={() => logoutMutation.mutate()}>
             <LogOut size={20} strokeWidth={2} />
             {!collapsed && <NavLabel $visible>Logout</NavLabel>}
           </LogoutButton>
@@ -339,11 +324,7 @@ export function NavBar() {
         {primaryNavItems.map((item) => {
           const Icon = item.icon;
           return (
-            <BottomNavLink
-              key={item.to}
-              to={item.to}
-              $active={isActive(item.to)}
-            >
+            <BottomNavLink key={item.to} to={item.to} $active={isActive(item.to)}>
               <Icon size={22} strokeWidth={2} />
               {item.label}
             </BottomNavLink>
@@ -362,11 +343,7 @@ export function NavBar() {
             {moreNavItems.map((item) => {
               const Icon = item.icon;
               return (
-                <MoreMenuItem
-                  key={item.to}
-                  to={item.to}
-                  onClick={() => setMoreOpen(false)}
-                >
+                <MoreMenuItem key={item.to} to={item.to} onClick={() => setMoreOpen(false)}>
                   <Icon size={18} strokeWidth={2} />
                   {item.label}
                 </MoreMenuItem>

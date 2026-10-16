@@ -3,13 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import styled from "styled-components";
 import { MonthPicker } from "../../components/MonthPicker.js";
 import { Scale } from "lucide-react";
-import {
-  Button,
-  AmountInput,
-  EmptyState,
-  PageTitle,
-  TitleRow,
-} from "../../components/ui.js";
+import { Button, AmountInput, EmptyState, PageTitle, TitleRow } from "../../components/ui.js";
 import { useContributions, useUpsertContributions } from "../../hooks/useContributions.js";
 import { useBudgets } from "../../hooks/useBudgets.js";
 import { useMonthlySummary } from "../../hooks/useTransactions.js";
@@ -32,8 +26,7 @@ const HeaderActions = styled.div`
 
 const SaveStatus = styled.span<{ $success?: boolean }>`
   font-size: 13px;
-  color: ${(p) =>
-    p.$success ? p.theme.colors.success : p.theme.colors.textMuted};
+  color: ${(p) => (p.$success ? p.theme.colors.success : p.theme.colors.textMuted)};
 `;
 
 const Section = styled.div`
@@ -97,8 +90,7 @@ const SummaryLabel = styled.span`
 const SummaryValue = styled.span<{ $accent?: boolean }>`
   font-size: 16px;
   font-weight: 600;
-  color: ${(p) =>
-    p.$accent ? p.theme.colors.primary : p.theme.colors.text};
+  color: ${(p) => (p.$accent ? p.theme.colors.primary : p.theme.colors.text)};
 `;
 
 const WireAmountRow = styled.div`
@@ -121,8 +113,7 @@ const SettlementRow = styled.div`
 
 const SettlementHint = styled.span<{ $positive?: boolean }>`
   font-size: 12px;
-  color: ${(p) =>
-    p.$positive ? p.theme.colors.danger : p.theme.colors.success};
+  color: ${(p) => (p.$positive ? p.theme.colors.danger : p.theme.colors.success)};
 `;
 
 function formatAmount(cents: number): string {
@@ -203,9 +194,7 @@ function SplitPage() {
     return members.map((m) => {
       const localVal = localRevenues[m.userId];
       const revenueCents =
-        localVal !== undefined
-          ? Math.round(parseFloat(localVal) * 100) || 0
-          : m.revenueCents;
+        localVal !== undefined ? Math.round(parseFloat(localVal) * 100) || 0 : m.revenueCents;
       return { ...m, revenueCents };
     });
   }, [members, localRevenues]);
@@ -226,10 +215,7 @@ function SplitPage() {
   }, [effectiveMembers, totalRevenueCents]);
 
   const totalBudgetedCents = useMemo(() => {
-    return (budgetsQuery.data?.budgets ?? []).reduce(
-      (sum, b) => sum + b.amountCents,
-      0,
-    );
+    return (budgetsQuery.data?.budgets ?? []).reduce((sum, b) => sum + b.amountCents, 0);
   }, [budgetsQuery.data?.budgets]);
 
   const totalSpentCents = summaryQuery.data?.totalAmount ?? 0;
@@ -267,10 +253,7 @@ function SplitPage() {
       <Header>
         <MonthPicker month={month} onChange={handleMonthChange} />
         <HeaderActions>
-          <Button
-            onClick={handleSave}
-            disabled={!dirty || upsertMutation.isPending}
-          >
+          <Button onClick={handleSave} disabled={!dirty || upsertMutation.isPending}>
             {upsertMutation.isPending ? "Saving..." : "Save"}
           </Button>
           {saved && <SaveStatus $success>Saved!</SaveStatus>}
@@ -278,9 +261,7 @@ function SplitPage() {
       </Header>
 
       {members.length === 0 ? (
-        <EmptyState>
-          No household members found. Add members in Settings.
-        </EmptyState>
+        <EmptyState>No household members found. Add members in Settings.</EmptyState>
       ) : (
         <>
           <Section>
@@ -300,18 +281,14 @@ function SplitPage() {
             ))}
             <SummaryRow style={{ marginTop: 16 }}>
               <SummaryLabel>Total revenue</SummaryLabel>
-              <SummaryValue $accent>
-                {formatAmount(totalRevenueCents)}
-              </SummaryValue>
+              <SummaryValue $accent>{formatAmount(totalRevenueCents)}</SummaryValue>
             </SummaryRow>
             {totalRevenueCents > 0 && (
               <>
                 {members.map((m) => (
                   <SummaryRow key={m.userId}>
                     <SummaryLabel>{m.email} ratio</SummaryLabel>
-                    <SummaryValue>
-                      {((ratios.get(m.userId) ?? 0) * 100).toFixed(1)}%
-                    </SummaryValue>
+                    <SummaryValue>{((ratios.get(m.userId) ?? 0) * 100).toFixed(1)}%</SummaryValue>
                   </SummaryRow>
                 ))}
               </>
@@ -328,9 +305,7 @@ function SplitPage() {
               members.map((m) => (
                 <WireAmountRow key={m.userId}>
                   <SummaryLabel>{m.email}</SummaryLabel>
-                  <SummaryValue>
-                    {formatAmount(wireAmounts.get(m.userId) ?? 0)}
-                  </SummaryValue>
+                  <SummaryValue>{formatAmount(wireAmounts.get(m.userId) ?? 0)}</SummaryValue>
                 </WireAmountRow>
               ))}
           </Section>
@@ -380,9 +355,7 @@ function SplitPage() {
                       </SummaryValue>
                       {settlement !== 0 && (
                         <SettlementHint $positive={settlement > 0}>
-                          {settlement > 0
-                            ? " → wire additional"
-                            : " → take back"}
+                          {settlement > 0 ? " → wire additional" : " → take back"}
                         </SettlementHint>
                       )}
                     </div>

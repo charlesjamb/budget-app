@@ -11,10 +11,7 @@ import {
   PageTitle,
   TitleRow,
 } from "../../components/ui.js";
-import {
-  useMappingRules,
-  useDeleteMappingRule,
-} from "../../hooks/useMappingRules.js";
+import { useMappingRules, useDeleteMappingRule } from "../../hooks/useMappingRules.js";
 import {
   useMerchantAliases,
   useCreateMerchantAlias,
@@ -120,18 +117,18 @@ const ThemeOption = styled.button<{ $active: boolean }>`
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
-  background: ${(p) =>
-    p.$active ? p.theme.colors.primary : p.theme.colors.card};
+  background: ${(p) => (p.$active ? p.theme.colors.primary : p.theme.colors.card)};
   color: ${(p) => (p.$active ? "#fff" : p.theme.colors.text)};
   border: none;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 
   &:hover:not(:disabled) {
-    background: ${(p) =>
-      p.$active ? p.theme.colors.primaryDark : p.theme.colors.background};
+    background: ${(p) => (p.$active ? p.theme.colors.primaryDark : p.theme.colors.background)};
     color: ${(p) => (p.$active ? "#fff" : p.theme.colors.text)};
   }
 
@@ -196,27 +193,15 @@ function SettingsPage() {
 
       <SectionTitle>Appearance</SectionTitle>
       <ThemeSegmentedControl>
-        <ThemeOption
-          type="button"
-          $active={mode === "light"}
-          onClick={() => setMode("light")}
-        >
+        <ThemeOption type="button" $active={mode === "light"} onClick={() => setMode("light")}>
           <Sun size={18} strokeWidth={2} />
           Light
         </ThemeOption>
-        <ThemeOption
-          type="button"
-          $active={mode === "dark"}
-          onClick={() => setMode("dark")}
-        >
+        <ThemeOption type="button" $active={mode === "dark"} onClick={() => setMode("dark")}>
           <Moon size={18} strokeWidth={2} />
           Dark
         </ThemeOption>
-        <ThemeOption
-          type="button"
-          $active={mode === "system"}
-          onClick={() => setMode("system")}
-        >
+        <ThemeOption type="button" $active={mode === "system"} onClick={() => setMode("system")}>
           <Monitor size={18} strokeWidth={2} />
           System
         </ThemeOption>
@@ -243,9 +228,7 @@ function SettingsPage() {
                   <Td>{rule.bankSubCategory}</Td>
                   <Td>{rule.budgetCategoryName}</Td>
                   <Td>
-                    <DangerButton
-                      onClick={() => deleteRuleMutation.mutate(rule.id)}
-                    >
+                    <DangerButton onClick={() => deleteRuleMutation.mutate(rule.id)}>
                       Delete
                     </DangerButton>
                   </Td>
@@ -313,9 +296,7 @@ function SettingsPage() {
                     </EditableCell>
                   )}
                   <Td>
-                    <DangerButton
-                      onClick={() => deleteAliasMutation.mutate(alias.id)}
-                    >
+                    <DangerButton onClick={() => deleteAliasMutation.mutate(alias.id)}>
                       Delete
                     </DangerButton>
                   </Td>

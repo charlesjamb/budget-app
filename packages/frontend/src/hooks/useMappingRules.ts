@@ -30,13 +30,8 @@ export function useUpdateMappingRule() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
-      id,
-      budgetCategoryId,
-    }: {
-      id: number;
-      budgetCategoryId: number;
-    }) => updateMappingRule(id, { budgetCategoryId }),
+    mutationFn: ({ id, budgetCategoryId }: { id: number; budgetCategoryId: number }) =>
+      updateMappingRule(id, { budgetCategoryId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["mapping-rules"] });
     },

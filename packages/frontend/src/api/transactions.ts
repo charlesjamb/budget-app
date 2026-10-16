@@ -35,10 +35,7 @@ export function getUncategorizedSubcategories(): Promise<UncategorizedSubcategor
   return apiRequest("/api/transactions/uncategorized-subcategories");
 }
 
-export function setReimbursement(
-  id: number,
-  body: ReimbursementRequest,
-): Promise<Transaction> {
+export function setReimbursement(id: number, body: ReimbursementRequest): Promise<Transaction> {
   return apiRequest(`/api/transactions/${id}/reimbursement`, {
     method: "PUT",
     body: JSON.stringify(body),

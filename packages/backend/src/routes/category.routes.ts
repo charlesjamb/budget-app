@@ -6,10 +6,7 @@ import { createCategoryService } from "../services/category.service.js";
 const VALID_TYPES: CategoryType[] = ["fixed", "variable"];
 
 function parseType(value: unknown): CategoryType | undefined {
-  if (
-    typeof value === "string" &&
-    VALID_TYPES.includes(value as CategoryType)
-  ) {
+  if (typeof value === "string" && VALID_TYPES.includes(value as CategoryType)) {
     return value as CategoryType;
   }
   return undefined;
@@ -89,9 +86,7 @@ export function categoryRoutes(db: AppDatabase): Router {
     const result = categoryService.delete(id, req.householdId!);
 
     if (result.error === "conflict") {
-      res
-        .status(409)
-        .json({ error: "Cannot delete: transactions reference this category" });
+      res.status(409).json({ error: "Cannot delete: transactions reference this category" });
       return;
     }
 

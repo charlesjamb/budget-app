@@ -15,18 +15,12 @@ export function merchantAliasRoutes(db: AppDatabase): Router {
     const { originalLabel, displayName } = req.body;
 
     if (!originalLabel || !displayName) {
-      res
-        .status(400)
-        .json({ error: "originalLabel and displayName are required" });
+      res.status(400).json({ error: "originalLabel and displayName are required" });
       return;
     }
 
     try {
-      const alias = merchantAliasService.create(
-        req.householdId!,
-        originalLabel,
-        displayName,
-      );
+      const alias = merchantAliasService.create(req.householdId!, originalLabel, displayName);
       res.status(201).json({ alias });
     } catch {
       res.status(409).json({ error: "Alias already exists for this label" });
@@ -42,11 +36,7 @@ export function merchantAliasRoutes(db: AppDatabase): Router {
       return;
     }
 
-    const alias = merchantAliasService.update(
-      id,
-      req.householdId!,
-      displayName,
-    );
+    const alias = merchantAliasService.update(id, req.householdId!, displayName);
     if (!alias) {
       res.status(404).json({ error: "Alias not found" });
       return;

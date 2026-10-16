@@ -12,9 +12,7 @@ export function budgetRoutes(db: AppDatabase): Router {
     const month = req.query.month as string;
 
     if (!month || !MONTH_RE.test(month)) {
-      res
-        .status(400)
-        .json({ error: "month query parameter is required (YYYY-MM)" });
+      res.status(400).json({ error: "month query parameter is required (YYYY-MM)" });
       return;
     }
 
@@ -36,10 +34,7 @@ export function budgetRoutes(db: AppDatabase): Router {
     }
 
     for (const b of budgets) {
-      if (
-        typeof b.categoryId !== "number" ||
-        typeof b.amountCents !== "number"
-      ) {
+      if (typeof b.categoryId !== "number" || typeof b.amountCents !== "number") {
         res.status(400).json({
           error: "Each budget must have categoryId and amountCents as numbers",
         });
@@ -72,17 +67,11 @@ export function budgetRoutes(db: AppDatabase): Router {
     }
 
     if (sourceMonth === targetMonth) {
-      res
-        .status(400)
-        .json({ error: "sourceMonth and targetMonth must differ" });
+      res.status(400).json({ error: "sourceMonth and targetMonth must differ" });
       return;
     }
 
-    const copiedCount = budgetService.copyFromMonth(
-      req.householdId!,
-      sourceMonth,
-      targetMonth,
-    );
+    const copiedCount = budgetService.copyFromMonth(req.householdId!, sourceMonth, targetMonth);
 
     res.json({ copiedCount });
   });

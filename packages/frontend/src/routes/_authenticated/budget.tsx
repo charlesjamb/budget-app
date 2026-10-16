@@ -14,11 +14,7 @@ import {
 } from "../../components/ui.js";
 import { useCategories } from "../../hooks/useCategories.js";
 import { useMonthlySummary } from "../../hooks/useTransactions.js";
-import {
-  useBudgets,
-  useUpsertBudgets,
-  useCopyBudget,
-} from "../../hooks/useBudgets.js";
+import { useBudgets, useUpsertBudgets, useCopyBudget } from "../../hooks/useBudgets.js";
 
 const Header = styled.div`
   display: flex;
@@ -133,8 +129,7 @@ const ProgressWrapper = styled.div`
 
 const SaveStatus = styled.span<{ $success?: boolean }>`
   font-size: 13px;
-  color: ${(p) =>
-    p.$success ? p.theme.colors.success : p.theme.colors.textMuted};
+  color: ${(p) => (p.$success ? p.theme.colors.success : p.theme.colors.textMuted)};
 `;
 
 function formatAmount(cents: number): string {
@@ -184,13 +179,7 @@ function BudgetPage() {
   const summary = summaryQuery.data;
 
   const budgetMap = useMemo(
-    () =>
-      new Map(
-        (budgetsQuery.data?.budgets ?? []).map((b) => [
-          b.categoryId,
-          b.amountCents,
-        ]),
-      ),
+    () => new Map((budgetsQuery.data?.budgets ?? []).map((b) => [b.categoryId, b.amountCents])),
     [budgetsQuery.data?.budgets],
   );
 
@@ -261,14 +250,12 @@ function BudgetPage() {
   };
 
   // Build grouped categories: first by type (fixed, variable), then by groupName
-  const spentMap = new Map(
-    (summary?.categories ?? []).map((c) => [c.id, c.totalAmount]),
-  );
+  const spentMap = new Map((summary?.categories ?? []).map((c) => [c.id, c.totalAmount]));
 
-  const groupedByType: Record<
-    "fixed" | "variable",
-    Record<string, GroupedCategory[]>
-  > = { fixed: {}, variable: {} };
+  const groupedByType: Record<"fixed" | "variable", Record<string, GroupedCategory[]>> = {
+    fixed: {},
+    variable: {},
+  };
 
   for (const cat of categories) {
     const type = cat.type ?? "variable";
@@ -318,18 +305,10 @@ function BudgetPage() {
       <Header>
         <MonthPicker month={month} onChange={handleMonthChange} />
         <HeaderActions>
-          <SecondaryButton
-            onClick={handleCopy}
-            disabled={copyMutation.isPending}
-          >
-            {copyMutation.isPending
-              ? "Copying..."
-              : `Copy from ${getPreviousMonth(month)}`}
+          <SecondaryButton onClick={handleCopy} disabled={copyMutation.isPending}>
+            {copyMutation.isPending ? "Copying..." : `Copy from ${getPreviousMonth(month)}`}
           </SecondaryButton>
-          <Button
-            onClick={handleSave}
-            disabled={!dirty || upsertMutation.isPending}
-          >
+          <Button onClick={handleSave} disabled={!dirty || upsertMutation.isPending}>
             {upsertMutation.isPending ? "Saving..." : "Save"}
           </Button>
           {saved && <SaveStatus $success>Saved!</SaveStatus>}
@@ -340,23 +319,16 @@ function BudgetPage() {
         <GlobalCapRow>
           <GlobalCapLabel>Total budgeted</GlobalCapLabel>
           <SpentVsBudget>
-            {formatAmount(totalBudgetedCents)} | Spent:{" "}
-            {formatAmount(totalSpent)}
+            {formatAmount(totalBudgetedCents)} | Spent: {formatAmount(totalSpent)}
           </SpentVsBudget>
         </GlobalCapRow>
         {totalBudgetedCents > 0 && (
-          <ProgressBar
-            spent={totalSpent}
-            budget={totalBudgetedCents}
-            showLabel
-          />
+          <ProgressBar spent={totalSpent} budget={totalBudgetedCents} showLabel />
         )}
       </GlobalCapSection>
 
       {categories.length === 0 ? (
-        <EmptyState>
-          No categories yet. Create some in the Categories page first.
-        </EmptyState>
+        <EmptyState>No categories yet. Create some in the Categories page first.</EmptyState>
       ) : (
         (["variable", "fixed"] as const)
           .filter((type) => Object.keys(groupedByType[type]).length > 0)
@@ -364,8 +336,7 @@ function BudgetPage() {
             const groups = groupedByType[type];
             const groupNames = sortGroupNames(Object.keys(groups));
 
-            const typeLabel =
-              type === "fixed" ? "Fixed expenses" : "Variable expenses";
+            const typeLabel = type === "fixed" ? "Fixed expenses" : "Variable expenses";
             return (
               <GroupSection key={type}>
                 <GroupHeader>
@@ -374,10 +345,7 @@ function BudgetPage() {
                 {groupNames.map((groupName) => {
                   const items = groups[groupName];
                   const groupSpent = items.reduce((s, c) => s + c.spent, 0);
-                  const groupBudget = items.reduce(
-                    (s, c) => s + c.budgetCents,
-                    0,
-                  );
+                  const groupBudget = items.reduce((s, c) => s + c.budgetCents, 0);
 
                   return (
                     <GroupSection key={`${type}-${groupName || "_"}`}>
@@ -386,9 +354,7 @@ function BudgetPage() {
                           <GroupTitle>{groupName}</GroupTitle>
                           <GroupSubtotal>
                             {formatAmount(groupSpent)}
-                            {groupBudget > 0
-                              ? ` / ${formatAmount(groupBudget)}`
-                              : ""}
+                            {groupBudget > 0 ? ` / ${formatAmount(groupBudget)}` : ""}
                           </GroupSubtotal>
                         </GroupHeader>
                       )}
@@ -402,16 +368,11 @@ function BudgetPage() {
                               inputMode="decimal"
                               placeholder="0.00"
                               value={getInputValue(cat.id)}
-                              onChange={(e) =>
-                                handleInputChange(cat.id, e.target.value)
-                              }
+                              onChange={(e) => handleInputChange(cat.id, e.target.value)}
                             />
                             <ProgressWrapper>
                               {(budgetMap.get(cat.id) ?? 0) > 0 && (
-                                <ProgressBar
-                                  spent={cat.spent}
-                                  budget={budgetMap.get(cat.id)!}
-                                />
+                                <ProgressBar spent={cat.spent} budget={budgetMap.get(cat.id)!} />
                               )}
                             </ProgressWrapper>
                           </CategoryRow>

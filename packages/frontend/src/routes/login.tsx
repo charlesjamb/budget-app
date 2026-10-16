@@ -77,12 +77,7 @@ function LoginPage() {
         <Form onSubmit={handleSubmit}>
           <Label>
             Email
-            <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
           </Label>
           <Label>
             Password
@@ -93,14 +88,8 @@ function LoginPage() {
               required
             />
           </Label>
-          {loginMutation.isError && (
-            <ErrorMessage>Invalid email or password</ErrorMessage>
-          )}
-          <Button
-            type="submit"
-            disabled={loginMutation.isPending}
-            style={{ marginTop: 8 }}
-          >
+          {loginMutation.isError && <ErrorMessage>Invalid email or password</ErrorMessage>}
+          <Button type="submit" disabled={loginMutation.isPending} style={{ marginTop: 8 }}>
             {loginMutation.isPending ? "Logging in..." : "Log in"}
           </Button>
         </Form>

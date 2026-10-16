@@ -2,10 +2,7 @@ import { useState, useMemo } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import styled, { useTheme } from "styled-components";
 import type { CategorySummary } from "@budget-app/shared";
-import {
-  useMonthlySummary,
-  useTransactions,
-} from "../../hooks/useTransactions.js";
+import { useMonthlySummary, useTransactions } from "../../hooks/useTransactions.js";
 import { MonthPicker } from "../../components/MonthPicker.js";
 import { CategoryExpenseCard } from "../../components/CategoryExpenseCard.js";
 import { ProgressBar } from "../../components/ProgressBar.js";
@@ -180,16 +177,9 @@ function DashboardPage() {
   }
 
   const fixedTotal = fixedCategories.reduce((s, c) => s + c.totalAmount, 0);
-  const variableTotal = variableCategories.reduce(
-    (s, c) => s + c.totalAmount,
-    0,
-  );
+  const variableTotal = variableCategories.reduce((s, c) => s + c.totalAmount, 0);
 
-  const renderCategorySection = (
-    title: string,
-    categories: CategorySummary[],
-    subtotal: number,
-  ) =>
+  const renderCategorySection = (title: string, categories: CategorySummary[], subtotal: number) =>
     categories.length > 0 ? (
       <>
         <SectionHeader>
@@ -203,13 +193,10 @@ function DashboardPage() {
               name={cat.name}
               totalAmount={cat.totalAmount}
               transactionCount={cat.transactionCount}
-              transactions={txList.filter(
-                (tx) => tx.budgetCategoryId === cat.id,
-              )}
+              transactions={txList.filter((tx) => tx.budgetCategoryId === cat.id)}
               budgetAmountCents={cat.budgetAmountCents}
               unbudgeted={
-                !(cat.budgetAmountCents != null && cat.budgetAmountCents > 0) &&
-                cat.totalAmount > 0
+                !(cat.budgetAmountCents != null && cat.budgetAmountCents > 0) && cat.totalAmount > 0
               }
             />
           ))}
@@ -219,13 +206,8 @@ function DashboardPage() {
 
   const unbudgetedSpendingTotal =
     summary.categories
-      .filter(
-        (c) =>
-          !(c.budgetAmountCents != null && c.budgetAmountCents > 0) &&
-          c.totalAmount > 0,
-      )
-      .reduce((s, c) => s + c.totalAmount, 0) +
-    summary.uncategorized.totalAmount;
+      .filter((c) => !(c.budgetAmountCents != null && c.budgetAmountCents > 0) && c.totalAmount > 0)
+      .reduce((s, c) => s + c.totalAmount, 0) + summary.uncategorized.totalAmount;
 
   const budgetRemaining =
     summary.globalBudgetCents != null && summary.globalBudgetCents > 0
@@ -244,31 +226,19 @@ function DashboardPage() {
           <TotalLabel>Total spent</TotalLabel>
           <TotalAmount>
             {formatAmount(summary.totalAmount)}
-            {summary.globalBudgetCents
-              ? ` / ${formatAmount(summary.globalBudgetCents)}`
-              : ""}
+            {summary.globalBudgetCents ? ` / ${formatAmount(summary.globalBudgetCents)}` : ""}
           </TotalAmount>
-          {summary.globalBudgetCents != null &&
-            summary.globalBudgetCents > 0 && (
-              <ProgressBar
-                spent={summary.totalAmount}
-                budget={summary.globalBudgetCents}
-              />
-            )}
+          {summary.globalBudgetCents != null && summary.globalBudgetCents > 0 && (
+            <ProgressBar spent={summary.totalAmount} budget={summary.globalBudgetCents} />
+          )}
         </TotalSummary>
       </Header>
 
       <StatCards>
         {budgetRemaining != null && (
-          <StatCard
-            $accent={
-              budgetRemaining >= 0 ? theme.colors.primary : theme.colors.danger
-            }
-          >
+          <StatCard $accent={budgetRemaining >= 0 ? theme.colors.primary : theme.colors.danger}>
             <StatLabel>Budget remaining</StatLabel>
-            <StatValue
-              $color={budgetRemaining >= 0 ? undefined : theme.colors.danger}
-            >
+            <StatValue $color={budgetRemaining >= 0 ? undefined : theme.colors.danger}>
               {formatAmount(Math.max(0, budgetRemaining))}
             </StatValue>
           </StatCard>
@@ -281,11 +251,7 @@ function DashboardPage() {
         )}
       </StatCards>
 
-      {renderCategorySection(
-        "Variable expenses",
-        variableCategories,
-        variableTotal,
-      )}
+      {renderCategorySection("Variable expenses", variableCategories, variableTotal)}
       {renderCategorySection("Fixed expenses", fixedCategories, fixedTotal)}
 
       {summary.uncategorized.transactionCount > 0 && (

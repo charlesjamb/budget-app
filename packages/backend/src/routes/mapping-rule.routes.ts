@@ -15,12 +15,9 @@ export function mappingRuleRoutes(db: AppDatabase): Router {
     const { bankSubCategory, labelSimplified, budgetCategoryId } = req.body;
 
     if (!bankSubCategory || !labelSimplified || !budgetCategoryId) {
-      res
-        .status(400)
-        .json({
-          error:
-            "bankSubCategory, labelSimplified and budgetCategoryId are required",
-        });
+      res.status(400).json({
+        error: "bankSubCategory, labelSimplified and budgetCategoryId are required",
+      });
       return;
     }
 
@@ -46,11 +43,7 @@ export function mappingRuleRoutes(db: AppDatabase): Router {
       return;
     }
 
-    const rule = mappingRuleService.update(
-      id,
-      req.householdId!,
-      budgetCategoryId,
-    );
+    const rule = mappingRuleService.update(id, req.householdId!, budgetCategoryId);
     if (!rule) {
       res.status(404).json({ error: "Rule not found" });
       return;
@@ -75,12 +68,9 @@ export function mappingRuleRoutes(db: AppDatabase): Router {
     const { bankSubCategory, labelSimplified, budgetCategoryId } = req.body;
 
     if (!bankSubCategory || !labelSimplified || !budgetCategoryId) {
-      res
-        .status(400)
-        .json({
-          error:
-            "bankSubCategory, labelSimplified and budgetCategoryId are required",
-        });
+      res.status(400).json({
+        error: "bankSubCategory, labelSimplified and budgetCategoryId are required",
+      });
       return;
     }
 

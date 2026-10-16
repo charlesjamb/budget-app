@@ -1,13 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  getBudgets,
-  upsertBudgets,
-  copyBudgetFromMonth,
-} from "../api/budgets.js";
-import type {
-  UpsertBudgetsRequest,
-  CopyBudgetRequest,
-} from "@budget-app/shared";
+import { getBudgets, upsertBudgets, copyBudgetFromMonth } from "../api/budgets.js";
+import type { UpsertBudgetsRequest, CopyBudgetRequest } from "@budget-app/shared";
 
 export function useBudgets(month: string) {
   return useQuery({

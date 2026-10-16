@@ -10,9 +10,7 @@ export function getCategories(): Promise<CategoriesResponse> {
   return apiRequest("/api/categories");
 }
 
-export function createCategory(
-  data: CreateCategoryRequest,
-): Promise<{ category: BudgetCategory }> {
+export function createCategory(data: CreateCategoryRequest): Promise<{ category: BudgetCategory }> {
   return apiRequest("/api/categories", {
     method: "POST",
     body: JSON.stringify(data),

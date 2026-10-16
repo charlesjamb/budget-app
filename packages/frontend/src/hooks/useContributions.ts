@@ -1,8 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  getContributions,
-  upsertContributions,
-} from "../api/contributions.js";
+import { getContributions, upsertContributions } from "../api/contributions.js";
 import type { UpsertContributionsRequest } from "@budget-app/shared";
 
 export function useContributions(month: string) {

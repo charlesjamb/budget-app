@@ -167,8 +167,7 @@ function ClassifyPage() {
     });
   };
 
-  const groupKey = (sub: UncategorizedGroup) =>
-    `${sub.bankSubCategory}::${sub.labelSimplified}`;
+  const groupKey = (sub: UncategorizedGroup) => `${sub.bankSubCategory}::${sub.labelSimplified}`;
 
   const toggleExpand = (key: string) => {
     setExpandedSub((prev) => (prev === key ? null : key));
@@ -182,9 +181,7 @@ function ClassifyPage() {
       </TitleRow>
 
       {subcategories.length === 0 ? (
-        <EmptyState>
-          All transactions are classified! Nothing to do here.
-        </EmptyState>
+        <EmptyState>All transactions are classified! Nothing to do here.</EmptyState>
       ) : (
         <CardList>
           {subcategories.map((sub: UncategorizedGroup) => {

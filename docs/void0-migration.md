@@ -11,31 +11,31 @@ Oxlint, Oxfmt and the Vite Task runner.
 
 ## Current state
 
-| Area           | Today                                                                     |
-| -------------- | ------------------------------------------------------------------------- |
-| Runtime        | Node 24.8 locally, `node:20-slim` in Docker, no version pinning           |
-| Package mgr    | npm workspaces, `package-lock.json`, `"@budget-app/shared": "*"`          |
-| Dev server     | Vite 7.3 + `@vitejs/plugin-react` 4.7, TanStack Router plugin             |
-| Tests          | Vitest 3.2, one `vitest.config.ts` per package (jsdom / node)             |
-| Lint           | ESLint 9 + typescript-eslint + eslint-plugin-react-hooks                  |
-| Format         | Prettier 3 (`printWidth: 80`, double quotes, trailing commas)             |
-| Types          | TypeScript 5.9; `tsc -b` in the frontend build, `tsc` emit for shared/backend |
-| Hooks          | Effectively none: Husky removed in `460dfa0`, leftovers in `.husky/_`, unused `.lintstagedrc` |
-| Orchestration  | `concurrently` for `dev`                                                  |
+| Area          | Today                                                                                         |
+| ------------- | --------------------------------------------------------------------------------------------- |
+| Runtime       | Node 24.8 locally, `node:20-slim` in Docker, no version pinning                               |
+| Package mgr   | npm workspaces, `package-lock.json`, `"@budget-app/shared": "*"`                              |
+| Dev server    | Vite 7.3 + `@vitejs/plugin-react` 4.7, TanStack Router plugin                                 |
+| Tests         | Vitest 3.2, one `vitest.config.ts` per package (jsdom / node)                                 |
+| Lint          | ESLint 9 + typescript-eslint + eslint-plugin-react-hooks                                      |
+| Format        | Prettier 3 (`printWidth: 80`, double quotes, trailing commas)                                 |
+| Types         | TypeScript 5.9; `tsc -b` in the frontend build, `tsc` emit for shared/backend                 |
+| Hooks         | Effectively none: Husky removed in `460dfa0`, leftovers in `.husky/_`, unused `.lintstagedrc` |
+| Orchestration | `concurrently` for `dev`                                                                      |
 
 ## Decisions
 
-| #   | Topic       | Decision                                                                                                         | Why                                                                                                     |
-| --- | ----------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| 1   | Scope       | Vite+ all-in, in two phases (upstream upgrades first, then `vp migrate`)                                         | One CLI/config for a small monorepo; isolates upgrade breakage from tooling breakage                    |
-| 2   | Runtime     | Node 26: `.node-version`, `engines: ">=26"`, `node:26-slim` in both Docker stages                                | Vite+ needs `^22.18 \|\| ^24.11 \|\| >=26`; 26 becomes LTS in Oct 2026                                    |
-| 2b  | Native deps | `better-sqlite3` 11 → 13, `bcrypt` 5 → 6                                                                            | 11.x has no Node 26 prebuild *and* no longer compiles (removed V8 APIs); 13.x uses Node-API. `bcrypt` 5 uses per-ABI `node-pre-gyp` prebuilds — no Node 26 build; 6.0 is the N-API version |
-| 3   | Hooks       | None. Delete `.husky/`, `.lintstagedrc`; `git config --unset core.hooksPath`                                     | Keep it simple; a `prepare` script breaks `install --prod` in Docker (same reason Husky was removed)    |
-| 4   | Builds      | Keep `tsc` for shared and backend, `tsx watch` for backend dev                                                   | Already works; tsdown adds bundling risk (native deps, runtime paths) for no gain                       |
-| 5   | Types       | TypeScript 7 everywhere. `vp check` (typeAware + typeCheck) for dev, `tsc` stays in builds as the Docker gate     | TS 7 stable since 2026-07; nothing left needs the TS API once ESLint is gone; one Go-based checker     |
-| 6   | Package mgr | pnpm 12.14.0 via `packageManager`, `workspace:*`, `allowBuilds`, Docker `pnpm install --prod`                   | Requested; `install --prod` keeps the layout so `../../frontend/dist` still resolves                    |
-| 7   | Style       | Oxfmt and Oxlint defaults; only deviation: Oxlint `react` plugin. Whole repo formatted in one commit             | Defaults by choice; `react` plugin is off by default and carries rules-of-hooks / exhaustive-deps      |
-| 8   | Validation  | Baseline, per-step gates, final gates (see below)                                                                 | Catch silently dropped tests and Docker/runtime regressions                                             |
+| #   | Topic       | Decision                                                                                                      | Why                                                                                                                                                                                        |
+| --- | ----------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | Scope       | Vite+ all-in, in two phases (upstream upgrades first, then `vp migrate`)                                      | One CLI/config for a small monorepo; isolates upgrade breakage from tooling breakage                                                                                                       |
+| 2   | Runtime     | Node 26: `.node-version`, `engines: ">=26"`, `node:26-slim` in both Docker stages                             | Vite+ needs `^22.18 \|\| ^24.11 \|\| >=26`; 26 becomes LTS in Oct 2026                                                                                                                     |
+| 2b  | Native deps | `better-sqlite3` 11 → 13, `bcrypt` 5 → 6                                                                      | 11.x has no Node 26 prebuild _and_ no longer compiles (removed V8 APIs); 13.x uses Node-API. `bcrypt` 5 uses per-ABI `node-pre-gyp` prebuilds — no Node 26 build; 6.0 is the N-API version |
+| 3   | Hooks       | None. Delete `.husky/`, `.lintstagedrc`; `git config --unset core.hooksPath`                                  | Keep it simple; a `prepare` script breaks `install --prod` in Docker (same reason Husky was removed)                                                                                       |
+| 4   | Builds      | Keep `tsc` for shared and backend, `tsx watch` for backend dev                                                | Already works; tsdown adds bundling risk (native deps, runtime paths) for no gain                                                                                                          |
+| 5   | Types       | TypeScript 7 everywhere. `vp check` (typeAware + typeCheck) for dev, `tsc` stays in builds as the Docker gate | TS 7 stable since 2026-07; nothing left needs the TS API once ESLint is gone; one Go-based checker                                                                                         |
+| 6   | Package mgr | pnpm 12.14.0 via `packageManager`, `workspace:*`, `allowBuilds`, Docker `pnpm install --prod`                 | Requested; `install --prod` keeps the layout so `../../frontend/dist` still resolves                                                                                                       |
+| 7   | Style       | Oxfmt and Oxlint defaults; only deviation: Oxlint `react` plugin. Whole repo formatted in one commit          | Defaults by choice; `react` plugin is off by default and carries rules-of-hooks / exhaustive-deps                                                                                          |
+| 8   | Validation  | Baseline, per-step gates, final gates (see below)                                                             | Catch silently dropped tests and Docker/runtime regressions                                                                                                                                |
 
 ### Deferred
 
@@ -103,28 +103,28 @@ Recorded 2026-10-16 in the `chore/void0-migration` worktree (Node 24.8.0, npm wo
 Executed order swaps native deps before the Node switch: better-sqlite3 11 / bcrypt 5 cannot be
 built against Node 26 at all, so the Node 26 commit would have no working backend otherwise.
 
-| Step | Commit                                                                                     |
-| ---- | ------------------------------------------------------------------------------------------ |
-| 1a   | `build:` native deps: better-sqlite3 11 → 13, bcrypt 5 → 6                                  |
-| 1b   | `build:` Node 26 (`.node-version`, `engines`, Volta pin, Docker base image)                 |
+| Step | Commit                                                                                             |
+| ---- | -------------------------------------------------------------------------------------------------- |
+| 1a   | `build:` native deps: better-sqlite3 11 → 13, bcrypt 5 → 6                                         |
+| 1b   | `build:` Node 26 (`.node-version`, `engines`, Volta pin, Docker base image)                        |
 | 1c   | `build:` npm → pnpm (`pnpm import`, workspace yaml, `allowBuilds`, `workspace:*`, Docker, scripts) |
-| 1d   | `build:` TypeScript 5.9 → 7 (+ backend `types: ["node"]`; frontend `vite/client` if needed) |
-| 1e   | `build:` Vite 7 → 8 (+ plugin-react compatible with Vite 8)                               |
-| 1f   | `build:` Vitest 3 → 4                                                                      |
+| 1d   | `build:` TypeScript 5.9 → 7 (+ backend `types: ["node"]`; frontend `vite/client` if needed)        |
+| 1e   | `build:` Vite 7 → 8 (+ plugin-react compatible with Vite 8)                                        |
+| 1f   | `build:` Vitest 3 → 4                                                                              |
 
 Gate after each step: `pnpm install --frozen-lockfile` clean (no `ERR_PNPM_IGNORED_BUILDS`), test count equals
 baseline, shared/backend/frontend builds pass.
 
 ### Phase 2: Vite+
 
-| Step | Commit                                                                                                  |
-| ---- | ------------------------------------------------------------------------------------------------------- |
-| 2a   | `chore:` `pnpm dlx --package=vite-plus@<latest> vp migrate --no-interactive`, then review the diff      |
-| 2b   | `chore:` remove ESLint / Prettier / concurrently configs and deps, Husky leftovers, `.lintstagedrc`     |
-| 2c   | `style:` `vp fmt` across the whole repo; add the SHA to `.git-blame-ignore-revs`                        |
-| 2d   | `fix:` new type-aware lint findings (≤ ~20 fixed; otherwise set to warn and list as follow-up)          |
-| 2e   | `chore:` remove generated "Vitest v4 compatibility" settings one at a time where tests still pass      |
-| 2f   | `docs:` update `AGENTS.md` (pnpm, `vp check`, `vp test`, `vp run`)                                      |
+| Step | Commit                                                                                              |
+| ---- | --------------------------------------------------------------------------------------------------- |
+| 2a   | `chore:` `pnpm dlx --package=vite-plus@<latest> vp migrate --no-interactive`, then review the diff  |
+| 2b   | `chore:` remove ESLint / Prettier / concurrently configs and deps, Husky leftovers, `.lintstagedrc` |
+| 2c   | `style:` `vp fmt` across the whole repo; add the SHA to `.git-blame-ignore-revs`                    |
+| 2d   | `fix:` new type-aware lint findings (≤ ~20 fixed; otherwise set to warn and list as follow-up)      |
+| 2e   | `chore:` remove generated "Vitest v4 compatibility" settings one at a time where tests still pass   |
+| 2f   | `docs:` update `AGENTS.md` (pnpm, `vp check`, `vp test`, `vp run`)                                  |
 
 Review points for 2a: root `vite.config.ts` lint/fmt blocks, `test` blocks merged into each package's
 `vite.config.ts`, `vitest` → `vite-plus/test` imports, `vite` override to `@voidzero-dev/vite-plus-core`,

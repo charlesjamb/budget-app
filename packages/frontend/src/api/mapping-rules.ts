@@ -12,9 +12,7 @@ export function getMappingRules(): Promise<MappingRulesResponse> {
   return apiRequest("/api/mapping-rules");
 }
 
-export function createMappingRule(
-  data: CreateMappingRuleRequest,
-): Promise<{ rule: MappingRule }> {
+export function createMappingRule(data: CreateMappingRuleRequest): Promise<{ rule: MappingRule }> {
   return apiRequest("/api/mapping-rules", {
     method: "POST",
     body: JSON.stringify(data),
@@ -35,9 +33,7 @@ export function deleteMappingRule(id: number): Promise<void> {
   return apiRequest(`/api/mapping-rules/${id}`, { method: "DELETE" });
 }
 
-export function classifySubCategory(
-  data: ClassifyRequest,
-): Promise<ClassifyResponse> {
+export function classifySubCategory(data: ClassifyRequest): Promise<ClassifyResponse> {
   return apiRequest("/api/mapping-rules/classify", {
     method: "POST",
     body: JSON.stringify(data),
