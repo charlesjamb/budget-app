@@ -11,4 +11,7 @@ export default defineConfig({
     options: { typeAware: true, typeCheck: true },
     ignorePatterns: ["**/routeTree.gen.ts", "**/dist/**"],
   },
+  test: {
+    projects: ["packages/backend", "packages/frontend"],
+  },
 });
