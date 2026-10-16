@@ -117,6 +117,12 @@ baseline, shared/backend/frontend builds pass.
 
 ### Phase 2: Vite+
 
+Executed order swaps 2b before 2a: `vp migrate` migrates the ESLint config through
+`@oxlint/migrate` → `typescript-estree`, which cannot load against the native TS 7 compiler.
+Removing the ESLint/Prettier toolchain first also matches decision #7 (Oxlint/Oxfmt defaults),
+so nothing is lost. Note: `--hooks` is the **default** in non-interactive mode — decision #3
+(no hooks) requires passing `--no-hooks` explicitly.
+
 | Step | Commit                                                                                              |
 | ---- | --------------------------------------------------------------------------------------------------- |
 | 2a   | `chore:` `pnpm dlx --package=vite-plus@<latest> vp migrate --no-interactive`, then review the diff  |
@@ -126,9 +132,11 @@ baseline, shared/backend/frontend builds pass.
 | 2e   | `chore:` remove generated "Vitest v4 compatibility" settings one at a time where tests still pass   |
 | 2f   | `docs:` update `AGENTS.md` (pnpm, `vp check`, `vp test`, `vp run`)                                  |
 
-Review points for 2a: root `vite.config.ts` lint/fmt blocks, `test` blocks merged into each package's
-`vite.config.ts`, `vitest` → `vite-plus/test` imports, `vite` override to `@voidzero-dev/vite-plus-core`,
-scripts rewritten to `vp`.
+Review points for 2a: root `vite.config.ts` lint/fmt blocks, `vitest` → `vite-plus/test` imports,
+`vite` override to `@voidzero-dev/vite-plus-core`, scripts rewritten to `vp`. Executed reality:
+`vp migrate` keeps each package's `vitest.config.ts` (now importing from `vite-plus`) instead of
+merging them into `vite.config.ts`, adds a `prefer-vite-plus-imports` oxlint rule, and writes
+`packages/*/.gitignore` for the `.vitest/` cache.
 
 ### Final gates
 
@@ -140,13 +148,33 @@ scripts rewritten to `vp`.
 - Docker: `docker build` + `docker run`; `GET /` serves `index.html`, `POST /api/auth/login` works
   (check `docker info` first; otherwise this becomes a manual step on the deploy machine)
 
+### Final gate results (2026-10-16)
+
+All gates pass:
+
+- `vp check`: format clean; 0 errors, 0 warnings, type-check clean (96 files)
+- `vp test` (root): 21 files / 148 tests — exactly the baseline, no skips. Required two additions:
+  root `vite.config.ts` gained `test.projects` (a flat root run previously ignored per-package
+  configs: no jsdom for the frontend, no `**/dist/**` exclude for compiled backend tests), and the
+  backend/frontend `**/dist/**` test exclude (vitest 4+ no longer excludes `dist/` and the backend
+  build emits compiled `*.test.js` into `dist/`)
+- `vp build` (frontend): 410.71 kB (gzip 125.85 kB) vs 421.37 kB (gzip 128.51 kB) baseline
+- `tsc` emits: `packages/shared/dist` and `packages/backend/dist` present
+- Dev smoke: `:5173` serves, `/api` proxy, login, Dashboard/Budget/Transactions all render. The
+  dev proxy target was pinned to `http://127.0.0.1:3000` — `localhost` resolves to `::1` first,
+  where an unrelated dev server was already listening on port 3000
+- Docker: `node:26-slim` image builds (native deps via N-API prebuilds, no compiler in the image);
+  `GET /` → 200 `text/html`, `POST /api/auth/login` → 401 JSON (bcrypt + SQLite round trip)
+
 ## Expected file changes
 
-- Added: `pnpm-workspace.yaml`, `pnpm-lock.yaml`, `.node-version`, root `vite.config.ts`, `.git-blame-ignore-revs`
-- Removed: `package-lock.json`, `eslint.config.js`, `.prettierrc`, `.lintstagedrc`, `.husky/`,
-  `packages/*/vitest.config.ts`
-- Modified: all `package.json` files, `packages/backend/tsconfig.json`, `packages/frontend/vite.config.ts`,
-  `Dockerfile`, `AGENTS.md`, test imports, repo-wide formatting
+- Added: `pnpm-workspace.yaml`, `pnpm-lock.yaml`, `.node-version`, root `vite.config.ts`,
+  `.git-blame-ignore-revs`, `packages/*/.gitignore`
+- Removed: `package-lock.json`, `eslint.config.js`, `.prettierrc`, `.lintstagedrc`, `.husky/`
+- Modified: all `package.json` files, `packages/backend/tsconfig.json`,
+  `packages/frontend/vite.config.ts`, `packages/*/vitest.config.ts` (kept, now `vite-plus`
+  configs — the plan originally expected them removed), `Dockerfile`, `AGENTS.md`, test imports,
+  repo-wide formatting
 
 ## References
 
