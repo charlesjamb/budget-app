@@ -9,30 +9,65 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
-import { Route as AuthenticatedTransactionsRouteImport } from './routes/_authenticated/transactions'
-import { Route as AuthenticatedSplitRouteImport } from './routes/_authenticated/split'
-import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
-import { Route as AuthenticatedImportRouteImport } from './routes/_authenticated/import'
-import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticated/history'
-import { Route as AuthenticatedClassifyRouteImport } from './routes/_authenticated/classify'
-import { Route as AuthenticatedCategoriesRouteImport } from './routes/_authenticated/categories'
 import { Route as AuthenticatedBudgetRouteImport } from './routes/_authenticated/budget'
+import { Route as AuthenticatedCategoriesRouteImport } from './routes/_authenticated/categories'
+import { Route as AuthenticatedClassifyRouteImport } from './routes/_authenticated/classify'
+import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticated/history'
+import { Route as AuthenticatedImportRouteImport } from './routes/_authenticated/import'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedSplitRouteImport } from './routes/_authenticated/split'
+import { Route as AuthenticatedTransactionsRouteImport } from './routes/_authenticated/transactions'
 
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedRoute = AuthenticatedRouteImport.update({
-  id: '/_authenticated',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedBudgetRoute = AuthenticatedBudgetRouteImport.update({
+  id: '/budget',
+  path: '/budget',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedCategoriesRoute = AuthenticatedCategoriesRouteImport.update({
+  id: '/categories',
+  path: '/categories',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedClassifyRoute = AuthenticatedClassifyRouteImport.update({
+  id: '/classify',
+  path: '/classify',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedHistoryRoute = AuthenticatedHistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedImportRoute = AuthenticatedImportRouteImport.update({
+  id: '/import',
+  path: '/import',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedSplitRoute = AuthenticatedSplitRouteImport.update({
+  id: '/split',
+  path: '/split',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedTransactionsRoute =
@@ -41,41 +76,6 @@ const AuthenticatedTransactionsRoute =
     path: '/transactions',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedSplitRoute = AuthenticatedSplitRouteImport.update({
-  id: '/split',
-  path: '/split',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedImportRoute = AuthenticatedImportRouteImport.update({
-  id: '/import',
-  path: '/import',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedHistoryRoute = AuthenticatedHistoryRouteImport.update({
-  id: '/history',
-  path: '/history',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedClassifyRoute = AuthenticatedClassifyRouteImport.update({
-  id: '/classify',
-  path: '/classify',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedCategoriesRoute = AuthenticatedCategoriesRouteImport.update({
-  id: '/categories',
-  path: '/categories',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedBudgetRoute = AuthenticatedBudgetRouteImport.update({
-  id: '/budget',
-  path: '/budget',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
@@ -162,18 +162,18 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/': {
@@ -183,46 +183,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/transactions': {
-      id: '/_authenticated/transactions'
-      path: '/transactions'
-      fullPath: '/transactions'
-      preLoaderRoute: typeof AuthenticatedTransactionsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/split': {
-      id: '/_authenticated/split'
-      path: '/split'
-      fullPath: '/split'
-      preLoaderRoute: typeof AuthenticatedSplitRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/settings': {
-      id: '/_authenticated/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/import': {
-      id: '/_authenticated/import'
-      path: '/import'
-      fullPath: '/import'
-      preLoaderRoute: typeof AuthenticatedImportRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/history': {
-      id: '/_authenticated/history'
-      path: '/history'
-      fullPath: '/history'
-      preLoaderRoute: typeof AuthenticatedHistoryRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/classify': {
-      id: '/_authenticated/classify'
-      path: '/classify'
-      fullPath: '/classify'
-      preLoaderRoute: typeof AuthenticatedClassifyRouteImport
+    '/_authenticated/budget': {
+      id: '/_authenticated/budget'
+      path: '/budget'
+      fullPath: '/budget'
+      preLoaderRoute: typeof AuthenticatedBudgetRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/categories': {
@@ -232,11 +197,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCategoriesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/budget': {
-      id: '/_authenticated/budget'
-      path: '/budget'
-      fullPath: '/budget'
-      preLoaderRoute: typeof AuthenticatedBudgetRouteImport
+    '/_authenticated/classify': {
+      id: '/_authenticated/classify'
+      path: '/classify'
+      fullPath: '/classify'
+      preLoaderRoute: typeof AuthenticatedClassifyRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/history': {
+      id: '/_authenticated/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof AuthenticatedHistoryRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/import': {
+      id: '/_authenticated/import'
+      path: '/import'
+      fullPath: '/import'
+      preLoaderRoute: typeof AuthenticatedImportRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/split': {
+      id: '/_authenticated/split'
+      path: '/split'
+      fullPath: '/split'
+      preLoaderRoute: typeof AuthenticatedSplitRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/transactions': {
+      id: '/_authenticated/transactions'
+      path: '/transactions'
+      fullPath: '/transactions'
+      preLoaderRoute: typeof AuthenticatedTransactionsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
   }
