@@ -19,7 +19,7 @@ export function useCreateMerchantAlias() {
   return useMutation({
     mutationFn: createMerchantAlias,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["merchant-aliases"] });
+      void queryClient.invalidateQueries({ queryKey: ["merchant-aliases"] });
     },
   });
 }
@@ -31,7 +31,7 @@ export function useUpdateMerchantAlias() {
     mutationFn: ({ id, displayName }: { id: number; displayName: string }) =>
       updateMerchantAlias(id, { displayName }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["merchant-aliases"] });
+      void queryClient.invalidateQueries({ queryKey: ["merchant-aliases"] });
     },
   });
 }
@@ -42,7 +42,7 @@ export function useDeleteMerchantAlias() {
   return useMutation({
     mutationFn: deleteMerchantAlias,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["merchant-aliases"] });
+      void queryClient.invalidateQueries({ queryKey: ["merchant-aliases"] });
     },
   });
 }

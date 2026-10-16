@@ -44,7 +44,7 @@ export function useExcludeTransaction() {
     mutationFn: ({ id, body }: { id: number; body: ExcludeTransactionRequest }) =>
       excludeTransaction(id, body),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      void queryClient.invalidateQueries({ queryKey: ["transactions"] });
     },
   });
 }
@@ -55,7 +55,7 @@ export function useSetReimbursement() {
     mutationFn: ({ id, body }: { id: number; body: ReimbursementRequest }) =>
       setReimbursement(id, body),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      void queryClient.invalidateQueries({ queryKey: ["transactions"] });
     },
   });
 }
@@ -65,7 +65,7 @@ export function useClearReimbursement() {
   return useMutation({
     mutationFn: (id: number) => clearReimbursement(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      void queryClient.invalidateQueries({ queryKey: ["transactions"] });
     },
   });
 }

@@ -9,13 +9,13 @@ export class ApiError extends Error {
 }
 
 export async function apiRequest<T>(url: string, options: RequestInit = {}): Promise<T> {
+  const headers = new Headers(options.headers);
+  headers.set("Content-Type", "application/json");
+
   const res = await fetch(url, {
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
     ...options,
+    credentials: "include",
+    headers,
   });
 
   if (!res.ok) {

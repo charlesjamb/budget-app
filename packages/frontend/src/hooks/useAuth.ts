@@ -40,7 +40,7 @@ export function useLogout() {
     mutationFn: logout,
     onSuccess: () => {
       queryClient.clear();
-      router.navigate({ to: "/login" });
+      void router.navigate({ to: "/login" });
     },
   });
 }

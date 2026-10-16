@@ -20,7 +20,7 @@ export function useCreateCategory() {
   return useMutation({
     mutationFn: (data: CreateCategoryRequest) => createCategory(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      void queryClient.invalidateQueries({ queryKey: ["categories"] });
     },
   });
 }
@@ -32,7 +32,7 @@ export function useUpdateCategory() {
     mutationFn: ({ id, ...data }: { id: number } & UpdateCategoryRequest) =>
       updateCategory(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      void queryClient.invalidateQueries({ queryKey: ["categories"] });
     },
   });
 }
@@ -43,7 +43,7 @@ export function useDeleteCategory() {
   return useMutation({
     mutationFn: deleteCategory,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      void queryClient.invalidateQueries({ queryKey: ["categories"] });
     },
   });
 }

@@ -7,7 +7,7 @@ export function useImport() {
   return useMutation({
     mutationFn: importCsv,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      void queryClient.invalidateQueries({ queryKey: ["transactions"] });
     },
   });
 }

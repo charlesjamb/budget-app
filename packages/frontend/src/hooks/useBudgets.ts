@@ -15,8 +15,8 @@ export function useUpsertBudgets() {
   return useMutation({
     mutationFn: (data: UpsertBudgetsRequest) => upsertBudgets(data),
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["budgets", variables.month] });
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({ queryKey: ["budgets", variables.month] });
+      void queryClient.invalidateQueries({
         queryKey: ["transactions", "summary", variables.month],
       });
     },
@@ -29,10 +29,10 @@ export function useCopyBudget() {
   return useMutation({
     mutationFn: (data: CopyBudgetRequest) => copyBudgetFromMonth(data),
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: ["budgets", variables.targetMonth],
       });
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: ["transactions", "summary", variables.targetMonth],
       });
     },

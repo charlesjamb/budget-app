@@ -108,6 +108,9 @@ describe("ThemeModeContext", () => {
 
     await user.click(screen.getByRole("button", { name: "Dark" }));
 
+    // localStorage.setItem is a vi.fn() mock in this test, so the unbound
+    // method reference is safe.
+    // oxlint-disable-next-line typescript/unbound-method
     expect(localStorage.setItem).toHaveBeenCalledWith("theme-mode", "dark");
     expect(screen.getByTestId("mode")).toHaveTextContent("dark");
   });

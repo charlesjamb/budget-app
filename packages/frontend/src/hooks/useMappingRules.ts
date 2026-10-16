@@ -21,7 +21,7 @@ export function useCreateMappingRule() {
   return useMutation({
     mutationFn: createMappingRule,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["mapping-rules"] });
+      void queryClient.invalidateQueries({ queryKey: ["mapping-rules"] });
     },
   });
 }
@@ -33,7 +33,7 @@ export function useUpdateMappingRule() {
     mutationFn: ({ id, budgetCategoryId }: { id: number; budgetCategoryId: number }) =>
       updateMappingRule(id, { budgetCategoryId }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["mapping-rules"] });
+      void queryClient.invalidateQueries({ queryKey: ["mapping-rules"] });
     },
   });
 }
@@ -44,8 +44,8 @@ export function useDeleteMappingRule() {
   return useMutation({
     mutationFn: deleteMappingRule,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["mapping-rules"] });
-      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      void queryClient.invalidateQueries({ queryKey: ["mapping-rules"] });
+      void queryClient.invalidateQueries({ queryKey: ["transactions"] });
     },
   });
 }
@@ -56,8 +56,8 @@ export function useClassify() {
   return useMutation({
     mutationFn: (data: ClassifyRequest) => classifySubCategory(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["mapping-rules"] });
-      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      void queryClient.invalidateQueries({ queryKey: ["mapping-rules"] });
+      void queryClient.invalidateQueries({ queryKey: ["transactions"] });
     },
   });
 }

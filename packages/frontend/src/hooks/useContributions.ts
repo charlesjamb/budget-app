@@ -15,7 +15,7 @@ export function useUpsertContributions() {
   return useMutation({
     mutationFn: (data: UpsertContributionsRequest) => upsertContributions(data),
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: ["contributions", variables.month],
       });
     },
