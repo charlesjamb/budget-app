@@ -5,6 +5,7 @@
 - A VPS with Docker and Docker Compose installed
 - SSL certificates (Let's Encrypt) for your domain
 - SSH access to the VPS
+- Nothing else: Node 26 and pnpm run inside the Docker image, so the VPS does not need Node or pnpm installed
 
 ## Step 1 — SSH into your VPS
 
@@ -15,7 +16,7 @@ ssh ubuntu@YOUR_VPS_IP -p YOUR_SSH_PORT
 ## Step 2 — Stop the old app
 
 ```bash
-cd /path/to/baby-vote
+cd ~/budget-app
 docker compose down
 ```
 
@@ -72,7 +73,8 @@ cd ~/budget-app
 docker compose up -d --build
 ```
 
-First build takes a few minutes (downloading images, installing deps, compiling).
+First build takes a few minutes (downloading images, installing deps). The native modules
+(bcrypt, better-sqlite3) ship prebuilt for Node-API, so nothing compiles on the VPS.
 
 ## Step 6 — Create user accounts
 

@@ -99,9 +99,14 @@ A couple defines a monthly budget by category in a spreadsheet. Their bank trans
 
 ## Tech Stack
 
+### Toolchain
+
+- **Vite+** (`vp`) drives dev, build, test (Vitest 5), lint (Oxlint), and format (Oxfmt)
+- **pnpm** workspaces, **Node 26**
+
 ### Frontend
 
-- **Vite** + React + TypeScript
+- **Vite+ (Vite 8 / Rolldown)** + React 19 + TypeScript 7
 - **TanStack Router** (type-safe routing)
 - **TanStack Query** (data fetching / cache)
 - **styled-components** (styling)
@@ -141,16 +146,17 @@ budget-app/
 
 ### Testing
 
+Tests run via **Vitest 5 through Vite+** (`vp test` / `pnpm test`); test APIs import from `vite-plus/test`.
+
 **Backend**
 
-- **Vitest** for unit and integration tests
 - **Supertest** for HTTP endpoint testing
 - SQLite **in-memory database** for test isolation
 - Cover: CSV parsing, mapping rules, deduplication, API endpoints
 
 **Frontend**
 
-- **Vitest** + **React Testing Library** for component and hook tests
+- **React Testing Library** for component and hook tests
 - **MSW** (Mock Service Worker) to mock API calls
 - Cover: import flow, category mapping UI, monthly view logic
 
@@ -160,22 +166,9 @@ budget-app/
 
 ### Code Quality
 
-**ESLint**
-
-- Flat config format (eslint.config.js)
-- **typescript-eslint** for TS rules
-- **eslint-plugin-react-hooks** for hook rules
-- Shared base config at root, per-package overrides if needed
-
-**Prettier**
-
-- Single `.prettierrc` at root
-- Separate from ESLint (Prettier formats, ESLint lints)
-
-**Pre-commit**
-
-- **Husky** + **lint-staged**
-- On staged files: run Prettier, ESLint, and affected tests
+- **Oxlint** via `vp check` — type-aware lint and type-checking in one command
+- **Oxfmt** via `vp fmt` — formatting with the default style
+- No pre-commit hooks — see `docs/void0-migration.md` (decision #3)
 
 ---
 
