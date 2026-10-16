@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
@@ -50,6 +50,16 @@ function setupSplitData(overrides?: {
 }
 
 describe("Split Page", () => {
+  beforeEach(() => {
+    // The page derives the month from the current date; pin it to match the
+    // February 2026 fixtures below so the test does not depend on "today".
+    vi.setSystemTime(new Date(2026, 1, 15, 12, 0, 0));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("should display page title and revenue inputs", async () => {
     setupAuthenticatedUser();
     setupSplitData();
