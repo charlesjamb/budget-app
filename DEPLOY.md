@@ -60,7 +60,14 @@ ls /etc/letsencrypt/live/your-domain.example/
 
 You should see `fullchain.pem` and `privkey.pem`.
 
-If the path is different, find them and update `docker-compose.yml` accordingly:
+**Important:** `nginx.conf` in this repo ships with the placeholder `your-domain.example`
+(4 occurrences: server_name, both certificate paths, and the HTTP redirect). Replace it
+with your real domain **before starting nginx**, or the container fails with
+`cannot load certificate ... fullchain.pem (No such file or directory)`. Prefer committing
+your real domain to `nginx.conf` in the repo over editing the file on the VPS — a local
+VPS edit gets overwritten by the next `git pull`.
+
+If the cert path is different, find them and update `docker-compose.yml` accordingly:
 
 ```bash
 find /etc -name "fullchain.pem" 2>/dev/null
