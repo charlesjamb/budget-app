@@ -1,7 +1,7 @@
 node_modules
 dist
 .git
-.claude
+.opencode
 *.db
 *.sqlite
 coverage
@@ -9,5 +9,5 @@ coverage
 .env
 PLAN.md
 SPEC.md
-CLAUDE.md
+AGENTS.md
 sample-expenses-extract.csv
