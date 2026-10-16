@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import { render, screen } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { server } from "../../mocks/server.js";
@@ -34,9 +34,7 @@ describe("Dashboard Page", () => {
 
     render(<TestWrapper initialPath="/" />);
 
-    expect(
-      await screen.findByText("No transactions for this month."),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("No transactions for this month.")).toBeInTheDocument();
   });
 
   it("should display monthly summary with categories", async () => {
@@ -186,8 +184,6 @@ describe("Dashboard Page", () => {
     render(<TestWrapper initialPath="/" />);
 
     expect(await screen.findByText("Unbudgeted spending")).toBeInTheDocument();
-    expect(screen.getAllByText("37.50 \u20AC").length).toBeGreaterThanOrEqual(
-      1,
-    );
+    expect(screen.getAllByText("37.50 \u20AC").length).toBeGreaterThanOrEqual(1);
   });
 });

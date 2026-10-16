@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
+import { afterEach, beforeEach, describe, it, expect, vi } from "vite-plus/test";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
@@ -127,9 +127,7 @@ describe("Split Page", () => {
     render(<TestWrapper initialPath="/split" />);
 
     expect(
-      await screen.findByText(
-        "No household members found. Add members in Settings.",
-      ),
+      await screen.findByText("No household members found. Add members in Settings."),
     ).toBeInTheDocument();
   });
 
@@ -137,7 +135,10 @@ describe("Split Page", () => {
     setupAuthenticatedUser();
     setupSplitData();
 
-    let putPayload: { month: string; contributions: { userId: number; revenueCents: number }[] } | null = null;
+    let putPayload: {
+      month: string;
+      contributions: { userId: number; revenueCents: number }[];
+    } | null = null;
     server.use(
       http.put("/api/contributions", async ({ request }) => {
         putPayload = (await request.json()) as typeof putPayload;

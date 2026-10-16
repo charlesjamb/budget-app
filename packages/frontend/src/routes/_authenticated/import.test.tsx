@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
@@ -23,9 +23,7 @@ describe("Import Page", () => {
     render(<TestWrapper initialPath="/import" />);
 
     expect(await screen.findByText(/Import CSV/)).toBeInTheDocument();
-    expect(
-      screen.getByText("Click to upload your bank CSV file"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Click to upload your bank CSV file")).toBeInTheDocument();
   });
 
   it("should show import results after successful upload", async () => {
@@ -48,9 +46,7 @@ describe("Import Page", () => {
     const file = new File(["csv content"], "expenses.csv", {
       type: "text/csv",
     });
-    const input = document.querySelector(
-      'input[type="file"]',
-    ) as HTMLInputElement;
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, file);
 
     expect(await screen.findByText("Import Complete")).toBeInTheDocument();

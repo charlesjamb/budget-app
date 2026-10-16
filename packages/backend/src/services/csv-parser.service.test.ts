@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import { parseCsv } from "./csv-parser.service.js";
 
 const SAMPLE_CSV = `Date de comptabilisation;Libelle simplifie;Libelle operation;Reference;Informations complementaires;Type operation;Categorie;Sous categorie;Debit;Credit;Date operation;Date de valeur;Pointage operation
@@ -46,9 +46,7 @@ describe("CSV Parser", () => {
 
   it("should skip Transaction exclue rows", () => {
     const rows = parseCsv(SAMPLE_CSV);
-    const excludedRow = rows.find((r) =>
-      r.labelSimplified.includes("REMBOURSEMENT"),
-    );
+    const excludedRow = rows.find((r) => r.labelSimplified.includes("REMBOURSEMENT"));
     expect(excludedRow).toBeUndefined();
   });
 

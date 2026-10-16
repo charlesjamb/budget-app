@@ -1,11 +1,7 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach } from "vite-plus/test";
 import request from "supertest";
 import { createApp } from "../app.js";
-import {
-  setupTestContext,
-  createCategory,
-  type TestContext,
-} from "../test/helpers.js";
+import { setupTestContext, createCategory, type TestContext } from "../test/helpers.js";
 
 describe("Budget Routes", () => {
   let ctx: TestContext;
@@ -28,9 +24,7 @@ describe("Budget Routes", () => {
     });
 
     it("should require month parameter", async () => {
-      const res = await request(app)
-        .get("/api/budgets")
-        .set("Cookie", ctx.sessionCookie);
+      const res = await request(app).get("/api/budgets").set("Cookie", ctx.sessionCookie);
 
       expect(res.status).toBe(400);
     });

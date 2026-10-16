@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach } from "vite-plus/test";
 import request from "supertest";
 import { createApp } from "../app.js";
 import {
@@ -212,9 +212,7 @@ describe("Transaction Routes", () => {
         .set("Cookie", ctx.sessionCookie);
 
       expect(res.status).toBe(200);
-      const found = res.body.transactions.find(
-        (t: { id: number }) => t.id === tx.id,
-      );
+      const found = res.body.transactions.find((t: { id: number }) => t.id === tx.id);
       expect(found).toBeDefined();
       expect(found.excluded).toBe(true);
       expect(found.excludedReason).toBe("Reimbursed");
@@ -256,9 +254,7 @@ describe("Transaction Routes", () => {
       expect(res.body.totalAmount).toBe(4800);
       expect(res.body.categories).toHaveLength(2);
 
-      const foodCat = res.body.categories.find(
-        (c: { name: string }) => c.name === "Food",
-      );
+      const foodCat = res.body.categories.find((c: { name: string }) => c.name === "Food");
       expect(foodCat.totalAmount).toBe(3500);
       expect(foodCat.transactionCount).toBe(2);
 
@@ -286,9 +282,7 @@ describe("Transaction Routes", () => {
 
       expect(res.status).toBe(200);
       expect(res.body.totalAmount).toBe(1500);
-      const foodCat = res.body.categories.find(
-        (c: { name: string }) => c.name === "Food",
-      );
+      const foodCat = res.body.categories.find((c: { name: string }) => c.name === "Food");
       expect(foodCat.totalAmount).toBe(1500);
       expect(foodCat.transactionCount).toBe(1);
     });
@@ -315,9 +309,7 @@ describe("Transaction Routes", () => {
       expect(res.status).toBe(200);
       // Food: 5000 - 2000 = 3000, Uncategorized: 1000 - 300 = 700
       expect(res.body.totalAmount).toBe(3700);
-      const foodCat = res.body.categories.find(
-        (c: { name: string }) => c.name === "Food",
-      );
+      const foodCat = res.body.categories.find((c: { name: string }) => c.name === "Food");
       expect(foodCat.totalAmount).toBe(3000);
       expect(res.body.uncategorized.totalAmount).toBe(700);
     });

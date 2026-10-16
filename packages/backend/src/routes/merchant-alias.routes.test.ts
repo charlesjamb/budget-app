@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach } from "vite-plus/test";
 import request from "supertest";
 import { createApp } from "../app.js";
 import { setupTestContext, type TestContext } from "../test/helpers.js";
@@ -66,13 +66,10 @@ describe("Merchant Alias Routes", () => {
   });
 
   it("should reject duplicate original label", async () => {
-    await request(app)
-      .post("/api/merchant-aliases")
-      .set("Cookie", ctx.sessionCookie)
-      .send({
-        originalLabel: "SARL CHEVALLIER",
-        displayName: "Boulangerie Chevallier",
-      });
+    await request(app).post("/api/merchant-aliases").set("Cookie", ctx.sessionCookie).send({
+      originalLabel: "SARL CHEVALLIER",
+      displayName: "Boulangerie Chevallier",
+    });
 
     const res = await request(app)
       .post("/api/merchant-aliases")

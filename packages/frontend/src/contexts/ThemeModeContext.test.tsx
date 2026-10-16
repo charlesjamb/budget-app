@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vite-plus/test";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ThemeModeProvider, useThemeMode } from "./ThemeModeContext.js";
@@ -115,9 +115,9 @@ describe("ThemeModeContext", () => {
   it("throws when useThemeMode is used outside provider", () => {
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    expect(() =>
-      render(<TestConsumer />),
-    ).toThrow("useThemeMode must be used within ThemeModeProvider");
+    expect(() => render(<TestConsumer />)).toThrow(
+      "useThemeMode must be used within ThemeModeProvider",
+    );
 
     consoleSpy.mockRestore();
   });

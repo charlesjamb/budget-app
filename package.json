@@ -2,10 +2,6 @@
   "name": "budget-app",
   "private": true,
   "type": "module",
-  "engines": {
-    "node": ">=26"
-  },
-  "packageManager": "pnpm@12.14.0",
   "scripts": {
     "test": "pnpm run test:backend && pnpm run test:frontend",
     "test:backend": "pnpm --filter @budget-app/backend test",
@@ -17,10 +13,15 @@
     "seed": "pnpm --filter @budget-app/backend seed"
   },
   "devDependencies": {
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "vite-plus": "catalog:"
+  },
+  "engines": {
+    "node": ">=26"
   },
   "volta": {
     "node": "26.12.0",
     "pnpm": "12.14.0"
-  }
+  },
+  "packageManager": "pnpm@12.14.0"
 }

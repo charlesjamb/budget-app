@@ -1,11 +1,7 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach } from "vite-plus/test";
 import request from "supertest";
 import { createApp } from "../app.js";
-import {
-  setupTestContext,
-  createCategory,
-  type TestContext,
-} from "../test/helpers.js";
+import { setupTestContext, createCategory, type TestContext } from "../test/helpers.js";
 import { mappingRules, transactions } from "../db/schema.js";
 
 const SAMPLE_CSV = `Date de comptabilisation;Libelle simplifie;Libelle operation;Reference;Informations complementaires;Type operation;Categorie;Sous categorie;Debit;Credit;Date operation;Date de valeur;Pointage operation
@@ -77,17 +73,13 @@ describe("Import Routes", () => {
     // Verify mapped transaction has budget_category_id
     const txs = ctx.db.select().from(transactions).all();
     const mappedTx = txs.find(
-      (t) =>
-        t.bankSubCategory === "Hyper/supermarche" &&
-        t.labelSimplified === "CARREFOUR MARKET",
+      (t) => t.bankSubCategory === "Hyper/supermarche" && t.labelSimplified === "CARREFOUR MARKET",
     );
     expect(mappedTx?.budgetCategoryId).toBe(cat.id);
   });
 
   it("should reject request without file", async () => {
-    const res = await request(app)
-      .post("/api/import")
-      .set("Cookie", ctx.sessionCookie);
+    const res = await request(app).post("/api/import").set("Cookie", ctx.sessionCookie);
 
     expect(res.status).toBe(400);
   });

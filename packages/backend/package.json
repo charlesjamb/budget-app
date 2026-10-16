@@ -7,8 +7,8 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "test": "vp test run",
+    "test:watch": "vp test",
     "seed": "tsx src/scripts/seed.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate"
@@ -37,7 +37,7 @@
     "drizzle-kit": "^0.30.4",
     "supertest": "^7.0.0",
     "tsx": "^4.19.2",
-    "vitest": "^4.1.11"
+    "vite-plus": "catalog:"
   },
   "volta": {
     "node": "26.12.0",

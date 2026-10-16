@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach } from "vite-plus/test";
 import { createTestDb, type AppDatabase } from "./connection.js";
 import {
   users,
@@ -20,9 +20,7 @@ describe("Database Schema", () => {
   });
 
   it("should create and query users", () => {
-    db.insert(users)
-      .values({ email: "test@example.com", passwordHash: "hash123" })
-      .run();
+    db.insert(users).values({ email: "test@example.com", passwordHash: "hash123" }).run();
 
     const result = db.select().from(users).all();
     expect(result).toHaveLength(1);
@@ -31,22 +29,15 @@ describe("Database Schema", () => {
   });
 
   it("should enforce unique email on users", () => {
-    db.insert(users)
-      .values({ email: "test@example.com", passwordHash: "hash" })
-      .run();
+    db.insert(users).values({ email: "test@example.com", passwordHash: "hash" }).run();
 
     expect(() =>
-      db
-        .insert(users)
-        .values({ email: "test@example.com", passwordHash: "hash2" })
-        .run(),
+      db.insert(users).values({ email: "test@example.com", passwordHash: "hash2" }).run(),
     ).toThrow();
   });
 
   it("should create households and members", () => {
-    db.insert(users)
-      .values({ email: "user@test.com", passwordHash: "hash" })
-      .run();
+    db.insert(users).values({ email: "user@test.com", passwordHash: "hash" }).run();
     db.insert(households).values({ name: "Test Household" }).run();
     db.insert(householdMembers).values({ userId: 1, householdId: 1 }).run();
 
@@ -57,9 +48,7 @@ describe("Database Schema", () => {
   });
 
   it("should create sessions", () => {
-    db.insert(users)
-      .values({ email: "user@test.com", passwordHash: "hash" })
-      .run();
+    db.insert(users).values({ email: "user@test.com", passwordHash: "hash" }).run();
     db.insert(sessions)
       .values({
         id: "session-uuid",
@@ -68,11 +57,7 @@ describe("Database Schema", () => {
       })
       .run();
 
-    const result = db
-      .select()
-      .from(sessions)
-      .where(eq(sessions.id, "session-uuid"))
-      .all();
+    const result = db.select().from(sessions).where(eq(sessions.id, "session-uuid")).all();
     expect(result).toHaveLength(1);
     expect(result[0].userId).toBe(1);
   });
@@ -86,10 +71,7 @@ describe("Database Schema", () => {
     expect(cats[0].name).toBe("Food");
 
     expect(() =>
-      db
-        .insert(budgetCategories)
-        .values({ householdId: 1, name: "Food" })
-        .run(),
+      db.insert(budgetCategories).values({ householdId: 1, name: "Food" }).run(),
     ).toThrow();
   });
 

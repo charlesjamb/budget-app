@@ -1,11 +1,7 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach } from "vite-plus/test";
 import bcrypt from "bcrypt";
 import { createTestDb } from "../db/connection.js";
-import {
-  users,
-  households,
-  householdMembers,
-} from "../db/schema.js";
+import { users, households, householdMembers } from "../db/schema.js";
 import { createContributionService } from "./contribution.service.js";
 
 describe("Contribution Service", () => {
@@ -61,21 +57,15 @@ describe("Contribution Service", () => {
 
       const members = service.getByMonth(householdId, "2026-02");
       expect(members).toHaveLength(2);
-      expect(members.find((m) => m.userId === userId1)?.revenueCents).toBe(
-        420000,
-      );
-      expect(members.find((m) => m.userId === userId2)?.revenueCents).toBe(
-        229000,
-      );
+      expect(members.find((m) => m.userId === userId1)?.revenueCents).toBe(420000);
+      expect(members.find((m) => m.userId === userId2)?.revenueCents).toBe(229000);
     });
 
     it("should return 0 for members without stored revenue", () => {
       service.upsert(householdId, "2026-02", userId1, 420000);
 
       const members = service.getByMonth(householdId, "2026-02");
-      expect(members.find((m) => m.userId === userId1)?.revenueCents).toBe(
-        420000,
-      );
+      expect(members.find((m) => m.userId === userId1)?.revenueCents).toBe(420000);
       expect(members.find((m) => m.userId === userId2)?.revenueCents).toBe(0);
     });
   });
@@ -108,12 +98,8 @@ describe("Contribution Service", () => {
       ]);
 
       const members = service.getByMonth(householdId, "2026-02");
-      expect(members.find((m) => m.userId === userId1)?.revenueCents).toBe(
-        420000,
-      );
-      expect(members.find((m) => m.userId === userId2)?.revenueCents).toBe(
-        229000,
-      );
+      expect(members.find((m) => m.userId === userId1)?.revenueCents).toBe(420000);
+      expect(members.find((m) => m.userId === userId2)?.revenueCents).toBe(229000);
     });
   });
 });

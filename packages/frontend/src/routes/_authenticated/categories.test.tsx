@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
@@ -49,16 +49,11 @@ describe("Categories Page", () => {
     expect(screen.getByText("Transport")).toBeInTheDocument();
 
     const user = userEvent.setup();
-    await user.type(
-      screen.getByPlaceholderText("New category name..."),
-      "Entertainment",
-    );
+    await user.type(screen.getByPlaceholderText("New category name..."), "Entertainment");
     await user.click(screen.getByRole("button", { name: "Add" }));
 
     await waitFor(() => {
-      expect(screen.getByPlaceholderText("New category name...")).toHaveValue(
-        "",
-      );
+      expect(screen.getByPlaceholderText("New category name...")).toHaveValue("");
     });
   });
 

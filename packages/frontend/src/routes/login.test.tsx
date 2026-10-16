@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
@@ -17,10 +17,7 @@ describe("Login Page", () => {
   it("should show error on invalid credentials", async () => {
     server.use(
       http.post("/api/auth/login", () => {
-        return HttpResponse.json(
-          { error: "Invalid credentials" },
-          { status: 401 },
-        );
+        return HttpResponse.json({ error: "Invalid credentials" }, { status: 401 });
       }),
     );
 
@@ -31,9 +28,7 @@ describe("Login Page", () => {
     await user.type(screen.getByLabelText("Password"), "wrong");
     await user.click(screen.getByRole("button", { name: "Log in" }));
 
-    expect(
-      await screen.findByText("Invalid email or password"),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("Invalid email or password")).toBeInTheDocument();
   });
 
   it("should redirect to dashboard on successful login", async () => {
@@ -48,10 +43,7 @@ describe("Login Page", () => {
       }),
       http.get("/api/auth/me", () => {
         if (!loggedIn) {
-          return HttpResponse.json(
-            { error: "Not authenticated" },
-            { status: 401 },
-          );
+          return HttpResponse.json({ error: "Not authenticated" }, { status: 401 });
         }
         return HttpResponse.json({
           user: { id: 1, email: "test@example.com" },

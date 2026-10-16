@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import { render, screen } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { server } from "../../mocks/server.js";
@@ -30,9 +30,7 @@ describe("Classify Page", () => {
     render(<TestWrapper initialPath="/classify" />);
 
     expect(
-      await screen.findByText(
-        "All transactions are classified! Nothing to do here.",
-      ),
+      await screen.findByText("All transactions are classified! Nothing to do here."),
     ).toBeInTheDocument();
   });
 

@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
@@ -85,9 +85,7 @@ describe("Transactions Page", () => {
 
     render(<TestWrapper initialPath="/transactions" />);
 
-    expect(
-      await screen.findByRole("heading", { name: "Transactions" }),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Transactions" })).toBeInTheDocument();
     expect(await screen.findByText("CARREFOUR")).toBeInTheDocument();
     expect(screen.getByText("UBER EATS")).toBeInTheDocument();
     expect(screen.getAllByText("Food")).toHaveLength(2);
@@ -101,9 +99,7 @@ describe("Transactions Page", () => {
 
     render(<TestWrapper initialPath="/transactions" />);
 
-    expect(
-      await screen.findByText("No transactions for this month."),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("No transactions for this month.")).toBeInTheDocument();
   });
 
   it("should show Exclude button for non-excluded transactions", async () => {
@@ -170,9 +166,7 @@ describe("Transactions Page", () => {
     await user.click(excludeButton);
 
     expect(screen.getByText("Exclude transaction")).toBeInTheDocument();
-    expect(
-      screen.getByPlaceholderText("e.g. Reimbursed by bank"),
-    ).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("e.g. Reimbursed by bank")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Cancel" })).toBeInTheDocument();
     const excludeButtons = screen.getAllByRole("button", { name: "Exclude" });
     expect(excludeButtons.length).toBeGreaterThanOrEqual(1);
@@ -225,8 +219,6 @@ describe("Transactions Page", () => {
     await user.click(reimburseButton);
 
     expect(screen.getByText("Add reimbursement")).toBeInTheDocument();
-    expect(
-      screen.getByPlaceholderText("e.g. Insurance reimbursement"),
-    ).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("e.g. Insurance reimbursement")).toBeInTheDocument();
   });
 });

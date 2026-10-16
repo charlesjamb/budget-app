@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach } from "vite-plus/test";
 import request from "supertest";
 import { createApp } from "../app.js";
 import {
@@ -19,9 +19,7 @@ describe("Category Routes", () => {
 
   describe("GET /api/categories", () => {
     it("should return empty list initially", async () => {
-      const res = await request(app)
-        .get("/api/categories")
-        .set("Cookie", ctx.sessionCookie);
+      const res = await request(app).get("/api/categories").set("Cookie", ctx.sessionCookie);
 
       expect(res.status).toBe(200);
       expect(res.body.categories).toEqual([]);
@@ -31,9 +29,7 @@ describe("Category Routes", () => {
       createCategory(ctx.db, ctx.householdId, "Food");
       createCategory(ctx.db, ctx.householdId, "Transport");
 
-      const res = await request(app)
-        .get("/api/categories")
-        .set("Cookie", ctx.sessionCookie);
+      const res = await request(app).get("/api/categories").set("Cookie", ctx.sessionCookie);
 
       expect(res.status).toBe(200);
       expect(res.body.categories).toHaveLength(2);

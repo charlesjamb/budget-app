@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import { render, screen } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { server } from "../../mocks/server.js";
@@ -142,9 +142,7 @@ describe("Budget Page", () => {
     render(<TestWrapper initialPath="/budget" />);
 
     expect(
-      await screen.findByText(
-        "No categories yet. Create some in the Categories page first.",
-      ),
+      await screen.findByText("No categories yet. Create some in the Categories page first."),
     ).toBeInTheDocument();
   });
 });

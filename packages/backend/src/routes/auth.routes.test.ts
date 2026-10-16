@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach } from "vite-plus/test";
 import request from "supertest";
 import { createApp } from "../app.js";
 import { setupTestContext, type TestContext } from "../test/helpers.js";
@@ -32,9 +32,7 @@ describe("Auth Routes", () => {
     });
 
     it("should reject missing fields", async () => {
-      const res = await request(app)
-        .post("/api/auth/login")
-        .send({ email: "test@example.com" });
+      const res = await request(app).post("/api/auth/login").send({ email: "test@example.com" });
 
       expect(res.status).toBe(400);
     });
@@ -42,9 +40,7 @@ describe("Auth Routes", () => {
 
   describe("POST /api/auth/logout", () => {
     it("should clear session", async () => {
-      const res = await request(app)
-        .post("/api/auth/logout")
-        .set("Cookie", ctx.sessionCookie);
+      const res = await request(app).post("/api/auth/logout").set("Cookie", ctx.sessionCookie);
 
       expect(res.status).toBe(204);
     });
@@ -52,9 +48,7 @@ describe("Auth Routes", () => {
 
   describe("GET /api/auth/me", () => {
     it("should return current user", async () => {
-      const res = await request(app)
-        .get("/api/auth/me")
-        .set("Cookie", ctx.sessionCookie);
+      const res = await request(app).get("/api/auth/me").set("Cookie", ctx.sessionCookie);
 
       expect(res.status).toBe(200);
       expect(res.body.user.email).toBe("test@example.com");

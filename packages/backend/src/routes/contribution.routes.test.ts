@@ -1,11 +1,8 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach } from "vite-plus/test";
 import request from "supertest";
 import bcrypt from "bcrypt";
 import { createApp } from "../app.js";
-import {
-  setupTestContext,
-  type TestContext,
-} from "../test/helpers.js";
+import { setupTestContext, type TestContext } from "../test/helpers.js";
 import { users, householdMembers } from "../db/schema.js";
 
 describe("Contribution Routes", () => {
@@ -34,9 +31,7 @@ describe("Contribution Routes", () => {
     });
 
     it("should require month parameter", async () => {
-      const res = await request(app)
-        .get("/api/contributions")
-        .set("Cookie", ctx.sessionCookie);
+      const res = await request(app).get("/api/contributions").set("Cookie", ctx.sessionCookie);
 
       expect(res.status).toBe(400);
     });
@@ -50,9 +45,7 @@ describe("Contribution Routes", () => {
     });
 
     it("should require auth", async () => {
-      const res = await request(app).get(
-        "/api/contributions?month=2026-02",
-      );
+      const res = await request(app).get("/api/contributions?month=2026-02");
       expect(res.status).toBe(401);
     });
 
@@ -76,10 +69,7 @@ describe("Contribution Routes", () => {
     it("should return all household members including second user", async () => {
       const passwordHash = await bcrypt.hash("password123", 10);
       ctx.db.insert(users).values({ email: "other@example.com", passwordHash }).run();
-      ctx.db
-        .insert(householdMembers)
-        .values({ userId: 2, householdId: ctx.householdId })
-        .run();
+      ctx.db.insert(householdMembers).values({ userId: 2, householdId: ctx.householdId }).run();
 
       const res = await request(app)
         .get("/api/contributions?month=2026-02")

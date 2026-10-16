@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach } from "vite-plus/test";
 import request from "supertest";
 import { createApp } from "../app.js";
 import {
@@ -32,9 +32,7 @@ describe("Mapping Rule Routes", () => {
 
       expect(createRes.status).toBe(201);
 
-      const listRes = await request(app)
-        .get("/api/mapping-rules")
-        .set("Cookie", ctx.sessionCookie);
+      const listRes = await request(app).get("/api/mapping-rules").set("Cookie", ctx.sessionCookie);
 
       expect(listRes.body.rules).toHaveLength(1);
       expect(listRes.body.rules[0].bankSubCategory).toBe("Hyper/supermarche");
@@ -122,8 +120,7 @@ describe("Mapping Rule Routes", () => {
         .set("Cookie", ctx.sessionCookie);
 
       const carrefourBefore = beforeDelete.body.subcategories.find(
-        (g: { labelSimplified: string }) =>
-          g.labelSimplified === "CARREFOUR MARKET",
+        (g: { labelSimplified: string }) => g.labelSimplified === "CARREFOUR MARKET",
       );
       expect(carrefourBefore).toBeUndefined();
 
@@ -140,8 +137,7 @@ describe("Mapping Rule Routes", () => {
         .set("Cookie", ctx.sessionCookie);
 
       const carrefourAfter = afterDelete.body.subcategories.find(
-        (g: { labelSimplified: string }) =>
-          g.labelSimplified === "CARREFOUR MARKET",
+        (g: { labelSimplified: string }) => g.labelSimplified === "CARREFOUR MARKET",
       );
       expect(carrefourAfter).toBeDefined();
       expect(carrefourAfter.count).toBe(2);

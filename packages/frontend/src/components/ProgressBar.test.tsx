@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import { render, screen } from "@testing-library/react";
 import { ThemeProvider } from "styled-components";
 import { theme } from "../theme.js";
@@ -9,16 +9,12 @@ const renderWithTheme = (ui: React.ReactElement) =>
 
 describe("ProgressBar", () => {
   it("should render nothing when budget is 0", () => {
-    const { container } = renderWithTheme(
-      <ProgressBar spent={5000} budget={0} />,
-    );
+    const { container } = renderWithTheme(<ProgressBar spent={5000} budget={0} />);
     expect(container.firstChild).toBeNull();
   });
 
   it("should render progress bar when budget > 0", () => {
-    const { container } = renderWithTheme(
-      <ProgressBar spent={5000} budget={10000} />,
-    );
+    const { container } = renderWithTheme(<ProgressBar spent={5000} budget={10000} />);
     expect(container.firstChild).not.toBeNull();
   });
 
