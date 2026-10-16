@@ -5,20 +5,18 @@
   "engines": {
     "node": ">=26"
   },
-  "workspaces": [
-    "packages/*"
-  ],
+  "packageManager": "pnpm@12.14.0",
   "scripts": {
     "lint": "eslint packages/*/src/",
     "format": "prettier --write \"packages/*/src/**/*.{ts,tsx}\"",
-    "test": "npm run test:backend && npm run test:frontend",
-    "test:backend": "npm run --workspace=packages/backend test",
-    "test:frontend": "npm run --workspace=packages/frontend test",
-    "dev:backend": "npm run --workspace=packages/backend dev",
-    "dev:frontend": "npm run --workspace=packages/frontend dev",
-    "dev": "npm run --workspace=packages/shared build && concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
-    "build": "npm run --workspace=packages/shared build && npm run --workspace=packages/backend build && npm run --workspace=packages/frontend build",
-    "seed": "npm run --workspace=packages/backend seed",
+    "test": "pnpm run test:backend && pnpm run test:frontend",
+    "test:backend": "pnpm --filter @budget-app/backend test",
+    "test:frontend": "pnpm --filter @budget-app/frontend test",
+    "dev:backend": "pnpm --filter @budget-app/backend dev",
+    "dev:frontend": "pnpm --filter @budget-app/frontend dev",
+    "dev": "pnpm --filter @budget-app/shared build && concurrently \"pnpm run dev:backend\" \"pnpm run dev:frontend\"",
+    "build": "pnpm --filter @budget-app/shared build && pnpm --filter @budget-app/backend build && pnpm --filter @budget-app/frontend build",
+    "seed": "pnpm --filter @budget-app/backend seed",
     "prepare": ""
   },
   "devDependencies": {
@@ -32,6 +30,7 @@
     "typescript-eslint": "^8.22.0"
   },
   "volta": {
-    "node": "26.12.0"
+    "node": "26.12.0",
+    "pnpm": "12.14.0"
   }
 }

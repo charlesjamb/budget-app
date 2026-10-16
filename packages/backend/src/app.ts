@@ -1,4 +1,4 @@
-import express from "express";
+import express, { type Express } from "express";
 import cookieParser from "cookie-parser";
 import helmet from "helmet";
 import path from "path";
@@ -14,7 +14,7 @@ import { budgetRoutes } from "./routes/budget.routes.js";
 import { contributionRoutes } from "./routes/contribution.routes.js";
 import { authMiddleware } from "./middleware/auth.js";
 
-export function createApp(db: AppDatabase) {
+export function createApp(db: AppDatabase): Express {
   const app = express();
 
   app.use(helmet());
