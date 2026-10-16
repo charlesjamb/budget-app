@@ -1,4 +1,4 @@
-FROM node:20-slim AS base
+FROM node:26-slim AS base
 WORKDIR /app
 
 # Install dependencies
@@ -24,7 +24,7 @@ RUN npm run --workspace=packages/frontend build
 RUN npx --workspace=packages/backend tsc
 
 # Production stage
-FROM node:20-slim AS production
+FROM node:26-slim AS production
 WORKDIR /app
 
 COPY package.json package-lock.json ./
