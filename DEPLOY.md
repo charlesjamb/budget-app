@@ -55,19 +55,21 @@ cd ~/budget-app
 Verify your Let's Encrypt certs are still in place:
 
 ```bash
-ls /etc/letsencrypt/live/your-domain.example/
+ls /etc/letsencrypt/live/mathildeetcharles.online/
 ```
 
 You should see `fullchain.pem` and `privkey.pem`.
 
-**Important:** `nginx.conf` in this repo ships with the placeholder `your-domain.example`
-(4 occurrences: server_name, both certificate paths, and the HTTP redirect). Replace it
-with your real domain **before starting nginx**, or the container fails with
-`cannot load certificate ... fullchain.pem (No such file or directory)`. Prefer committing
-your real domain to `nginx.conf` in the repo over editing the file on the VPS — a local
-VPS edit gets overwritten by the next `git pull`.
+**Important:** `nginx.conf` carries the real domain (`mathildeetcharles.online`). The certificate
+paths must match your Let's Encrypt layout — the live directory is named after the cert's primary
+domain. If nginx fails with `cannot load certificate ... fullchain.pem (No such file or directory)`,
+check the actual directory name and align `nginx.conf` with it:
 
-If the cert path is different, find them and update `docker-compose.yml` accordingly:
+```bash
+ls /etc/letsencrypt/live/
+```
+
+If the cert path is different, update `docker-compose.yml` accordingly:
 
 ```bash
 find /etc -name "fullchain.pem" 2>/dev/null
@@ -114,7 +116,7 @@ docker compose logs app    # app only
 docker compose logs nginx  # nginx only
 ```
 
-Open **https://your-domain.example** in your browser.
+Open **https://mathildeetcharles.online** in your browser.
 
 ## Useful commands
 
