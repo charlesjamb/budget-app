@@ -19,9 +19,24 @@ describe("getBudgetStatus", () => {
     expect(getBudgetStatus(143400, 143400, "fixed")).toBe("paid");
   });
 
-  it("is over as soon as the budget is exceeded, whatever the type", () => {
+  it("treats a fixed expense within 1 € of its budget as paid, above or below", () => {
+    expect(getBudgetStatus(2926, 2900, "fixed")).toBe("paid");
+    expect(getBudgetStatus(134681, 134700, "fixed")).toBe("paid");
+    expect(getBudgetStatus(10100, 10000, "fixed")).toBe("paid");
+    expect(getBudgetStatus(9900, 10000, "fixed")).toBe("paid");
+  });
+
+  it("keeps a fixed expense over or under budget by more than 1 € as such", () => {
+    expect(getBudgetStatus(10101, 10000, "fixed")).toBe("over");
+    expect(getBudgetStatus(9800, 10000, "fixed")).toBe("warn");
+  });
+
+  it("does not mark an unspent fixed expense as paid", () => {
+    expect(getBudgetStatus(0, 50, "fixed")).toBe("ok");
+  });
+
+  it("is over as soon as a variable budget is exceeded", () => {
     expect(getBudgetStatus(10001, 10000, "variable")).toBe("over");
-    expect(getBudgetStatus(10001, 10000, "fixed")).toBe("over");
   });
 
   it("is unbudgeted without a positive budget", () => {
