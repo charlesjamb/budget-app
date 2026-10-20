@@ -505,4 +505,80 @@ describe("Transaction Routes", () => {
       expect(carrefour.transactions).toHaveLength(1);
     });
   });
+
+  describe("PATCH /api/transactions/:id/category", () => {
+    it("should set the category and lock the transaction", async () => {
+      const food = createCategory(ctx.db, ctx.householdId, "Food");
+      const tx = createTransaction(ctx.db, ctx.householdId, { budgetCategoryId: null });
+
+      const res = await request(app)
+        .patch(`/api/transactions/${tx.id}/category`)
+        .set("Cookie", ctx.sessionCookie)
+        .send({ budgetCategoryId: food.id });
+
+      expect(res.status).toBe(200);
+      expect(res.body.budgetCategoryId).toBe(food.id);
+      expect(res.body.budgetCategoryName).toBe("Food");
+      expect(res.body.categoryLocked).toBe(true);
+    });
+
+    it("should leave other transactions of the same merchant untouched", async () => {
+      const food = createCategory(ctx.db, ctx.householdId, "Food");
+      const other = createTransaction(ctx.db, ctx.householdId, {
+        labelSimplified: "SAME",
+        budgetCategoryId: null,
+      });
+      const tx = createTransaction(ctx.db, ctx.householdId, { labelSimplified: "SAME" });
+
+      await request(app)
+        .patch(`/api/transactions/${tx.id}/category`)
+        .set("Cookie", ctx.sessionCookie)
+        .send({ budgetCategoryId: food.id });
+
+      const res = await request(app)
+        .get("/api/transactions?month=2026-02")
+        .set("Cookie", ctx.sessionCookie);
+      const untouched = res.body.transactions.find((t: { id: number }) => t.id === other.id);
+      expect(untouched.budgetCategoryId).toBeNull();
+      expect(untouched.categoryLocked).toBe(false);
+    });
+
+    it("should reject a category from another household", async () => {
+      const tx = createTransaction(ctx.db, ctx.householdId);
+
+      const res = await request(app)
+        .patch(`/api/transactions/${tx.id}/category`)
+        .set("Cookie", ctx.sessionCookie)
+        .send({ budgetCategoryId: 9999 });
+
+      expect(res.status).toBe(400);
+    });
+
+    it("should return 404 for an unknown transaction", async () => {
+      const food = createCategory(ctx.db, ctx.householdId, "Food");
+
+      const res = await request(app)
+        .patch("/api/transactions/9999/category")
+        .set("Cookie", ctx.sessionCookie)
+        .send({ budgetCategoryId: food.id });
+
+      expect(res.status).toBe(404);
+    });
+
+    it("should require a numeric budgetCategoryId", async () => {
+      const tx = createTransaction(ctx.db, ctx.householdId);
+
+      const res = await request(app)
+        .patch(`/api/transactions/${tx.id}/category`)
+        .set("Cookie", ctx.sessionCookie)
+        .send({});
+
+      expect(res.status).toBe(400);
+    });
+
+    it("should require auth", async () => {
+      const res = await request(app).patch("/api/transactions/1/category").send({});
+      expect(res.status).toBe(401);
+    });
+  });
 });

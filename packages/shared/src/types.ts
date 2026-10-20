@@ -239,3 +239,7 @@ export interface UpsertContributionsRequest {
   month: string;
   contributions: { userId: number; revenueCents: number }[];
 }
+
+export interface SetTransactionCategoryRequest {
+  budgetCategoryId: number;
+}

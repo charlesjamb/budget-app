@@ -2,6 +2,7 @@ import { Router } from "express";
 import multer from "multer";
 import { type AppDatabase } from "../db/connection.js";
 import { createImportService } from "../services/import.service.js";
+import { decodeCsv } from "../services/csv-decode.js";
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -18,7 +19,7 @@ export function importRoutes(db: AppDatabase): Router {
       return;
     }
 
-    const csvContent = req.file.buffer.toString("utf-8");
+    const csvContent = decodeCsv(req.file.buffer);
     const result = importService.importCsv(req.householdId!, csvContent);
 
     res.json(result);

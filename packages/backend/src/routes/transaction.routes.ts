@@ -3,6 +3,7 @@ import {
   GLOBAL_CAP_CATEGORY_ID,
   type ExcludeTransactionRequest,
   type ReimbursementRequest,
+  type SetTransactionCategoryRequest,
 } from "@budget-app/shared";
 import { type AppDatabase } from "../db/connection.js";
 import { createTransactionService } from "../services/transaction.service.js";
@@ -37,6 +38,29 @@ export function transactionRoutes(db: AppDatabase): Router {
       return;
     }
     res.json(updated);
+  });
+
+  router.patch("/:id/category", (req, res) => {
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) {
+      res.status(400).json({ error: "Invalid transaction ID" });
+      return;
+    }
+    const { budgetCategoryId } = req.body as SetTransactionCategoryRequest;
+    if (!Number.isInteger(budgetCategoryId)) {
+      res.status(400).json({ error: "budgetCategoryId must be an integer" });
+      return;
+    }
+    const result = transactionService.setCategory(req.householdId!, id, budgetCategoryId);
+    if ("error" in result) {
+      if (result.error === "invalid_category") {
+        res.status(400).json({ error: "Category not found" });
+      } else {
+        res.status(404).json({ error: "Transaction not found" });
+      }
+      return;
+    }
+    res.json(result.data);
   });
 
   router.put("/:id/reimbursement", (req, res) => {

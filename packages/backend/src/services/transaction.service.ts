@@ -236,6 +236,31 @@ export function createTransactionService(db: AppDatabase) {
       };
     },
 
+    /** Manual override for one transaction; locked so mapping-rule application leaves it alone. */
+    setCategory(householdId: number, transactionId: number, budgetCategoryId: number) {
+      const category = db
+        .select({ id: budgetCategories.id })
+        .from(budgetCategories)
+        .where(
+          and(
+            eq(budgetCategories.id, budgetCategoryId),
+            eq(budgetCategories.householdId, householdId),
+          ),
+        )
+        .get();
+      if (!category) return { error: "invalid_category" as const };
+
+      const updated = db
+        .update(transactions)
+        .set({ budgetCategoryId, categoryLocked: 1 })
+        .where(and(eq(transactions.id, transactionId), eq(transactions.householdId, householdId)))
+        .returning({ id: transactions.id })
+        .get();
+      if (!updated) return { error: "not_found" as const };
+
+      return { data: getFullTransaction(householdId, transactionId)! };
+    },
+
     updateExclude(householdId: number, transactionId: number, excluded: boolean, reason?: string) {
       const updated = db
         .update(transactions)

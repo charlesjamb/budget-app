@@ -47,3 +47,10 @@ export function clearReimbursement(id: number): Promise<Transaction> {
     method: "DELETE",
   });
 }
+
+export function setTransactionCategory(id: number, budgetCategoryId: number): Promise<Transaction> {
+  return apiRequest(`/api/transactions/${id}/category`, {
+    method: "PATCH",
+    body: JSON.stringify({ budgetCategoryId }),
+  });
+}

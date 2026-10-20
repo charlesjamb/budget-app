@@ -69,6 +69,7 @@ export function createMappingRuleService(db: AppDatabase) {
             eq(transactions.bankSubCategory, rule.bankSubCategory),
             eq(transactions.labelSimplified, rule.labelSimplified),
             eq(transactions.budgetCategoryId, rule.budgetCategoryId),
+            eq(transactions.categoryLocked, 0),
           ),
         )
         .run();
@@ -116,7 +117,7 @@ export function createMappingRuleService(db: AppDatabase) {
           .get();
       }
 
-      // Retroactively apply to uncategorized transactions matching both fields
+      // Retroactively apply to every matching transaction except manual per-transaction overrides
       const updateResult = db
         .update(transactions)
         .set({ budgetCategoryId })
@@ -125,7 +126,7 @@ export function createMappingRuleService(db: AppDatabase) {
             eq(transactions.householdId, householdId),
             eq(transactions.bankSubCategory, bankSubCategory),
             eq(transactions.labelSimplified, labelSimplified),
-            isNull(transactions.budgetCategoryId),
+            eq(transactions.categoryLocked, 0),
           ),
         )
         .run();

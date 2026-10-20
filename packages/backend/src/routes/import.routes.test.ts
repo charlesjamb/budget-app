@@ -83,4 +83,22 @@ describe("Import Routes", () => {
 
     expect(res.status).toBe(400);
   });
+
+  it("should decode a latin1-encoded export instead of corrupting accents", async () => {
+    const latin1Csv = SAMPLE_CSV.replace("dr HOARAU sc", "CHEQUE N°12 Prélèvement");
+
+    const res = await request(app)
+      .post("/api/import")
+      .set("Cookie", ctx.sessionCookie)
+      .attach("file", Buffer.from(latin1Csv, "latin1"), "expenses.csv");
+
+    expect(res.body.imported).toBe(3);
+    const labels = ctx.db
+      .select()
+      .from(transactions)
+      .all()
+      .map((t) => t.labelSimplified);
+    expect(labels).toContain("CHEQUE N°12 Prélèvement");
+    expect(labels.some((l) => l.includes("�"))).toBe(false);
+  });
 });

@@ -242,3 +242,42 @@ export const TitleRow = styled.div`
     display: block;
   }
 `;
+
+export const ModalOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background: ${(p) => p.theme.colors.overlay};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+`;
+
+export const ModalContent = styled.div`
+  background: ${(p) => p.theme.colors.card};
+  border-radius: ${(p) => p.theme.radii.lg};
+  box-shadow: ${(p) => p.theme.shadows.cardHover};
+  padding: 24px;
+  max-width: 400px;
+  width: 100%;
+`;
+
+export const ModalTitle = styled.h3`
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  font-weight: 600;
+`;
+
+export const ModalDescription = styled.p`
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  color: ${(p) => p.theme.colors.textMuted};
+`;
+
+export const ModalActions = styled.div`
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  justify-content: flex-end;
+`;

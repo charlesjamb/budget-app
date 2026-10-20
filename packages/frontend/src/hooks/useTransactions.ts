@@ -7,6 +7,7 @@ import {
   excludeTransaction,
   setReimbursement,
   clearReimbursement,
+  setTransactionCategory,
 } from "../api/transactions.js";
 import type { ExcludeTransactionRequest, ReimbursementRequest } from "@budget-app/shared";
 
@@ -64,6 +65,17 @@ export function useClearReimbursement() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => clearReimbursement(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["transactions"] });
+    },
+  });
+}
+
+export function useSetTransactionCategory() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, budgetCategoryId }: { id: number; budgetCategoryId: number }) =>
+      setTransactionCategory(id, budgetCategoryId),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["transactions"] });
     },

@@ -1,5 +1,7 @@
 import { describe, it, expect, beforeEach } from "vite-plus/test";
 import request from "supertest";
+import { eq } from "drizzle-orm";
+import { transactions } from "../db/schema.js";
 import { createApp } from "../app.js";
 import {
   setupTestContext,
@@ -190,6 +192,77 @@ describe("Mapping Rule Routes", () => {
       expect(res.body.rule.labelSimplified).toBe("CARREFOUR MARKET");
       // Only the 2 CARREFOUR MARKET transactions, not ESPRIT THAI
       expect(res.body.updatedCount).toBe(2);
+    });
+  });
+
+  describe("manual category overrides", () => {
+    const rule = { bankSubCategory: "Hyper/supermarche", labelSimplified: "CARREFOUR MARKET" };
+
+    it("classify should re-apply the rule to unlocked transactions already categorized", async () => {
+      const food = createCategory(ctx.db, ctx.householdId, "Food");
+      const fun = createCategory(ctx.db, ctx.householdId, "Fun");
+      const tx = createTransaction(ctx.db, ctx.householdId, {
+        ...rule,
+        budgetCategoryId: food.id,
+      });
+
+      const res = await request(app)
+        .post("/api/mapping-rules/classify")
+        .set("Cookie", ctx.sessionCookie)
+        .send({ ...rule, budgetCategoryId: fun.id });
+
+      expect(res.body.updatedCount).toBe(1);
+      const row = ctx.db.select().from(transactions).where(eq(transactions.id, tx.id)).get();
+      expect(row?.budgetCategoryId).toBe(fun.id);
+    });
+
+    it("classify should skip locked transactions", async () => {
+      const food = createCategory(ctx.db, ctx.householdId, "Food");
+      const fun = createCategory(ctx.db, ctx.householdId, "Fun");
+      const locked = createTransaction(ctx.db, ctx.householdId, {
+        ...rule,
+        budgetCategoryId: food.id,
+        categoryLocked: 1,
+      });
+      const unlocked = createTransaction(ctx.db, ctx.householdId, {
+        ...rule,
+        budgetCategoryId: food.id,
+      });
+
+      const res = await request(app)
+        .post("/api/mapping-rules/classify")
+        .set("Cookie", ctx.sessionCookie)
+        .send({ ...rule, budgetCategoryId: fun.id });
+
+      expect(res.body.updatedCount).toBe(1);
+      const rows = ctx.db.select().from(transactions).all();
+      expect(rows.find((r) => r.id === locked.id)?.budgetCategoryId).toBe(food.id);
+      expect(rows.find((r) => r.id === unlocked.id)?.budgetCategoryId).toBe(fun.id);
+    });
+
+    it("deleting a rule should keep locked transactions categorized", async () => {
+      const food = createCategory(ctx.db, ctx.householdId, "Food");
+      const created = await request(app)
+        .post("/api/mapping-rules")
+        .set("Cookie", ctx.sessionCookie)
+        .send({ ...rule, budgetCategoryId: food.id });
+      const locked = createTransaction(ctx.db, ctx.householdId, {
+        ...rule,
+        budgetCategoryId: food.id,
+        categoryLocked: 1,
+      });
+      const unlocked = createTransaction(ctx.db, ctx.householdId, {
+        ...rule,
+        budgetCategoryId: food.id,
+      });
+
+      await request(app)
+        .delete(`/api/mapping-rules/${created.body.rule.id}`)
+        .set("Cookie", ctx.sessionCookie);
+
+      const rows = ctx.db.select().from(transactions).all();
+      expect(rows.find((r) => r.id === locked.id)?.budgetCategoryId).toBe(food.id);
+      expect(rows.find((r) => r.id === unlocked.id)?.budgetCategoryId).toBeNull();
     });
   });
 });
