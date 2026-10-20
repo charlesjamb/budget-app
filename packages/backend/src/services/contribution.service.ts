@@ -9,6 +9,7 @@ export function createContributionService(db: AppDatabase) {
         .select({
           userId: users.id,
           email: users.email,
+          displayName: users.displayName,
           revenueCents: sql<number>`COALESCE(${monthlyContributions.revenueCents}, 0)`,
         })
         .from(householdMembers)
@@ -27,6 +28,7 @@ export function createContributionService(db: AppDatabase) {
       return members.map((m) => ({
         userId: m.userId,
         email: m.email,
+        displayName: m.displayName,
         revenueCents: Number(m.revenueCents),
       }));
     },

@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach } from "vite-plus/test";
 import request from "supertest";
 import { createApp } from "../app.js";
 import { setupTestContext, type TestContext } from "../test/helpers.js";
+import { eq } from "drizzle-orm";
+import { users } from "../db/schema.js";
 
 describe("Auth Routes", () => {
   let ctx: TestContext;
@@ -53,6 +55,14 @@ describe("Auth Routes", () => {
       expect(res.status).toBe(200);
       expect(res.body.user.email).toBe("test@example.com");
       expect(res.body.householdId).toBe(1);
+    });
+
+    it("should return the display name", async () => {
+      ctx.db.update(users).set({ displayName: "Charles" }).where(eq(users.id, ctx.userId)).run();
+
+      const res = await request(app).get("/api/auth/me").set("Cookie", ctx.sessionCookie);
+
+      expect(res.body.user.displayName).toBe("Charles");
     });
 
     it("should return 401 without session", async () => {

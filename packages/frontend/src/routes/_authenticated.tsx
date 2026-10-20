@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { useAuth } from "../hooks/useAuth.js";
 import { NavBar } from "../components/NavBar.js";
 import { SidebarProvider, useSidebar } from "../contexts/SidebarContext.js";
+import { parseMonth } from "../lib/month.js";
 
 const Layout = styled.div`
   min-height: 100vh;
@@ -40,6 +41,9 @@ const LoadingScreen = styled.div`
 `;
 
 export const Route = createFileRoute("/_authenticated")({
+  validateSearch: (search: Record<string, unknown>): { month?: string } => ({
+    month: parseMonth(search.month),
+  }),
   component: AuthenticatedLayout,
 });
 

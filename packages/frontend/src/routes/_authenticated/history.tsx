@@ -4,7 +4,7 @@ import styled from "styled-components";
 import { useHistory } from "../../hooks/useTransactions.js";
 
 import { BarChart3 } from "lucide-react";
-import { PageTitle, TitleRow } from "../../components/ui.js";
+import { PageTitle, TitleRow, EmptyState } from "../../components/ui.js";
 
 const Controls = styled.div`
   display: flex;
@@ -87,13 +87,6 @@ const Td = styled.td<{ $highlight?: boolean }>`
     background: ${(p) => p.theme.colors.card};
     z-index: 1;
   }
-`;
-
-const EmptyState = styled.p`
-  text-align: center;
-  color: ${(p) => p.theme.colors.textMuted};
-  padding: 48px;
-  font-size: 16px;
 `;
 
 function formatAmount(cents: number): string {

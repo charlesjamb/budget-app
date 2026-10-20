@@ -2,12 +2,15 @@ import { useState, useCallback, useMemo } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import styled from "styled-components";
 import { MonthPicker } from "../../components/MonthPicker.js";
+import { useMonth } from "../../hooks/useMonth.js";
 import { ProgressBar } from "../../components/ProgressBar.js";
 import { Wallet } from "lucide-react";
 import {
   Button,
   SecondaryButton,
   AmountInput,
+  Header,
+  SaveStatus,
   EmptyState,
   PageTitle,
   TitleRow,
@@ -15,15 +18,6 @@ import {
 import { useCategories } from "../../hooks/useCategories.js";
 import { useMonthlySummary } from "../../hooks/useTransactions.js";
 import { useBudgets, useUpsertBudgets, useCopyBudget } from "../../hooks/useBudgets.js";
-
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-  gap: 12px;
-`;
 
 const HeaderActions = styled.div`
   display: flex;
@@ -127,18 +121,8 @@ const ProgressWrapper = styled.div`
   }
 `;
 
-const SaveStatus = styled.span<{ $success?: boolean }>`
-  font-size: 13px;
-  color: ${(p) => (p.$success ? p.theme.colors.success : p.theme.colors.textMuted)};
-`;
-
 function formatAmount(cents: number): string {
   return (cents / 100).toFixed(2) + " \u20AC";
-}
-
-function getCurrentMonth(): string {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 }
 
 function getPreviousMonth(month: string): string {
@@ -161,7 +145,7 @@ export const Route = createFileRoute("/_authenticated/budget")({
 });
 
 function BudgetPage() {
-  const [month, setMonth] = useState(getCurrentMonth);
+  const [month, setMonth] = useMonth();
   const [localBudgets, setLocalBudgets] = useState<Record<number, string>>({});
   const [dirty, setDirty] = useState(false);
   const [saved, setSaved] = useState(false);

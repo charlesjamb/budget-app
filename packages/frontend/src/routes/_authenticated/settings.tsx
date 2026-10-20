@@ -8,6 +8,10 @@ import {
   Input,
   DangerButton,
   EditInput,
+  EmptyState,
+  Table as BaseTable,
+  Th,
+  Td,
   PageTitle,
   TitleRow,
 } from "../../components/ui.js";
@@ -38,7 +42,7 @@ const TableScroll = styled.div`
   }
 `;
 
-const Table = styled.table`
+const Table = styled(BaseTable)`
   width: 100%;
   background: ${(p) => p.theme.colors.card};
   border-radius: ${(p) => p.theme.radii.lg};
@@ -53,24 +57,6 @@ const Table = styled.table`
   }
 `;
 
-const Th = styled.th`
-  text-align: left;
-  padding: 12px 16px;
-  background: ${(p) => p.theme.colors.background};
-  border-bottom: 1px solid ${(p) => p.theme.colors.border};
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: ${(p) => p.theme.colors.textMuted};
-  white-space: nowrap;
-`;
-
-const Td = styled.td`
-  padding: 10px 16px;
-  border-bottom: 1px solid ${(p) => p.theme.colors.border};
-  font-size: 14px;
-`;
-
 const AddForm = styled.form`
   display: flex;
   gap: 8px;
@@ -83,13 +69,6 @@ const AddForm = styled.form`
 
 const FormInput = styled(Input)`
   flex: 1;
-`;
-
-const EmptyState = styled.p`
-  color: ${(p) => p.theme.colors.textMuted};
-  padding: 24px;
-  text-align: center;
-  font-size: 14px;
 `;
 
 const EditableCell = styled.td`

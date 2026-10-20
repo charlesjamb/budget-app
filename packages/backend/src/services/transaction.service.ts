@@ -23,6 +23,7 @@ export function createTransactionService(db: AppDatabase) {
         excludedReason: transactions.excludedReason,
         reimbursedAmount: transactions.reimbursedAmount,
         reimbursementNote: transactions.reimbursementNote,
+        categoryLocked: transactions.categoryLocked,
       })
       .from(transactions)
       .leftJoin(budgetCategories, eq(transactions.budgetCategoryId, budgetCategories.id))
@@ -39,6 +40,7 @@ export function createTransactionService(db: AppDatabase) {
       ? {
           ...row,
           excluded: row.excluded === 1,
+          categoryLocked: row.categoryLocked === 1,
         }
       : null;
   }
@@ -68,6 +70,7 @@ export function createTransactionService(db: AppDatabase) {
           excludedReason: transactions.excludedReason,
           reimbursedAmount: transactions.reimbursedAmount,
           reimbursementNote: transactions.reimbursementNote,
+          categoryLocked: transactions.categoryLocked,
         })
         .from(transactions)
         .leftJoin(budgetCategories, eq(transactions.budgetCategoryId, budgetCategories.id))
@@ -90,6 +93,7 @@ export function createTransactionService(db: AppDatabase) {
       return results.map((r) => ({
         ...r,
         excluded: r.excluded === 1,
+        categoryLocked: r.categoryLocked === 1,
       }));
     },
 

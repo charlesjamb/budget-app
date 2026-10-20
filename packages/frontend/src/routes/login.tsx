@@ -10,7 +10,7 @@ const Page = styled.div`
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: ${(p) => p.theme.gradients.primary};
+  background: ${(p) => p.theme.colors.background};
   padding: 24px;
 `;
 

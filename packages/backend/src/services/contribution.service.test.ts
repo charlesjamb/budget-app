@@ -42,11 +42,13 @@ describe("Contribution Service", () => {
       expect(members).toContainEqual({
         userId: userId1,
         email: "user1@example.com",
+        displayName: null,
         revenueCents: 0,
       });
       expect(members).toContainEqual({
         userId: userId2,
         email: "user2@example.com",
+        displayName: null,
         revenueCents: 0,
       });
     });

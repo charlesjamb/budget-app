@@ -11,6 +11,7 @@ function initSchema(sqlite: Database.Database, ifNotExists: boolean) {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       email TEXT NOT NULL UNIQUE,
       password_hash TEXT NOT NULL,
+      display_name TEXT,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
@@ -40,6 +41,7 @@ function initSchema(sqlite: Database.Database, ifNotExists: boolean) {
       name TEXT NOT NULL,
       group_name TEXT,
       type TEXT NOT NULL DEFAULT 'variable',
+      icon TEXT,
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       updated_at TEXT NOT NULL DEFAULT (datetime('now')),
       UNIQUE(household_id, name)
@@ -74,6 +76,7 @@ function initSchema(sqlite: Database.Database, ifNotExists: boolean) {
       excluded_reason TEXT,
       reimbursed_amount INTEGER NOT NULL DEFAULT 0,
       reimbursement_note TEXT,
+      category_locked INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
@@ -119,6 +122,16 @@ function runMigrations(sqlite: Database.Database) {
   if (!cols.some((c) => c.name === "type")) {
     sqlite.exec("ALTER TABLE budget_categories ADD COLUMN type TEXT NOT NULL DEFAULT 'variable'");
   }
+  if (!cols.some((c) => c.name === "icon")) {
+    sqlite.exec("ALTER TABLE budget_categories ADD COLUMN icon TEXT");
+  }
+
+  const userCols = sqlite.prepare("PRAGMA table_info(users)").all() as {
+    name: string;
+  }[];
+  if (!userCols.some((c) => c.name === "display_name")) {
+    sqlite.exec("ALTER TABLE users ADD COLUMN display_name TEXT");
+  }
 
   const txCols = sqlite.prepare("PRAGMA table_info(transactions)").all() as {
     name: string;
@@ -134,6 +147,9 @@ function runMigrations(sqlite: Database.Database) {
   }
   if (!txCols.some((c) => c.name === "reimbursement_note")) {
     sqlite.exec("ALTER TABLE transactions ADD COLUMN reimbursement_note TEXT");
+  }
+  if (!txCols.some((c) => c.name === "category_locked")) {
+    sqlite.exec("ALTER TABLE transactions ADD COLUMN category_locked INTEGER NOT NULL DEFAULT 0");
   }
 }
 

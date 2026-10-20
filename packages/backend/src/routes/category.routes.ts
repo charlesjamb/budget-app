@@ -22,7 +22,7 @@ export function categoryRoutes(db: AppDatabase): Router {
   });
 
   router.post("/", (req, res) => {
-    const { name, groupName, type: typeParam } = req.body;
+    const { name, groupName, type: typeParam, icon } = req.body;
 
     if (!name || typeof name !== "string" || !name.trim()) {
       res.status(400).json({ error: "Name is required" });
@@ -41,6 +41,7 @@ export function categoryRoutes(db: AppDatabase): Router {
         name.trim(),
         groupName?.trim() || undefined,
         type,
+        typeof icon === "string" ? icon.trim() || undefined : undefined,
       );
       res.status(201).json({ category });
     } catch {
@@ -50,7 +51,7 @@ export function categoryRoutes(db: AppDatabase): Router {
 
   router.put("/:id", (req, res) => {
     const id = parseInt(req.params.id, 10);
-    const { name, groupName, type: typeParam } = req.body;
+    const { name, groupName, type: typeParam, icon } = req.body;
 
     if (!name || typeof name !== "string" || !name.trim()) {
       res.status(400).json({ error: "Name is required" });
@@ -70,6 +71,7 @@ export function categoryRoutes(db: AppDatabase): Router {
         name.trim(),
         groupName !== undefined ? groupName?.trim() || null : undefined,
         type,
+        icon !== undefined ? (typeof icon === "string" ? icon.trim() || null : null) : undefined,
       );
       if (!category) {
         res.status(404).json({ error: "Category not found" });

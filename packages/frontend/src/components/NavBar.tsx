@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useRouterState, useSearch } from "@tanstack/react-router";
 import styled from "styled-components";
 import { useSidebar } from "../contexts/SidebarContext.js";
 import {
@@ -42,7 +42,7 @@ const moreNavItems = navItems.filter((item) => ["/categories", "/history"].inclu
 const SidebarWrapper = styled.aside<{ $collapsed: boolean }>`
   width: ${(p) => (p.$collapsed ? 72 : 240)}px;
   min-width: ${(p) => (p.$collapsed ? 72 : 240)}px;
-  background: ${(p) => p.theme.gradients.sidebar};
+  background: ${(p) => p.theme.colors.sidebar};
   display: flex;
   flex-direction: column;
   transition: width 0.2s ease;
@@ -51,7 +51,7 @@ const SidebarWrapper = styled.aside<{ $collapsed: boolean }>`
   left: 0;
   bottom: 0;
   z-index: 100;
-  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.08);
+  border-right: 1px solid ${(p) => p.theme.colors.border};
 
   @media (max-width: 640px) {
     display: none;
@@ -69,12 +69,12 @@ const SidebarBrand = styled.div<{ $collapsed: boolean }>`
 `;
 
 const BrandIcon = styled(PiggyBankIcon)`
-  color: #fff;
+  color: ${(p) => p.theme.colors.text};
   flex-shrink: 0;
 `;
 
 const BrandText = styled.span<{ $visible: boolean }>`
-  color: #fff;
+  color: ${(p) => p.theme.colors.text};
   font-weight: 700;
   font-size: 18px;
   white-space: nowrap;
@@ -102,16 +102,16 @@ const NavLink = styled(Link)<{ $active?: boolean; $collapsed?: boolean }>`
   gap: ${(p) => (p.$collapsed ? 0 : 12)}px;
   padding: 10px ${(p) => (p.$collapsed ? 10 : 16)}px;
   border-radius: ${(p) => p.theme.radii.md};
-  color: ${(p) => (p.$active ? "#fff" : "rgba(255, 255, 255, 0.85)")};
+  color: ${(p) => (p.$active ? p.theme.colors.primary : p.theme.colors.textMuted)};
   text-decoration: none;
   font-size: 14px;
   font-weight: ${(p) => (p.$active ? 600 : 500)};
-  background: ${(p) => (p.$active ? "rgba(255, 255, 255, 0.2)" : "transparent")};
+  background: ${(p) => (p.$active ? p.theme.colors.accentSoft : "transparent")};
   transition: all 0.15s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.15);
-    color: #fff;
+    background: ${(p) => p.theme.colors.accentSoft};
+    color: ${(p) => p.theme.colors.primary};
   }
 `;
 
@@ -127,7 +127,7 @@ const NavLabel = styled.span<{ $visible: boolean }>`
 
 const SidebarFooter = styled.div<{ $collapsed?: boolean }>`
   padding: ${(p) => (p.$collapsed ? "12px 8px" : "16px 12px")};
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-top: 1px solid ${(p) => p.theme.colors.border};
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -142,14 +142,14 @@ const CollapseButton = styled.button<{ $collapsed?: boolean }>`
   width: 100%;
   background: transparent;
   border: none;
-  color: rgba(255, 255, 255, 0.9);
+  color: ${(p) => p.theme.colors.textMuted};
   cursor: pointer;
   font-size: 14px;
   border-radius: ${(p) => p.theme.radii.md};
   transition: background 0.15s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: ${(p) => p.theme.colors.accentSoft};
   }
 `;
 
@@ -160,9 +160,9 @@ const LogoutButton = styled.button<{ $collapsed?: boolean }>`
   gap: 12px;
   padding: 10px ${(p) => (p.$collapsed ? 10 : 16)}px;
   width: 100%;
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: #fff;
+  background: ${(p) => p.theme.colors.card};
+  border: 1px solid ${(p) => p.theme.colors.border};
+  color: ${(p) => p.theme.colors.textMuted};
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
@@ -170,7 +170,7 @@ const LogoutButton = styled.button<{ $collapsed?: boolean }>`
   transition: all 0.15s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.25);
+    background: ${(p) => p.theme.colors.accentSoft};
   }
 `;
 
@@ -272,6 +272,9 @@ const MoreMenuItem = styled(Link)`
 export function NavBar() {
   const logoutMutation = useLogout();
   const routerState = useRouterState();
+  const { month } = useSearch({ from: "/_authenticated" });
+  // styled(Link) erases the router's route typing, so the search object is cast here once.
+  const monthSearch = { month } as never;
   const currentPath = routerState.location.pathname;
   const { collapsed, toggleCollapse } = useSidebar();
   const [moreOpen, setMoreOpen] = useState(false);
@@ -293,6 +296,7 @@ export function NavBar() {
               <NavLink
                 key={item.to}
                 to={item.to}
+                search={monthSearch}
                 $active={isActive(item.to)}
                 $collapsed={collapsed}
               >
@@ -324,7 +328,12 @@ export function NavBar() {
         {primaryNavItems.map((item) => {
           const Icon = item.icon;
           return (
-            <BottomNavLink key={item.to} to={item.to} $active={isActive(item.to)}>
+            <BottomNavLink
+              key={item.to}
+              to={item.to}
+              search={monthSearch}
+              $active={isActive(item.to)}
+            >
               <Icon size={22} strokeWidth={2} />
               {item.label}
             </BottomNavLink>
@@ -343,7 +352,12 @@ export function NavBar() {
             {moreNavItems.map((item) => {
               const Icon = item.icon;
               return (
-                <MoreMenuItem key={item.to} to={item.to} onClick={() => setMoreOpen(false)}>
+                <MoreMenuItem
+                  key={item.to}
+                  to={item.to}
+                  search={monthSearch}
+                  onClick={() => setMoreOpen(false)}
+                >
                   <Icon size={18} strokeWidth={2} />
                   {item.label}
                 </MoreMenuItem>

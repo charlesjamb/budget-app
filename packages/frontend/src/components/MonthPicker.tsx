@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { addMonths } from "../lib/month.js";
 
 const Container = styled.div`
   display: flex;
@@ -8,7 +9,7 @@ const Container = styled.div`
   background: ${(p) => p.theme.colors.background};
   padding: 8px 16px;
   border-radius: ${(p) => p.theme.radii.pill};
-  box-shadow: ${(p) => p.theme.shadows.card};
+  border: 1px solid ${(p) => p.theme.colors.border};
 
   @media (max-width: 640px) {
     width: 100%;
@@ -31,7 +32,7 @@ const ArrowButton = styled.button`
 
   &:hover {
     background: ${(p) => p.theme.colors.primary};
-    color: #fff;
+    color: ${(p) => p.theme.colors.onPrimary};
     border-color: ${(p) => p.theme.colors.primary};
   }
 `;
@@ -50,12 +51,6 @@ function formatMonth(month: string): string {
   return date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
 }
 
-function addMonths(month: string, offset: number): string {
-  const [year, m] = month.split("-").map(Number);
-  const date = new Date(year, m - 1 + offset);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-}
-
 interface MonthPickerProps {
   month: string;
   onChange: (month: string) => void;
@@ -64,11 +59,19 @@ interface MonthPickerProps {
 export function MonthPicker({ month, onChange }: MonthPickerProps) {
   return (
     <Container>
-      <ArrowButton onClick={() => onChange(addMonths(month, -1))}>
+      <ArrowButton
+        type="button"
+        aria-label="Previous month"
+        onClick={() => onChange(addMonths(month, -1))}
+      >
         <ChevronLeft size={20} strokeWidth={2} />
       </ArrowButton>
       <MonthDisplay>{formatMonth(month)}</MonthDisplay>
-      <ArrowButton onClick={() => onChange(addMonths(month, 1))}>
+      <ArrowButton
+        type="button"
+        aria-label="Next month"
+        onClick={() => onChange(addMonths(month, 1))}
+      >
         <ChevronRight size={20} strokeWidth={2} />
       </ArrowButton>
     </Container>

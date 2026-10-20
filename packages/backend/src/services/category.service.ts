@@ -11,19 +11,27 @@ export function createCategoryService(db: AppDatabase) {
           name: budgetCategories.name,
           groupName: budgetCategories.groupName,
           type: budgetCategories.type,
+          icon: budgetCategories.icon,
         })
         .from(budgetCategories)
         .where(eq(budgetCategories.householdId, householdId))
         .all();
     },
 
-    create(householdId: number, name: string, groupName?: string, type?: "fixed" | "variable") {
+    create(
+      householdId: number,
+      name: string,
+      groupName?: string,
+      type?: "fixed" | "variable",
+      icon?: string,
+    ) {
       const result = db
         .insert(budgetCategories)
         .values({
           householdId,
           name,
           groupName: groupName ?? null,
+          icon: icon ?? null,
           ...(type && { type }),
         })
         .returning({
@@ -31,6 +39,7 @@ export function createCategoryService(db: AppDatabase) {
           name: budgetCategories.name,
           groupName: budgetCategories.groupName,
           type: budgetCategories.type,
+          icon: budgetCategories.icon,
         })
         .get();
       return result;
@@ -42,6 +51,7 @@ export function createCategoryService(db: AppDatabase) {
       name: string,
       groupName?: string | null,
       type?: "fixed" | "variable",
+      icon?: string | null,
     ) {
       const setValues: Record<string, unknown> = {
         name,
@@ -53,6 +63,9 @@ export function createCategoryService(db: AppDatabase) {
       if (type !== undefined) {
         setValues.type = type;
       }
+      if (icon !== undefined) {
+        setValues.icon = icon;
+      }
 
       const result = db
         .update(budgetCategories)
@@ -63,6 +76,7 @@ export function createCategoryService(db: AppDatabase) {
           name: budgetCategories.name,
           groupName: budgetCategories.groupName,
           type: budgetCategories.type,
+          icon: budgetCategories.icon,
         })
         .get();
       return result ?? null;

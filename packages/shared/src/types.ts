@@ -5,6 +5,7 @@ export type CategoryType = "fixed" | "variable";
 export interface User {
   id: number;
   email: string;
+  displayName: string | null;
 }
 
 export interface BudgetCategory {
@@ -12,6 +13,7 @@ export interface BudgetCategory {
   name: string;
   groupName?: string;
   type: CategoryType;
+  icon?: string | null;
 }
 
 export interface Transaction {
@@ -32,6 +34,7 @@ export interface Transaction {
   excludedReason: string | null;
   reimbursedAmount: number;
   reimbursementNote: string | null;
+  categoryLocked: boolean;
 }
 
 export interface MappingRule {
@@ -73,12 +76,14 @@ export interface CreateCategoryRequest {
   name: string;
   groupName?: string;
   type?: CategoryType;
+  icon?: string | null;
 }
 
 export interface UpdateCategoryRequest {
   name: string;
   groupName?: string;
   type?: CategoryType;
+  icon?: string | null;
 }
 
 export interface ImportResult {
@@ -220,6 +225,7 @@ export interface ReimbursementRequest {
 export interface ContributionMember {
   userId: number;
   email: string;
+  displayName: string | null;
   revenueCents: number;
 }
 

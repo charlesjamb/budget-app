@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import styled from "styled-components";
 import { Receipt, EyeOff, Eye, RotateCcw, X } from "lucide-react";
 import { MonthPicker } from "../../components/MonthPicker.js";
+import { useMonth } from "../../hooks/useMonth.js";
 import {
   PageTitle,
   TitleRow,
@@ -11,6 +12,7 @@ import {
   SecondaryButton,
   Input,
   Label,
+  Header,
 } from "../../components/ui.js";
 import {
   useTransactions,
@@ -19,15 +21,6 @@ import {
   useClearReimbursement,
 } from "../../hooks/useTransactions.js";
 import type { Transaction } from "@budget-app/shared";
-
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-  gap: 12px;
-`;
 
 const TableWrapper = styled.div`
   overflow-x: auto;
@@ -170,11 +163,6 @@ function formatAmount(cents: number): string {
   return (cents / 100).toFixed(2) + " \u20AC";
 }
 
-function getCurrentMonth(): string {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-}
-
 function formatDate(dateStr: string): string {
   const [y, m, d] = dateStr.split("-");
   return `${d}/${m}/${y}`;
@@ -185,7 +173,7 @@ export const Route = createFileRoute("/_authenticated/transactions")({
 });
 
 function TransactionsPage() {
-  const [month, setMonth] = useState(getCurrentMonth);
+  const [month, setMonth] = useMonth();
   const [excludeModal, setExcludeModal] = useState<{
     transaction: Transaction;
     reason: string;

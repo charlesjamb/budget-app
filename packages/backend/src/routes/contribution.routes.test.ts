@@ -26,6 +26,7 @@ describe("Contribution Routes", () => {
       expect(res.body.members[0]).toEqual({
         userId: ctx.userId,
         email: "test@example.com",
+        displayName: null,
         revenueCents: 0,
       });
     });

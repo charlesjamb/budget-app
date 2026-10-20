@@ -10,6 +10,7 @@ import {
   EditInput,
   Select,
   ErrorMessage,
+  EmptyState,
   PageTitle,
   TitleRow,
 } from "../../components/ui.js";
@@ -57,13 +58,6 @@ const Actions = styled.div`
   display: flex;
   gap: 8px;
   align-items: center;
-`;
-
-const EmptyState = styled.p`
-  text-align: center;
-  color: ${(p) => p.theme.colors.textMuted};
-  padding: 32px;
-  font-size: 15px;
 `;
 
 const GroupBadge = styled.span`

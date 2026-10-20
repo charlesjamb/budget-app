@@ -1,18 +1,17 @@
-import styled from "styled-components";
+import styled, { type DefaultTheme } from "styled-components";
 
 export const Button = styled.button`
-  background: ${(p) => p.theme.gradients.primary};
-  color: #fff;
+  background: ${(p) => p.theme.colors.primary};
+  color: ${(p) => p.theme.colors.onPrimary};
   border: none;
   padding: 8px 16px;
   border-radius: ${(p) => p.theme.radii.md};
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: ${(p) => p.theme.shadows.button};
 
   &:hover:not(:disabled) {
-    filter: brightness(1.05);
+    background: ${(p) => p.theme.colors.primaryDark};
   }
 
   &:disabled {
@@ -145,6 +144,82 @@ export const EmptyState = styled.p`
   color: ${(p) => p.theme.colors.textMuted};
   padding: 48px 32px;
   font-size: 16px;
+`;
+
+export const Header = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+`;
+
+export const SaveStatus = styled.span<{ $success?: boolean }>`
+  font-size: 13px;
+  color: ${(p) => (p.$success ? p.theme.colors.success : p.theme.colors.textMuted)};
+`;
+
+export const Table = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+`;
+
+export const Th = styled.th`
+  text-align: left;
+  padding: 12px 16px;
+  background: ${(p) => p.theme.colors.background};
+  border-bottom: 1px solid ${(p) => p.theme.colors.border};
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: ${(p) => p.theme.colors.textMuted};
+  white-space: nowrap;
+`;
+
+export const Td = styled.td`
+  padding: 10px 16px;
+  border-bottom: 1px solid ${(p) => p.theme.colors.border};
+  font-size: 14px;
+`;
+
+type ChipTone = "neutral" | "ok" | "warn" | "over" | "accent";
+
+const chipColors = (tone: ChipTone, theme: DefaultTheme) => {
+  switch (tone) {
+    case "ok":
+      return { bg: theme.colors.okSoft, fg: theme.colors.ok };
+    case "warn":
+      return { bg: theme.colors.warnSoft, fg: theme.colors.warn };
+    case "over":
+      return { bg: theme.colors.overSoft, fg: theme.colors.over };
+    case "accent":
+      return { bg: theme.colors.accentSoft, fg: theme.colors.primary };
+    default:
+      return { bg: theme.colors.background, fg: theme.colors.textMuted };
+  }
+};
+
+export const Chip = styled.span<{ $tone?: ChipTone }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: ${(p) => p.theme.radii.pill};
+  font-size: ${(p) => p.theme.fontSize.xs};
+  font-weight: 500;
+  white-space: nowrap;
+  background: ${(p) => chipColors(p.$tone ?? "neutral", p.theme).bg};
+  color: ${(p) => chipColors(p.$tone ?? "neutral", p.theme).fg};
+`;
+
+export const SectionHeader = styled.h2`
+  font-size: ${(p) => p.theme.fontSize.xs};
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: ${(p) => p.theme.colors.textMuted};
+  margin: ${(p) => p.theme.space.xl} 0 ${(p) => p.theme.space.sm};
 `;
 
 export const PageTitle = styled.h1`

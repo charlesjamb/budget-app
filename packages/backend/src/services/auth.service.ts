@@ -40,7 +40,7 @@ export function createAuthService(db: AppDatabase) {
 
       return {
         sessionId,
-        user: { id: user.id, email: user.email },
+        user: { id: user.id, email: user.email, displayName: user.displayName },
         householdId: membership?.householdId ?? null,
       };
     },
@@ -75,7 +75,7 @@ export function createAuthService(db: AppDatabase) {
         .get();
 
       return {
-        user: { id: user.id, email: user.email },
+        user: { id: user.id, email: user.email, displayName: user.displayName },
         householdId: membership?.householdId ?? null,
       };
     },

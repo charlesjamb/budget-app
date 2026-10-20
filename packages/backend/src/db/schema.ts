@@ -5,6 +5,7 @@ export const users = sqliteTable("users", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   email: text("email").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
+  displayName: text("display_name"),
   createdAt: text("created_at")
     .notNull()
     .default(sql`(datetime('now'))`),
@@ -53,6 +54,7 @@ export const budgetCategories = sqliteTable(
     name: text("name").notNull(),
     groupName: text("group_name"),
     type: text("type").notNull().default("variable"),
+    icon: text("icon"),
     createdAt: text("created_at")
       .notNull()
       .default(sql`(datetime('now'))`),
@@ -103,6 +105,7 @@ export const transactions = sqliteTable("transactions", {
   excludedReason: text("excluded_reason"),
   reimbursedAmount: integer("reimbursed_amount").notNull().default(0),
   reimbursementNote: text("reimbursement_note"),
+  categoryLocked: integer("category_locked").notNull().default(0),
   createdAt: text("created_at")
     .notNull()
     .default(sql`(datetime('now'))`),

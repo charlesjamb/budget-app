@@ -2,31 +2,26 @@ import { useState, useCallback, useMemo } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import styled from "styled-components";
 import { MonthPicker } from "../../components/MonthPicker.js";
+import { useMonth } from "../../hooks/useMonth.js";
 import { Scale } from "lucide-react";
-import { Button, AmountInput, EmptyState, PageTitle, TitleRow } from "../../components/ui.js";
+import {
+  Button,
+  AmountInput,
+  EmptyState,
+  Header,
+  PageTitle,
+  SaveStatus,
+  TitleRow,
+} from "../../components/ui.js";
 import { useContributions, useUpsertContributions } from "../../hooks/useContributions.js";
 import { useBudgets } from "../../hooks/useBudgets.js";
 import { useMonthlySummary } from "../../hooks/useTransactions.js";
 import type { ContributionMember } from "@budget-app/shared";
 
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-  gap: 12px;
-`;
-
 const HeaderActions = styled.div`
   display: flex;
   gap: 8px;
   align-items: center;
-`;
-
-const SaveStatus = styled.span<{ $success?: boolean }>`
-  font-size: 13px;
-  color: ${(p) => (p.$success ? p.theme.colors.success : p.theme.colors.textMuted)};
 `;
 
 const Section = styled.div`
@@ -120,17 +115,12 @@ function formatAmount(cents: number): string {
   return (cents / 100).toFixed(2) + " €";
 }
 
-function getCurrentMonth(): string {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-}
-
 export const Route = createFileRoute("/_authenticated/split")({
   component: SplitPage,
 });
 
 function SplitPage() {
-  const [month, setMonth] = useState(getCurrentMonth);
+  const [month, setMonth] = useMonth();
   const [localRevenues, setLocalRevenues] = useState<Record<number, string>>({});
   const [dirty, setDirty] = useState(false);
   const [saved, setSaved] = useState(false);

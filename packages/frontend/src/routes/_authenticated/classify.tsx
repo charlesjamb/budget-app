@@ -7,7 +7,7 @@ import { useCategories } from "../../hooks/useCategories.js";
 import { useClassify } from "../../hooks/useMappingRules.js";
 import type { UncategorizedGroup } from "@budget-app/shared";
 
-import { PageTitle, TitleRow } from "../../components/ui.js";
+import { PageTitle, TitleRow, CardHover, Select as BaseSelect } from "../../components/ui.js";
 
 const EmptyState = styled.div`
   text-align: center;
@@ -23,21 +23,6 @@ const CardList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
-`;
-
-const Card = styled.div`
-  background: ${(p) => p.theme.colors.card};
-  border-radius: ${(p) => p.theme.radii.lg};
-  box-shadow: ${(p) => p.theme.shadows.card};
-  overflow: hidden;
-  transition:
-    transform 0.2s,
-    box-shadow 0.2s;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: ${(p) => p.theme.shadows.cardHover};
-  }
 `;
 
 const CardHeader = styled.div`
@@ -75,20 +60,9 @@ const Count = styled.span`
   font-size: 13px;
 `;
 
-const Select = styled.select`
-  padding: 8px 12px;
-  border: 1px solid ${(p) => p.theme.colors.borderLight};
-  border-radius: ${(p) => p.theme.radii.md};
-  font-size: 14px;
+const Select = styled(BaseSelect)`
   min-width: 200px;
   flex-shrink: 0;
-  background: ${(p) => p.theme.colors.card};
-
-  &:focus {
-    outline: none;
-    border-color: ${(p) => p.theme.colors.primary};
-    box-shadow: ${(p) => p.theme.shadows.focus};
-  }
 `;
 
 const TransactionList = styled.div`
@@ -187,7 +161,7 @@ function ClassifyPage() {
           {subcategories.map((sub: UncategorizedGroup) => {
             const key = groupKey(sub);
             return (
-              <Card key={key}>
+              <CardHover key={key}>
                 <CardHeader>
                   <HeaderLeft onClick={() => toggleExpand(key)}>
                     <SubCategoryName>{sub.labelSimplified}</SubCategoryName>
@@ -230,7 +204,7 @@ function ClassifyPage() {
                     ))}
                   </TransactionList>
                 )}
-              </Card>
+              </CardHover>
             );
           })}
         </CardList>

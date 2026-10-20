@@ -52,6 +52,25 @@ describe("Category Routes", () => {
       expect(res.body.category.name).toBe("Food");
     });
 
+    it("should store an icon", async () => {
+      const res = await request(app)
+        .post("/api/categories")
+        .set("Cookie", ctx.sessionCookie)
+        .send({ name: "Food", icon: "🥖" });
+
+      expect(res.status).toBe(201);
+      expect(res.body.category.icon).toBe("🥖");
+    });
+
+    it("should default the icon to null", async () => {
+      const res = await request(app)
+        .post("/api/categories")
+        .set("Cookie", ctx.sessionCookie)
+        .send({ name: "Food" });
+
+      expect(res.body.category.icon).toBeNull();
+    });
+
     it("should reject duplicate names", async () => {
       createCategory(ctx.db, ctx.householdId, "Food");
 
@@ -114,6 +133,28 @@ describe("Category Routes", () => {
 
       expect(res.status).toBe(200);
       expect(res.body.category.name).toBe("Groceries");
+    });
+
+    it("should update and clear the icon", async () => {
+      const cat = createCategory(ctx.db, ctx.householdId, "Food");
+
+      const set = await request(app)
+        .put(`/api/categories/${cat.id}`)
+        .set("Cookie", ctx.sessionCookie)
+        .send({ name: "Food", icon: "🥖" });
+      expect(set.body.category.icon).toBe("🥖");
+
+      const kept = await request(app)
+        .put(`/api/categories/${cat.id}`)
+        .set("Cookie", ctx.sessionCookie)
+        .send({ name: "Food" });
+      expect(kept.body.category.icon).toBe("🥖");
+
+      const cleared = await request(app)
+        .put(`/api/categories/${cat.id}`)
+        .set("Cookie", ctx.sessionCookie)
+        .send({ name: "Food", icon: "" });
+      expect(cleared.body.category.icon).toBeNull();
     });
 
     it("should return 404 for non-existent category", async () => {

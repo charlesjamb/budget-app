@@ -1,9 +1,10 @@
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import styled, { useTheme } from "styled-components";
 import type { CategorySummary } from "@budget-app/shared";
 import { useMonthlySummary, useTransactions } from "../../hooks/useTransactions.js";
 import { MonthPicker } from "../../components/MonthPicker.js";
+import { useMonth } from "../../hooks/useMonth.js";
 import { CategoryExpenseCard } from "../../components/CategoryExpenseCard.js";
 import { ProgressBar } from "../../components/ProgressBar.js";
 import { LayoutDashboard } from "lucide-react";
@@ -124,18 +125,13 @@ function formatAmount(cents: number): string {
   return (cents / 100).toFixed(2) + " \u20AC";
 }
 
-function getCurrentMonth(): string {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-}
-
 export const Route = createFileRoute("/_authenticated/")({
   component: DashboardPage,
 });
 
 function DashboardPage() {
   const theme = useTheme();
-  const [month, setMonth] = useState(getCurrentMonth);
+  const [month, setMonth] = useMonth();
   const summaryQuery = useMonthlySummary(month);
   const transactionsQuery = useTransactions(month);
 
