@@ -103,6 +103,7 @@ export interface CategorySummary {
   transactionCount: number;
   budgetAmountCents?: number;
   type?: CategoryType;
+  icon?: string | null;
 }
 
 export interface MonthlySummary {

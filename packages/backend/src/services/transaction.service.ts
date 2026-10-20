@@ -107,6 +107,7 @@ export function createTransactionService(db: AppDatabase) {
           id: budgetCategories.id,
           name: budgetCategories.name,
           type: budgetCategories.type,
+          icon: budgetCategories.icon,
           totalAmount:
             sql<number>`sum(${transactions.amount} - ${transactions.reimbursedAmount})`.as(
               "total_amount",
@@ -122,7 +123,12 @@ export function createTransactionService(db: AppDatabase) {
             eq(transactions.excluded, 0),
           ),
         )
-        .groupBy(budgetCategories.id, budgetCategories.name, budgetCategories.type)
+        .groupBy(
+          budgetCategories.id,
+          budgetCategories.name,
+          budgetCategories.type,
+          budgetCategories.icon,
+        )
         .all();
 
       // Uncategorized transactions

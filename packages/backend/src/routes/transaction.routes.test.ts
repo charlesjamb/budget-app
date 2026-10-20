@@ -1,5 +1,7 @@
 import { describe, it, expect, beforeEach } from "vite-plus/test";
 import request from "supertest";
+import { eq } from "drizzle-orm";
+import { budgetCategories } from "../db/schema.js";
 import { createApp } from "../app.js";
 import {
   setupTestContext,
@@ -220,6 +222,26 @@ describe("Transaction Routes", () => {
   });
 
   describe("GET /api/transactions/monthly-summary", () => {
+    it("should include the category icon", async () => {
+      const food = createCategory(ctx.db, ctx.householdId, "Food");
+      ctx.db
+        .update(budgetCategories)
+        .set({ icon: "🥖" })
+        .where(eq(budgetCategories.id, food.id))
+        .run();
+      createTransaction(ctx.db, ctx.householdId, {
+        dateOperation: "2026-02-10",
+        amount: 1500,
+        budgetCategoryId: food.id,
+      });
+
+      const res = await request(app)
+        .get("/api/transactions/monthly-summary?month=2026-02")
+        .set("Cookie", ctx.sessionCookie);
+
+      expect(res.body.categories[0].icon).toBe("🥖");
+    });
+
     it("should return monthly summary grouped by category", async () => {
       const food = createCategory(ctx.db, ctx.householdId, "Food");
       const transport = createCategory(ctx.db, ctx.householdId, "Transport");
