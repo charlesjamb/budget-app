@@ -39,6 +39,7 @@ describe("History Page", () => {
     const row = screen.getByText(/Food/).closest("tr")!;
     expect(within(row).getByText(/421/)).toBeInTheDocument();
     expect(within(row).getByText(/140/)).toBeInTheDocument();
+    expect(within(row).getByText(/281/)).toBeInTheDocument();
   });
 
   it("should request the selected range preset", async () => {

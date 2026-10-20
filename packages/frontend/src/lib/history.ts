@@ -7,10 +7,11 @@ export function niceCeil(value: number): number {
   return step * magnitude;
 }
 
-/** Mean over every month in range, counting months without spending as 0. */
+/** Mean over the months in range that have transactions; months without any are left out. */
 export function averageOverMonths(amounts: Record<string, number>, months: string[]): number {
-  if (months.length === 0) return 0;
-  return Math.round(months.reduce((sum, m) => sum + (amounts[m] ?? 0), 0) / months.length);
+  const active = months.filter((m) => amounts[m] !== undefined);
+  if (active.length === 0) return 0;
+  return Math.round(active.reduce((sum, m) => sum + amounts[m], 0) / active.length);
 }
 
 export function isOverBudget(spentCents: number, budgetCents: number | undefined): boolean {
