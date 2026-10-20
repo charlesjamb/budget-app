@@ -11,6 +11,8 @@ const NO_SPEND = { spent: 0, budget: 0 };
 const Svg = styled.svg`
   display: block;
   width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
   height: auto;
   font-family: inherit;
 `;

@@ -418,7 +418,7 @@ function BudgetPage() {
                                 {overspent ? " ⚠" : ""}
                               </Muted>
                               <PrevInline>
-                                {prevName}:{" "}
+                                {shortMonthName(prevMonth)}:{" "}
                                 {row.prevBudgetCents > 0
                                   ? formatAmount(row.prevBudgetCents, { decimals: 0 })
                                   : "–"}{" "}

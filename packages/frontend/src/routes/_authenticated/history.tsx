@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import styled from "styled-components";
 import { BarChart3 } from "lucide-react";
@@ -112,6 +112,19 @@ const Td = styled.td<{ $over?: boolean; $muted?: boolean }>`
   }
 `;
 
+/** The sparkline column is dropped on phones so the latest month stays next to the average. */
+const TrendTh = styled(Th)`
+  @media (max-width: 640px) {
+    display: none;
+  }
+`;
+
+const TrendTd = styled(Td)`
+  @media (max-width: 640px) {
+    display: none;
+  }
+`;
+
 function formatMonthHeader(month: string): string {
   const [y, m] = month.split("-").map(Number);
   return new Date(y, m - 1, 1).toLocaleDateString("en-US", { month: "short", year: "2-digit" });
@@ -137,6 +150,13 @@ function HistoryPage() {
   const historyQuery = useHistory(from, to);
 
   const data = historyQuery.data;
+  const tableScrollRef = useRef<HTMLDivElement>(null);
+
+  // On narrow screens the table overflows sideways: start at the most recent month.
+  useEffect(() => {
+    const el = tableScrollRef.current;
+    if (el) el.scrollLeft = el.scrollWidth;
+  }, [data]);
   const rows = data
     ? data.categories
         .map((cat) => ({ cat, avg: averageOverMonths(cat.amounts, data.months) }))
@@ -181,7 +201,7 @@ function HistoryPage() {
           </Card>
 
           <SectionHeader>By category</SectionHeader>
-          <TableWrapper>
+          <TableWrapper ref={tableScrollRef}>
             <Table>
               <thead>
                 <tr>
@@ -190,7 +210,7 @@ function HistoryPage() {
                     <Th key={m}>{formatMonthHeader(m)}</Th>
                   ))}
                   <Th>Avg</Th>
-                  <Th>Trend</Th>
+                  <TrendTh>Trend</TrendTh>
                 </tr>
               </thead>
               <tbody>
@@ -210,9 +230,9 @@ function HistoryPage() {
                       );
                     })}
                     <Td>{formatAmount(avg, { decimals: 0 })}</Td>
-                    <Td>
+                    <TrendTd>
                       <Sparkline values={data.months.map((m) => cat.amounts[m] ?? 0)} />
-                    </Td>
+                    </TrendTd>
                   </tr>
                 ))}
               </tbody>

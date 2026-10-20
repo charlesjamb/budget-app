@@ -91,6 +91,18 @@ const InlineSelect = styled(Select)`
   padding: 4px 8px;
 `;
 
+const HideOnMobileTh = styled(Th)`
+  @media (max-width: 640px) {
+    display: none;
+  }
+`;
+
+const HideOnMobileTd = styled(Td)`
+  @media (max-width: 640px) {
+    display: none;
+  }
+`;
+
 const TableScroll = styled.div`
   @media (max-width: 640px) {
     width: 100%;
@@ -111,8 +123,6 @@ const Table = styled(BaseTable)`
 
   @media (max-width: 640px) {
     border-radius: 0;
-    width: max-content;
-    min-width: 100%;
   }
 `;
 
@@ -318,7 +328,7 @@ function SettingsPage() {
                 <thead>
                   <tr>
                     <Th>Merchant</Th>
-                    <Th>Bank sub-category</Th>
+                    <HideOnMobileTh>Bank sub-category</HideOnMobileTh>
                     <Th>Category</Th>
                     <Th />
                   </tr>
@@ -327,7 +337,7 @@ function SettingsPage() {
                   {rules.map((rule) => (
                     <tr key={rule.id}>
                       <Td>{rule.labelSimplified}</Td>
-                      <Td>{rule.bankSubCategory}</Td>
+                      <HideOnMobileTd>{rule.bankSubCategory}</HideOnMobileTd>
                       <Td>
                         {editingRule === rule.id ? (
                           <InlineSelect

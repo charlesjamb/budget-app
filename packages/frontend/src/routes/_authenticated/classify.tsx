@@ -105,6 +105,9 @@ const Choices = styled.div`
 `;
 
 const Choice = styled.button<{ $suggested?: boolean }>`
+  display: inline-flex;
+  align-items: center;
+  gap: ${(p) => p.theme.space.xs};
   padding: 8px 14px;
   border-radius: ${(p) => p.theme.radii.pill};
   font-size: ${(p) => p.theme.fontSize.md};
@@ -242,7 +245,7 @@ function ClassifyPage() {
                       disabled={classifyMutation.isPending}
                       onClick={() => handleClassify(cat.id)}
                     >
-                      {cat.icon ? `${cat.icon} ` : ""}
+                      {cat.icon && <span aria-hidden>{cat.icon}</span>}
                       {cat.name}
                     </Choice>
                   ))}
@@ -262,7 +265,7 @@ function ClassifyPage() {
                     disabled={classifyMutation.isPending}
                     onClick={() => handleClassify(cat.id)}
                   >
-                    {cat.icon ? `${cat.icon} ` : ""}
+                    {cat.icon && <span aria-hidden>{cat.icon}</span>}
                     {cat.name}
                   </Choice>
                 ))}

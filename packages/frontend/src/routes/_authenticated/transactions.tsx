@@ -429,7 +429,7 @@ function TransactionsPage() {
                             aria-label={`Change category of ${merchant}`}
                             onClick={() => setCategoryTransaction(tx)}
                           >
-                            {icon}
+                            {icon && <span aria-hidden>{icon}</span>}
                             {tx.budgetCategoryName ?? "Uncategorized"}
                             {tx.categoryLocked && <Lock size={11} aria-label="Set manually" />}
                           </ChipButton>
