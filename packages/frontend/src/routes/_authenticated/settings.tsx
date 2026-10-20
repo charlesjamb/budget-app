@@ -166,7 +166,7 @@ const ThemeOption = styled.button<{ $active: boolean }>`
   gap: 8px;
   padding: 10px 16px;
   background: ${(p) => (p.$active ? p.theme.colors.primary : p.theme.colors.card)};
-  color: ${(p) => (p.$active ? "#fff" : p.theme.colors.text)};
+  color: ${(p) => (p.$active ? p.theme.colors.onPrimary : p.theme.colors.text)};
   border: none;
   font-size: 14px;
   font-weight: 500;
@@ -177,7 +177,7 @@ const ThemeOption = styled.button<{ $active: boolean }>`
 
   &:hover:not(:disabled) {
     background: ${(p) => (p.$active ? p.theme.colors.primaryDark : p.theme.colors.background)};
-    color: ${(p) => (p.$active ? "#fff" : p.theme.colors.text)};
+    color: ${(p) => (p.$active ? p.theme.colors.onPrimary : p.theme.colors.text)};
   }
 
   &:not(:last-child) {
