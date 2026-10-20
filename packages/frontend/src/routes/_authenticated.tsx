@@ -27,7 +27,8 @@ const ContentWrapper = styled.div`
   padding: 24px;
 
   @media (max-width: 640px) {
-    padding: 16px 16px 80px;
+    padding-block: 16px calc(80px + env(safe-area-inset-bottom, 0px));
+    padding-inline: 16px;
   }
 `;
 

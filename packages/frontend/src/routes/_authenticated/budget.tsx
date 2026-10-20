@@ -1,3 +1,4 @@
+import { FlowSteps } from "../../components/FlowSteps.js";
 import { useState, useCallback, useMemo } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import styled from "styled-components";
@@ -285,6 +286,8 @@ function BudgetPage() {
         <Wallet size={28} strokeWidth={2} />
         <PageTitle>Budget</PageTitle>
       </TitleRow>
+
+      <FlowSteps flow="plan" current="/budget" month={month} />
 
       <Header>
         <MonthPicker month={month} onChange={handleMonthChange} />

@@ -20,6 +20,8 @@ import { Route as AuthenticatedImportRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedSplitRouteImport } from './routes/_authenticated/split'
 import { Route as AuthenticatedTransactionsRouteImport } from './routes/_authenticated/transactions'
+import { Route as AuthenticatedCloseSettleRouteImport } from './routes/_authenticated/close.settle'
+import { Route as AuthenticatedPlanWiresRouteImport } from './routes/_authenticated/plan.wires'
 
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
@@ -76,6 +78,17 @@ const AuthenticatedTransactionsRoute =
     path: '/transactions',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedCloseSettleRoute =
+  AuthenticatedCloseSettleRouteImport.update({
+    id: '/close/settle',
+    path: '/close/settle',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedPlanWiresRoute = AuthenticatedPlanWiresRouteImport.update({
+  id: '/plan/wires',
+  path: '/plan/wires',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
@@ -88,6 +101,8 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/split': typeof AuthenticatedSplitRoute
   '/transactions': typeof AuthenticatedTransactionsRoute
+  '/close/settle': typeof AuthenticatedCloseSettleRoute
+  '/plan/wires': typeof AuthenticatedPlanWiresRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -100,6 +115,8 @@ export interface FileRoutesByTo {
   '/split': typeof AuthenticatedSplitRoute
   '/transactions': typeof AuthenticatedTransactionsRoute
   '/': typeof AuthenticatedIndexRoute
+  '/close/settle': typeof AuthenticatedCloseSettleRoute
+  '/plan/wires': typeof AuthenticatedPlanWiresRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -114,6 +131,8 @@ export interface FileRoutesById {
   '/_authenticated/split': typeof AuthenticatedSplitRoute
   '/_authenticated/transactions': typeof AuthenticatedTransactionsRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/close/settle': typeof AuthenticatedCloseSettleRoute
+  '/_authenticated/plan/wires': typeof AuthenticatedPlanWiresRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -128,6 +147,8 @@ export interface FileRouteTypes {
     | '/settings'
     | '/split'
     | '/transactions'
+    | '/close/settle'
+    | '/plan/wires'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -140,6 +161,8 @@ export interface FileRouteTypes {
     | '/split'
     | '/transactions'
     | '/'
+    | '/close/settle'
+    | '/plan/wires'
   id:
     | '__root__'
     | '/_authenticated'
@@ -153,6 +176,8 @@ export interface FileRouteTypes {
     | '/_authenticated/split'
     | '/_authenticated/transactions'
     | '/_authenticated/'
+    | '/_authenticated/close/settle'
+    | '/_authenticated/plan/wires'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -239,6 +264,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTransactionsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/close/settle': {
+      id: '/_authenticated/close/settle'
+      path: '/close/settle'
+      fullPath: '/close/settle'
+      preLoaderRoute: typeof AuthenticatedCloseSettleRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/plan/wires': {
+      id: '/_authenticated/plan/wires'
+      path: '/plan/wires'
+      fullPath: '/plan/wires'
+      preLoaderRoute: typeof AuthenticatedPlanWiresRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
@@ -252,6 +291,8 @@ interface AuthenticatedRouteChildren {
   AuthenticatedSplitRoute: typeof AuthenticatedSplitRoute
   AuthenticatedTransactionsRoute: typeof AuthenticatedTransactionsRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedCloseSettleRoute: typeof AuthenticatedCloseSettleRoute
+  AuthenticatedPlanWiresRoute: typeof AuthenticatedPlanWiresRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -264,6 +305,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedSplitRoute: AuthenticatedSplitRoute,
   AuthenticatedTransactionsRoute: AuthenticatedTransactionsRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedCloseSettleRoute: AuthenticatedCloseSettleRoute,
+  AuthenticatedPlanWiresRoute: AuthenticatedPlanWiresRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

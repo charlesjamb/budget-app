@@ -4,10 +4,6 @@ import styled from "styled-components";
 import { useSidebar } from "../contexts/SidebarContext.js";
 import {
   LayoutDashboard,
-  Wallet,
-  Scale,
-  Upload,
-  Tags,
   FolderOpen,
   BarChart3,
   Receipt,
@@ -15,29 +11,48 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
-  MoreHorizontal,
+  CalendarDays,
+  Menu,
 } from "lucide-react";
 import { useLogout } from "../hooks/useAuth.js";
+import { useMonthRhythm } from "../hooks/useMonthRhythm.js";
+import { useUncategorizedSubcategories } from "../hooks/useTransactions.js";
 import { PiggyBankIcon } from "./PiggyBankIcon.js";
 
-const navItems = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/budget", label: "Budget", icon: Wallet },
-  { to: "/split", label: "Split", icon: Scale },
-  { to: "/import", label: "Import", icon: Upload },
-  { to: "/classify", label: "Classify", icon: Tags },
+const overviewItems = [
+  { to: "/", label: "Overview", icon: LayoutDashboard },
   { to: "/transactions", label: "Transactions", icon: Receipt },
-  { to: "/categories", label: "Categories", icon: FolderOpen },
   { to: "/history", label: "History", icon: BarChart3 },
+] as const;
+
+const planItems = [
+  { to: "/budget", label: "Budget" },
+  { to: "/plan/wires", label: "Wires" },
+] as const;
+
+const closeItems = [
+  { to: "/import", label: "Import" },
+  { to: "/classify", label: "Classify" },
+  { to: "/close/settle", label: "Settle up" },
+] as const;
+
+const setupItems = [
+  { to: "/categories", label: "Categories", icon: FolderOpen },
   { to: "/settings", label: "Settings", icon: Settings },
 ] as const;
 
-const primaryNavItems = navItems.filter((item) =>
-  ["/", "/budget", "/split", "/import", "/classify", "/transactions", "/settings"].includes(
-    item.to,
-  ),
-);
-const moreNavItems = navItems.filter((item) => ["/categories", "/history"].includes(item.to));
+const sheetItems = [
+  { to: "/history", label: "History", icon: BarChart3 },
+  { to: "/categories", label: "Categories", icon: FolderOpen },
+  { to: "/settings", label: "Settings", icon: Settings },
+] as const;
+
+const FLOW_PATHS = ["/budget", "/plan", "/import", "/classify", "/close"];
+
+function shortMonthName(month: string): string {
+  const [year, m] = month.split("-").map(Number);
+  return new Date(year, m - 1).toLocaleDateString("en-US", { month: "short" });
+}
 
 const SidebarWrapper = styled.aside<{ $collapsed: boolean }>`
   width: ${(p) => (p.$collapsed ? 72 : 240)}px;
@@ -88,14 +103,35 @@ const BrandText = styled.span<{ $visible: boolean }>`
 
 const NavList = styled.nav`
   flex: 1;
-  padding: 16px 12px;
+  padding: 8px 12px 16px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   overflow-y: auto;
 `;
 
+const NavGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+`;
+
+const GroupLabel = styled.div<{ $collapsed: boolean; $emphasised?: boolean }>`
+  margin-top: ${(p) => p.theme.space.lg};
+  padding: ${(p) => (p.$collapsed ? "0" : `4px ${p.theme.space.lg}`)};
+  font-size: ${(p) => p.theme.fontSize.xs};
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: ${(p) => (p.$emphasised ? p.theme.colors.primary : p.theme.colors.textLight)};
+  border-top: ${(p) => (p.$collapsed ? `1px solid ${p.theme.colors.border}` : "none")};
+  height: ${(p) => (p.$collapsed ? "1px" : "auto")};
+  overflow: hidden;
+`;
+
 const NavLink = styled(Link)<{ $active?: boolean; $collapsed?: boolean }>`
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: ${(p) => (p.$collapsed ? "center" : "flex-start")};
@@ -120,9 +156,51 @@ const NavLabel = styled.span<{ $visible: boolean }>`
   overflow: hidden;
   opacity: ${(p) => (p.$visible ? 1 : 0)};
   width: ${(p) => (p.$visible ? "auto" : 0)};
+  flex: ${(p) => (p.$visible ? 1 : "none")};
   transition:
     opacity 0.15s,
     width 0.15s;
+`;
+
+const StepDot = styled.span<{ $active?: boolean }>`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: ${(p) => p.theme.radii.pill};
+  font-size: ${(p) => p.theme.fontSize.xs};
+  font-weight: 600;
+  background: ${(p) => (p.$active ? p.theme.colors.primary : p.theme.colors.border)};
+  color: ${(p) => (p.$active ? p.theme.colors.onPrimary : p.theme.colors.textMuted)};
+`;
+
+const Badge = styled.span<{ $collapsed?: boolean }>`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: ${(p) => (p.$collapsed ? "0" : "0 6px")};
+  border-radius: ${(p) => p.theme.radii.pill};
+  background: ${(p) => p.theme.colors.primary};
+  color: ${(p) => p.theme.colors.onPrimary};
+  font-size: ${(p) => p.theme.fontSize.xs};
+  font-weight: 600;
+  line-height: 1;
+
+  ${(p) =>
+    p.$collapsed &&
+    `
+    position: absolute;
+    top: 4px;
+    right: 8px;
+    min-width: 8px;
+    width: 8px;
+    height: 8px;
+    font-size: 0;
+  `}
 `;
 
 const SidebarFooter = styled.div<{ $collapsed?: boolean }>`
@@ -180,12 +258,11 @@ const BottomNav = styled.nav`
   bottom: 0;
   left: 0;
   right: 0;
-  height: 60px;
+  height: calc(60px + env(safe-area-inset-bottom, 0px));
+  padding: 0 8px env(safe-area-inset-bottom, 0px);
   background: ${(p) => p.theme.colors.card};
   border-top: 1px solid ${(p) => p.theme.colors.border};
   z-index: 100;
-  padding: 0 8px;
-  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.06);
 
   @media (max-width: 640px) {
     display: flex;
@@ -194,7 +271,7 @@ const BottomNav = styled.nav`
   }
 `;
 
-const BottomNavLink = styled(Link)<{ $active?: boolean }>`
+const tabStyles = `
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -202,9 +279,14 @@ const BottomNavLink = styled(Link)<{ $active?: boolean }>`
   justify-content: center;
   gap: 2px;
   padding: 8px 4px;
-  color: ${(p) => (p.$active ? p.theme.colors.primary : p.theme.colors.textMuted)};
+  font-size: 11px;
   text-decoration: none;
-  font-size: 10px;
+  cursor: pointer;
+`;
+
+const BottomNavLink = styled(Link)<{ $active?: boolean }>`
+  ${tabStyles}
+  color: ${(p) => (p.$active ? p.theme.colors.primary : p.theme.colors.textMuted)};
   font-weight: ${(p) => (p.$active ? 600 : 500)};
   border-radius: ${(p) => p.theme.radii.sm};
   transition: all 0.15s;
@@ -215,20 +297,12 @@ const BottomNavLink = styled(Link)<{ $active?: boolean }>`
   }
 `;
 
-const MoreButton = styled.button<{ $active?: boolean }>`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  padding: 8px 4px;
+const MenuButton = styled.button<{ $active?: boolean }>`
+  ${tabStyles}
   background: none;
   border: none;
   color: ${(p) => (p.$active ? p.theme.colors.primary : p.theme.colors.textMuted)};
-  font-size: 10px;
   font-weight: ${(p) => (p.$active ? 600 : 500)};
-  cursor: pointer;
   border-radius: ${(p) => p.theme.radii.sm};
   transition: all 0.15s;
 
@@ -238,49 +312,83 @@ const MoreButton = styled.button<{ $active?: boolean }>`
   }
 `;
 
-const MoreMenu = styled.div<{ $open: boolean }>`
+const Backdrop = styled.div`
   position: fixed;
-  bottom: 70px;
-  right: 16px;
-  background: ${(p) => p.theme.colors.card};
-  border-radius: ${(p) => p.theme.radii.md};
-  box-shadow: ${(p) => p.theme.shadows.cardHover};
-  padding: 8px;
-  display: ${(p) => (p.$open ? "flex" : "none")};
-  flex-direction: column;
-  gap: 2px;
-  z-index: 101;
-  min-width: 140px;
+  inset: 0;
+  z-index: 100;
+  background: ${(p) => p.theme.colors.overlay};
 `;
 
-const MoreMenuItem = styled(Link)`
+const Sheet = styled.div`
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 101;
+  background: ${(p) => p.theme.colors.card};
+  border-radius: ${(p) => p.theme.radii.lg} ${(p) => p.theme.radii.lg} 0 0;
+  padding: ${(p) => p.theme.space.sm} ${(p) => p.theme.space.lg}
+    calc(${(p) => p.theme.space.lg} + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+`;
+
+const SheetItem = styled(Link)`
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
+  gap: 12px;
+  padding: 14px 12px;
   color: ${(p) => p.theme.colors.text};
   text-decoration: none;
-  font-size: 14px;
-  border-radius: ${(p) => p.theme.radii.sm};
-  transition: background 0.15s;
+  font-size: ${(p) => p.theme.fontSize.lg};
+  border-radius: ${(p) => p.theme.radii.md};
 
   &:hover {
     background: ${(p) => p.theme.colors.background};
   }
+`;
+
+const SheetButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 12px;
+  background: none;
+  border: none;
+  border-top: 1px solid ${(p) => p.theme.colors.border};
+  color: ${(p) => p.theme.colors.textMuted};
+  font-size: ${(p) => p.theme.fontSize.lg};
+  cursor: pointer;
+  text-align: left;
 `;
 
 export function NavBar() {
   const logoutMutation = useLogout();
   const routerState = useRouterState();
   const { month } = useSearch({ from: "/_authenticated" });
-  // styled(Link) erases the router's route typing, so the search object is cast here once.
-  const monthSearch = { month } as never;
-  const currentPath = routerState.location.pathname;
+  const { planMonth, closeMonth, planEmphasised } = useMonthRhythm();
+  const { data: uncategorized } = useUncategorizedSubcategories();
   const { collapsed, toggleCollapse } = useSidebar();
-  const [moreOpen, setMoreOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
+  const currentPath = routerState.location.pathname;
   const isActive = (to: string) => (to === "/" ? currentPath === "/" : currentPath.startsWith(to));
-  const isMoreActive = moreNavItems.some((item) => isActive(item.to));
+  const inFlow = FLOW_PATHS.some((path) => currentPath.startsWith(path));
+  const inSheet = sheetItems.some((item) => isActive(item.to));
+
+  const unclassifiedCount = (uncategorized?.subcategories ?? []).reduce(
+    (sum, group) => sum + group.count,
+    0,
+  );
+
+  // styled(Link) erases the router's route typing, so search objects are cast here once.
+  const searchFor = (value: string | undefined) => ({ month: value }) as never;
+  const keepMonth = searchFor(month);
+
+  const monthTab = planEmphasised
+    ? { to: "/budget", search: searchFor(planMonth) }
+    : { to: "/import", search: searchFor(closeMonth) };
 
   return (
     <>
@@ -290,21 +398,81 @@ export function NavBar() {
           <BrandText $visible={!collapsed}>Budget</BrandText>
         </SidebarBrand>
         <NavList>
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            return (
+          <NavGroup>
+            {overviewItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  search={keepMonth}
+                  $active={isActive(item.to)}
+                  $collapsed={collapsed}
+                >
+                  <Icon size={20} strokeWidth={2} />
+                  <NavLabel $visible={!collapsed}>{item.label}</NavLabel>
+                </NavLink>
+              );
+            })}
+          </NavGroup>
+
+          <NavGroup>
+            <GroupLabel $collapsed={collapsed} $emphasised={planEmphasised}>
+              {!collapsed && `Plan · ${shortMonthName(planMonth)}`}
+            </GroupLabel>
+            {planItems.map((item, i) => (
               <NavLink
                 key={item.to}
                 to={item.to}
-                search={monthSearch}
+                search={searchFor(planMonth)}
                 $active={isActive(item.to)}
                 $collapsed={collapsed}
               >
-                <Icon size={20} strokeWidth={2} />
+                <StepDot $active={isActive(item.to)}>{i + 1}</StepDot>
                 <NavLabel $visible={!collapsed}>{item.label}</NavLabel>
               </NavLink>
-            );
-          })}
+            ))}
+          </NavGroup>
+
+          <NavGroup>
+            <GroupLabel $collapsed={collapsed}>
+              {!collapsed && `Close · ${shortMonthName(closeMonth)}`}
+            </GroupLabel>
+            {closeItems.map((item, i) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                search={searchFor(closeMonth)}
+                $active={isActive(item.to)}
+                $collapsed={collapsed}
+              >
+                <StepDot $active={isActive(item.to)}>{i + 1}</StepDot>
+                <NavLabel $visible={!collapsed}>{item.label}</NavLabel>
+                {item.to === "/classify" && unclassifiedCount > 0 && (
+                  <Badge $collapsed={collapsed}>{unclassifiedCount}</Badge>
+                )}
+              </NavLink>
+            ))}
+          </NavGroup>
+
+          <NavGroup>
+            <GroupLabel $collapsed={collapsed} />
+            {setupItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  search={keepMonth}
+                  $active={isActive(item.to)}
+                  $collapsed={collapsed}
+                >
+                  <Icon size={20} strokeWidth={2} />
+                  <NavLabel $visible={!collapsed}>{item.label}</NavLabel>
+                </NavLink>
+              );
+            })}
+          </NavGroup>
         </NavList>
         <SidebarFooter $collapsed={collapsed}>
           <CollapseButton $collapsed={collapsed} onClick={toggleCollapse}>
@@ -324,58 +492,54 @@ export function NavBar() {
         </SidebarFooter>
       </SidebarWrapper>
 
-      <BottomNav>
-        {primaryNavItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <BottomNavLink
-              key={item.to}
-              to={item.to}
-              search={monthSearch}
-              $active={isActive(item.to)}
-            >
-              <Icon size={22} strokeWidth={2} />
-              {item.label}
-            </BottomNavLink>
-          );
-        })}
-        <div style={{ position: "relative" }}>
-          <MoreButton
-            $active={isMoreActive}
-            onClick={() => setMoreOpen((o) => !o)}
-            aria-expanded={moreOpen}
-          >
-            <MoreHorizontal size={22} strokeWidth={2} />
-            More
-          </MoreButton>
-          <MoreMenu $open={moreOpen}>
-            {moreNavItems.map((item) => {
+      <BottomNav aria-label="Main">
+        <BottomNavLink to="/" search={keepMonth} $active={isActive("/")}>
+          <LayoutDashboard size={22} strokeWidth={2} />
+          Overview
+        </BottomNavLink>
+        <BottomNavLink to="/transactions" search={keepMonth} $active={isActive("/transactions")}>
+          <Receipt size={22} strokeWidth={2} />
+          Transactions
+        </BottomNavLink>
+        <BottomNavLink to={monthTab.to} search={monthTab.search} $active={inFlow}>
+          <CalendarDays size={22} strokeWidth={2} />
+          Month
+        </BottomNavLink>
+        <MenuButton
+          $active={inSheet}
+          onClick={() => setSheetOpen((open) => !open)}
+          aria-expanded={sheetOpen}
+          aria-label="Menu"
+        >
+          <Menu size={22} strokeWidth={2} />
+          Menu
+        </MenuButton>
+      </BottomNav>
+
+      {sheetOpen && (
+        <>
+          <Backdrop onClick={() => setSheetOpen(false)} aria-hidden />
+          <Sheet role="dialog" aria-label="Menu">
+            {sheetItems.map((item) => {
               const Icon = item.icon;
               return (
-                <MoreMenuItem
+                <SheetItem
                   key={item.to}
                   to={item.to}
-                  search={monthSearch}
-                  onClick={() => setMoreOpen(false)}
+                  search={keepMonth}
+                  onClick={() => setSheetOpen(false)}
                 >
-                  <Icon size={18} strokeWidth={2} />
+                  <Icon size={20} strokeWidth={2} />
                   {item.label}
-                </MoreMenuItem>
+                </SheetItem>
               );
             })}
-          </MoreMenu>
-        </div>
-      </BottomNav>
-      {moreOpen && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 100,
-          }}
-          onClick={() => setMoreOpen(false)}
-          aria-hidden
-        />
+            <SheetButton onClick={() => logoutMutation.mutate()}>
+              <LogOut size={20} strokeWidth={2} />
+              Logout
+            </SheetButton>
+          </Sheet>
+        </>
       )}
     </>
   );

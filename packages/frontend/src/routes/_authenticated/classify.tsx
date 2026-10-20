@@ -1,3 +1,5 @@
+import { useMonth } from "../../hooks/useMonth.js";
+import { FlowSteps } from "../../components/FlowSteps.js";
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import styled from "styled-components";
@@ -121,6 +123,7 @@ export const Route = createFileRoute("/_authenticated/classify")({
 });
 
 function ClassifyPage() {
+  const [month] = useMonth();
   const subcategoriesQuery = useUncategorizedSubcategories();
   const categoriesQuery = useCategories();
   const classifyMutation = useClassify();
@@ -153,6 +156,8 @@ function ClassifyPage() {
         <Tags size={28} strokeWidth={2} />
         <PageTitle>Classify Transactions</PageTitle>
       </TitleRow>
+
+      <FlowSteps flow="close" current="/classify" month={month} />
 
       {subcategories.length === 0 ? (
         <EmptyState>All transactions are classified! Nothing to do here.</EmptyState>

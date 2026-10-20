@@ -50,7 +50,9 @@ describe("Import Page", () => {
     await user.upload(input, file);
 
     expect(await screen.findByText("Import Complete")).toBeInTheDocument();
-    expect(screen.getByText("15")).toBeInTheDocument();
-    expect(screen.getByText("3")).toBeInTheDocument();
+    expect(screen.getByText("New transactions imported").nextElementSibling).toHaveTextContent(
+      "15",
+    );
+    expect(screen.getByText("Duplicates skipped").nextElementSibling).toHaveTextContent("3");
   });
 });

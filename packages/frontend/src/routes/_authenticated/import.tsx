@@ -1,3 +1,5 @@
+import { useMonth } from "../../hooks/useMonth.js";
+import { FlowSteps } from "../../components/FlowSteps.js";
 import { useRef } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import styled from "styled-components";
@@ -88,6 +90,7 @@ export const Route = createFileRoute("/_authenticated/import")({
 });
 
 function ImportPage() {
+  const [month] = useMonth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const importMutation = useImport();
 
@@ -104,6 +107,8 @@ function ImportPage() {
         <Upload size={28} strokeWidth={2} />
         <PageTitle>Import CSV</PageTitle>
       </TitleRow>
+
+      <FlowSteps flow="close" current="/import" month={month} />
 
       <UploadArea onClick={() => fileInputRef.current?.click()}>
         <UploadText>Click to upload your bank CSV file</UploadText>
