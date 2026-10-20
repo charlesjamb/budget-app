@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vite-plus/test";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { server } from "../../mocks/server.js";
 import { TestWrapper } from "../../test/TestWrapper.js";
@@ -107,14 +108,61 @@ describe("Budget Page", () => {
     expect(screen.getByText("Budget couple")).toBeInTheDocument();
   });
 
-  it("should show total budgeted section", async () => {
+  it("should show total planned and delta vs previous month", async () => {
     setupAuthenticatedUser();
     setupBudgetData();
 
-    render(<TestWrapper initialPath="/budget" />);
+    render(<TestWrapper initialPath="/budget?month=2026-02" />);
 
-    expect(await screen.findByText("Total budgeted")).toBeInTheDocument();
-    expect(screen.getByText(/Spent: 1500\.00/)).toBeInTheDocument();
+    expect(await screen.findByText("planned")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Start from January" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Next: Wires/ })).toBeInTheDocument();
+  });
+
+  it("should save a single row on blur without a Save button", async () => {
+    setupAuthenticatedUser();
+    setupBudgetData();
+    const bodies: unknown[] = [];
+    server.use(
+      http.put("/api/budgets", async ({ request }) => {
+        bodies.push(await request.json());
+        return HttpResponse.json({ month: "2026-02", budgets: [] });
+      }),
+    );
+
+    render(<TestWrapper initialPath="/budget?month=2026-02" />);
+
+    expect(screen.queryByRole("button", { name: "Save" })).not.toBeInTheDocument();
+    const input = await screen.findByLabelText("Courses budget");
+    await userEvent.clear(input);
+    await userEvent.type(input, "450");
+    await userEvent.tab();
+
+    await waitFor(() =>
+      expect(bodies).toEqual([
+        { month: "2026-02", budgets: [{ categoryId: 3, amountCents: 45000 }] },
+      ]),
+    );
+  });
+
+  it("should not save when the value is unchanged", async () => {
+    setupAuthenticatedUser();
+    setupBudgetData();
+    const bodies: unknown[] = [];
+    server.use(
+      http.put("/api/budgets", async ({ request }) => {
+        bodies.push(await request.json());
+        return HttpResponse.json({ month: "2026-02", budgets: [] });
+      }),
+    );
+
+    render(<TestWrapper initialPath="/budget?month=2026-02" />);
+
+    const input = await screen.findByLabelText("Courses budget");
+    await userEvent.click(input);
+    await userEvent.tab();
+
+    expect(bodies).toEqual([]);
   });
 
   it("should show empty state when no categories", async () => {
