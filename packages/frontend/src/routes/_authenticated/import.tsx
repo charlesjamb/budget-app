@@ -1,86 +1,89 @@
 import { useMonth } from "../../hooks/useMonth.js";
 import { FlowSteps } from "../../components/FlowSteps.js";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import styled from "styled-components";
 import { Upload } from "lucide-react";
 import { useImport } from "../../hooks/useImport.js";
 import { Button, PageTitle, TitleRow } from "../../components/ui.js";
 
-const UploadArea = styled.div`
-  background: ${(p) => p.theme.colors.card};
-  border: 2px dashed ${(p) => p.theme.colors.borderLight};
+const DropZone = styled.div<{ $active: boolean }>`
+  background: ${(p) => (p.$active ? p.theme.colors.accentSoft : p.theme.colors.card)};
+  border: 2px dashed ${(p) => (p.$active ? p.theme.colors.primary : p.theme.colors.borderLight)};
   border-radius: ${(p) => p.theme.radii.lg};
-  padding: 48px;
+  padding: ${(p) => p.theme.space.xxl};
   text-align: center;
-  cursor: pointer;
+  box-shadow: ${(p) => p.theme.shadows.card};
   transition:
     border-color 0.15s,
-    box-shadow 0.2s;
-  box-shadow: ${(p) => p.theme.shadows.card};
-
-  &:hover {
-    border-color: ${(p) => p.theme.colors.primary};
-    box-shadow: ${(p) => p.theme.shadows.cardHover};
-  }
+    background 0.15s;
 `;
 
 const HiddenInput = styled.input`
   display: none;
 `;
 
-const UploadText = styled.p`
-  color: ${(p) => p.theme.colors.textMuted};
-  font-size: 16px;
-  margin-bottom: 8px;
+const DropIcon = styled.div`
+  color: ${(p) => p.theme.colors.primary};
+  margin-bottom: ${(p) => p.theme.space.sm};
 `;
 
-const UploadHint = styled.p`
+const DropText = styled.p`
+  font-size: ${(p) => p.theme.fontSize.lg};
+  margin-bottom: ${(p) => p.theme.space.xs};
+`;
+
+const DropHint = styled.p`
   color: ${(p) => p.theme.colors.textLight};
-  font-size: 13px;
+  font-size: ${(p) => p.theme.fontSize.sm};
+  margin-bottom: ${(p) => p.theme.space.lg};
 `;
 
 const ResultCard = styled.div`
   background: ${(p) => p.theme.colors.card};
   border-radius: ${(p) => p.theme.radii.lg};
   box-shadow: ${(p) => p.theme.shadows.card};
-  padding: 24px;
-  margin-top: 24px;
+  padding: ${(p) => p.theme.space.xl};
+  margin-top: ${(p) => p.theme.space.xl};
 `;
 
 const ResultTitle = styled.h2`
-  font-size: 18px;
-  margin-bottom: 16px;
+  font-size: ${(p) => p.theme.fontSize.xl};
+  margin-bottom: ${(p) => p.theme.space.md};
 `;
 
-const StatRow = styled.div`
+const Stats = styled.div`
   display: flex;
-  justify-content: space-between;
-  padding: 8px 0;
-  border-bottom: 1px solid ${(p) => p.theme.colors.border};
-  font-size: 15px;
+  flex-wrap: wrap;
+  gap: ${(p) => p.theme.space.md} ${(p) => p.theme.space.xl};
+`;
 
-  &:last-child {
-    border-bottom: none;
-  }
+const Stat = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const StatValue = styled.span`
+  font-size: ${(p) => p.theme.fontSize.xxl};
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 `;
 
 const StatLabel = styled.span`
   color: ${(p) => p.theme.colors.textMuted};
+  font-size: ${(p) => p.theme.fontSize.sm};
 `;
 
-const StatValue = styled.span`
-  font-weight: 600;
-`;
+const ClassifyLink = styled.div`
+  margin-top: ${(p) => p.theme.space.lg};
 
-const ClassifyLink = styled(Link)`
-  display: inline-block;
-  margin-top: 16px;
-  color: ${(p) => p.theme.colors.primary};
-  font-weight: 500;
-  text-decoration: none;
+  a {
+    color: ${(p) => p.theme.colors.primary};
+    font-weight: 600;
+    text-decoration: none;
+  }
 
-  &:hover {
+  a:hover {
     text-decoration: underline;
   }
 `;
@@ -92,13 +95,11 @@ export const Route = createFileRoute("/_authenticated/import")({
 function ImportPage() {
   const [month] = useMonth();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [dragging, setDragging] = useState(false);
   const importMutation = useImport();
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      importMutation.mutate(file);
-    }
+  const handleFile = (file: File | undefined) => {
+    if (file) importMutation.mutate(file);
   };
 
   return (
@@ -110,41 +111,70 @@ function ImportPage() {
 
       <FlowSteps flow="close" current="/import" month={month} />
 
-      <UploadArea onClick={() => fileInputRef.current?.click()}>
-        <UploadText>Click to upload your bank CSV file</UploadText>
-        <UploadHint>Banque Populaire format (semicolon-separated)</UploadHint>
-        <HiddenInput ref={fileInputRef} type="file" accept=".csv" onChange={handleFileChange} />
-        <Button type="button" disabled={importMutation.isPending} style={{ marginTop: 16 }}>
-          {importMutation.isPending ? "Importing..." : "Select CSV File"}
+      <DropZone
+        $active={dragging}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragging(true);
+        }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragging(false);
+          handleFile(e.dataTransfer.files[0]);
+        }}
+      >
+        <DropIcon>
+          <Upload size={32} strokeWidth={1.5} />
+        </DropIcon>
+        <DropText>Drop your bank CSV here</DropText>
+        <DropHint>Banque Populaire format (semicolon-separated)</DropHint>
+        <HiddenInput
+          ref={fileInputRef}
+          type="file"
+          accept=".csv"
+          aria-label="Bank CSV file"
+          onChange={(e) => handleFile(e.target.files?.[0])}
+        />
+        <Button
+          type="button"
+          disabled={importMutation.isPending}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          {importMutation.isPending ? "Importing..." : "Select CSV file"}
         </Button>
-      </UploadArea>
+      </DropZone>
 
       {importMutation.isSuccess && importMutation.data && (
         <ResultCard>
-          <ResultTitle>Import Complete</ResultTitle>
-          <StatRow>
-            <StatLabel>New transactions imported</StatLabel>
-            <StatValue>{importMutation.data.imported}</StatValue>
-          </StatRow>
-          <StatRow>
-            <StatLabel>Duplicates skipped</StatLabel>
-            <StatValue>{importMutation.data.skipped}</StatValue>
-          </StatRow>
+          <ResultTitle>Import complete</ResultTitle>
+          <Stats>
+            <Stat>
+              <StatValue>{importMutation.data.imported}</StatValue>
+              <StatLabel>imported</StatLabel>
+            </Stat>
+            <Stat>
+              <StatValue>{importMutation.data.skipped}</StatValue>
+              <StatLabel>duplicates skipped</StatLabel>
+            </Stat>
+            <Stat>
+              <StatValue>{importMutation.data.unmappedCount}</StatValue>
+              <StatLabel>to classify</StatLabel>
+            </Stat>
+          </Stats>
           {importMutation.data.unmappedCount > 0 && (
-            <>
-              <StatRow>
-                <StatLabel>Unmapped transactions</StatLabel>
-                <StatValue>{importMutation.data.unmappedCount}</StatValue>
-              </StatRow>
-              <ClassifyLink to="/classify">Classify unmapped transactions &rarr;</ClassifyLink>
-            </>
+            <ClassifyLink>
+              <Link to="/classify" search={{ month }}>
+                Classify {importMutation.data.unmappedCount} transactions &rarr;
+              </Link>
+            </ClassifyLink>
           )}
         </ResultCard>
       )}
 
       {importMutation.isError && (
         <ResultCard>
-          <ResultTitle>Import Failed</ResultTitle>
+          <ResultTitle>Import failed</ResultTitle>
           <p>An error occurred while importing the CSV file.</p>
         </ResultCard>
       )}

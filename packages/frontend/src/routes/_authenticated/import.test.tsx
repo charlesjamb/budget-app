@@ -23,7 +23,7 @@ describe("Import Page", () => {
     render(<TestWrapper initialPath="/import" />);
 
     expect(await screen.findByText(/Import CSV/)).toBeInTheDocument();
-    expect(screen.getByText("Click to upload your bank CSV file")).toBeInTheDocument();
+    expect(screen.getByText("Drop your bank CSV here")).toBeInTheDocument();
   });
 
   it("should show import results after successful upload", async () => {
@@ -46,13 +46,13 @@ describe("Import Page", () => {
     const file = new File(["csv content"], "expenses.csv", {
       type: "text/csv",
     });
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = screen.getByLabelText("Bank CSV file");
     await user.upload(input, file);
 
-    expect(await screen.findByText("Import Complete")).toBeInTheDocument();
-    expect(screen.getByText("New transactions imported").nextElementSibling).toHaveTextContent(
-      "15",
-    );
-    expect(screen.getByText("Duplicates skipped").nextElementSibling).toHaveTextContent("3");
+    expect(await screen.findByText("Import complete")).toBeInTheDocument();
+    expect(screen.getByText("imported").previousElementSibling).toHaveTextContent("15");
+    expect(screen.getByText("duplicates skipped").previousElementSibling).toHaveTextContent("3");
+    expect(screen.getByText("to classify").previousElementSibling).toHaveTextContent("8");
+    expect(screen.getByRole("link", { name: /Classify 8 transactions/ })).toBeInTheDocument();
   });
 });

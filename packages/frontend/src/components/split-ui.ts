@@ -4,52 +4,61 @@ export const Section = styled.div`
   background: ${(p) => p.theme.colors.card};
   border-radius: ${(p) => p.theme.radii.lg};
   box-shadow: ${(p) => p.theme.shadows.card};
-  padding: 20px;
-  margin-bottom: 24px;
+  padding: ${(p) => p.theme.space.xl};
+  margin-bottom: ${(p) => p.theme.space.xl};
 `;
 
 export const SectionTitle = styled.h2`
-  font-size: 16px;
+  font-size: ${(p) => p.theme.fontSize.xs};
   font-weight: 600;
-  margin: 0 0 16px 0;
-  color: ${(p) => p.theme.colors.text};
-`;
-
-export const SummaryRow = styled.div<{ $spaced?: boolean }>`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-  margin-top: ${(p) => (p.$spaced ? "16px" : "0")};
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-`;
-
-export const SummaryLabel = styled.span`
-  font-size: 14px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0 0 ${(p) => p.theme.space.md};
   color: ${(p) => p.theme.colors.textMuted};
 `;
 
-export const SummaryValue = styled.span<{ $accent?: boolean; $tone?: "positive" | "negative" }>`
-  font-size: 16px;
-  font-weight: 600;
-  color: ${(p) =>
-    p.$tone === "positive"
-      ? p.theme.colors.over
-      : p.$tone === "negative"
-        ? p.theme.colors.ok
-        : p.$accent
-          ? p.theme.colors.primary
-          : p.theme.colors.text};
-`;
-
-export const MemberLineRow = styled.div`
+export const MemberLine = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
+  gap: ${(p) => p.theme.space.md};
+  padding: ${(p) => p.theme.space.md} 0;
   border-top: 1px solid ${(p) => p.theme.colors.border};
-  margin-top: 8px;
+
+  &:first-of-type {
+    border-top: none;
+  }
+`;
+
+export const MemberLabel = styled.span`
+  font-size: ${(p) => p.theme.fontSize.lg};
+  font-weight: 500;
+`;
+
+export const Figure = styled.span<{ $tone?: "ok" | "over" | "muted" }>`
+  font-size: ${(p) => p.theme.fontSize.lg};
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: ${(p) =>
+    p.$tone === "ok"
+      ? p.theme.colors.ok
+      : p.$tone === "over"
+        ? p.theme.colors.over
+        : p.$tone === "muted"
+          ? p.theme.colors.textMuted
+          : p.theme.colors.text};
+`;
+
+export const BigNumber = styled.div`
+  font-size: ${(p) => p.theme.fontSize.hero};
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+`;
+
+export const Note = styled.p`
+  font-size: ${(p) => p.theme.fontSize.md};
+  color: ${(p) => p.theme.colors.textMuted};
+  margin: ${(p) => p.theme.space.xs} 0 ${(p) => p.theme.space.md};
 `;

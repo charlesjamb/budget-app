@@ -1,19 +1,20 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import styled from "styled-components";
-import type { CategoryType } from "@budget-app/shared";
-import { FolderOpen } from "lucide-react";
+import type { BudgetCategory, CategoryType } from "@budget-app/shared";
+import { FolderOpen, Pencil, Trash2 } from "lucide-react";
 import {
   Button,
-  Input,
-  DangerButton,
+  SecondaryButton,
   EditInput,
   Select,
+  Chip,
   ErrorMessage,
-  EmptyState,
   PageTitle,
   TitleRow,
 } from "../../components/ui.js";
+import { EmojiPicker } from "../../components/EmojiPicker.js";
+import { RowMenu } from "../../components/RowMenu.js";
 import {
   useCategories,
   useCreateCategory,
@@ -21,75 +22,184 @@ import {
   useDeleteCategory,
 } from "../../hooks/useCategories.js";
 
-const AddForm = styled.form`
-  display: flex;
-  gap: 8px;
-  margin-bottom: 24px;
-`;
-
-const FormInput = styled(Input)`
-  flex: 1;
-`;
-
 const List = styled.div`
   background: ${(p) => p.theme.colors.card};
   border-radius: ${(p) => p.theme.radii.lg};
   box-shadow: ${(p) => p.theme.shadows.card};
-  overflow: hidden;
 `;
 
-const ListItem = styled.div`
+const Row = styled.div`
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
+  gap: ${(p) => p.theme.space.md};
+  padding: ${(p) => p.theme.space.md} ${(p) => p.theme.space.lg};
   border-bottom: 1px solid ${(p) => p.theme.colors.border};
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover [data-row-menu-trigger] {
+    opacity: 1;
+  }
+`;
+
+const RowBody = styled.button`
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: ${(p) => p.theme.space.md};
+  padding: 0;
+  background: none;
+  border: none;
+  color: ${(p) => p.theme.colors.text};
+  font-size: ${(p) => p.theme.fontSize.lg};
+  text-align: left;
+  cursor: pointer;
+`;
+
+const Icon = styled.span`
+  width: 28px;
+  text-align: center;
+  font-size: 20px;
+`;
+
+const Name = styled.span`
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const Chips = styled.span`
+  display: inline-flex;
+  gap: ${(p) => p.theme.space.xs};
+  flex-wrap: wrap;
+`;
+
+const FormRow = styled.form`
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: ${(p) => p.theme.space.sm};
+  padding: ${(p) => p.theme.space.md} ${(p) => p.theme.space.lg};
+  border-bottom: 1px solid ${(p) => p.theme.colors.border};
+  background: ${(p) => p.theme.colors.accentSoft};
 
   &:last-child {
     border-bottom: none;
   }
 `;
 
-const CategoryName = styled.span`
-  font-size: 15px;
+const NameInput = styled(EditInput)`
+  flex: 1 1 160px;
+  min-width: 0;
+  padding: 8px 10px;
 `;
 
-const Actions = styled.div`
-  display: flex;
-  gap: 8px;
-  align-items: center;
+const GroupInput = styled(EditInput)`
+  flex: 0 1 160px;
+  min-width: 0;
+  padding: 8px 10px;
 `;
 
-const GroupBadge = styled.span`
-  font-size: 11px;
-  color: ${(p) => p.theme.colors.textMuted};
-  background: ${(p) => p.theme.colors.background};
-  padding: 2px 8px;
-  border-radius: 10px;
-  margin-left: 8px;
+const NewRow = styled.button`
+  width: 100%;
+  padding: ${(p) => p.theme.space.md} ${(p) => p.theme.space.lg};
+  background: none;
+  border: none;
+  color: ${(p) => p.theme.colors.primary};
+  font-size: ${(p) => p.theme.fontSize.md};
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: ${(p) => p.theme.colors.background};
+  }
 `;
 
-const TypeBadge = styled.span`
-  font-size: 11px;
-  color: ${(p) => p.theme.colors.text};
-  background: ${(p) => p.theme.colors.border};
-  padding: 2px 8px;
-  border-radius: 10px;
-  margin-left: 8px;
-`;
+interface CategoryDraft {
+  name: string;
+  groupName: string;
+  type: CategoryType;
+  icon: string;
+}
+
+const EMPTY_DRAFT: CategoryDraft = { name: "", groupName: "", type: "variable", icon: "" };
+
+interface CategoryFormProps {
+  initial: CategoryDraft;
+  pending: boolean;
+  onSubmit: (draft: CategoryDraft) => void;
+  onCancel: () => void;
+}
+
+/** Inline row form shared by "edit category" and "+ New category". */
+function CategoryForm({ initial, pending, onSubmit, onCancel }: CategoryFormProps) {
+  const [draft, setDraft] = useState(initial);
+  const set = <K extends keyof CategoryDraft>(key: K, value: CategoryDraft[K]) =>
+    setDraft((prev) => ({ ...prev, [key]: value }));
+
+  return (
+    <FormRow
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (draft.name.trim()) onSubmit(draft);
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") onCancel();
+      }}
+    >
+      <EmojiPicker value={draft.icon} onChange={(icon) => set("icon", icon)} />
+      <NameInput
+        aria-label="Category name"
+        placeholder="Name"
+        value={draft.name}
+        onChange={(e) => set("name", e.target.value)}
+        autoFocus
+      />
+      <GroupInput
+        aria-label="Group"
+        placeholder="Group (optional)"
+        value={draft.groupName}
+        onChange={(e) => set("groupName", e.target.value)}
+      />
+      <Select
+        aria-label="Type"
+        value={draft.type}
+        onChange={(e) => set("type", e.target.value as CategoryType)}
+      >
+        <option value="variable">Variable</option>
+        <option value="fixed">Fixed</option>
+      </Select>
+      <Button type="submit" disabled={pending || !draft.name.trim()}>
+        Save
+      </Button>
+      <SecondaryButton type="button" onClick={onCancel}>
+        Cancel
+      </SecondaryButton>
+    </FormRow>
+  );
+}
+
+function toDraft(cat: BudgetCategory): CategoryDraft {
+  return {
+    name: cat.name,
+    groupName: cat.groupName ?? "",
+    type: cat.type ?? "variable",
+    icon: cat.icon ?? "",
+  };
+}
 
 export const Route = createFileRoute("/_authenticated/categories")({
   component: CategoriesPage,
 });
 
 function CategoriesPage() {
-  const [newName, setNewName] = useState("");
-  const [newGroupName, setNewGroupName] = useState("");
-  const [newType, setNewType] = useState<CategoryType>("variable");
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [editName, setEditName] = useState("");
-  const [editGroupName, setEditGroupName] = useState("");
-  const [editType, setEditType] = useState<CategoryType>("variable");
+  const [creating, setCreating] = useState(false);
 
   const categoriesQuery = useCategories();
   const createMutation = useCreateCategory();
@@ -98,44 +208,26 @@ function CategoriesPage() {
 
   const categories = categoriesQuery.data?.categories ?? [];
 
-  const handleAdd = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newName.trim()) return;
+  const handleCreate = (draft: CategoryDraft) => {
     createMutation.mutate(
       {
-        name: newName.trim(),
-        groupName: newGroupName.trim() || undefined,
-        type: newType,
+        name: draft.name.trim(),
+        groupName: draft.groupName.trim() || undefined,
+        type: draft.type,
+        icon: draft.icon.trim() || undefined,
       },
-      {
-        onSuccess: () => {
-          setNewName("");
-          setNewGroupName("");
-        },
-      },
+      { onSuccess: () => setCreating(false) },
     );
   };
 
-  const handleStartEdit = (
-    id: number,
-    name: string,
-    groupName?: string,
-    type: CategoryType = "variable",
-  ) => {
-    setEditingId(id);
-    setEditName(name);
-    setEditGroupName(groupName ?? "");
-    setEditType(type);
-  };
-
-  const handleSaveEdit = (id: number) => {
-    if (!editName.trim()) return;
+  const handleUpdate = (id: number, draft: CategoryDraft) => {
     updateMutation.mutate(
       {
         id,
-        name: editName.trim(),
-        groupName: editGroupName.trim(),
-        type: editType,
+        name: draft.name.trim(),
+        groupName: draft.groupName.trim(),
+        type: draft.type,
+        icon: draft.icon.trim() || null,
       },
       { onSuccess: () => setEditingId(null) },
     );
@@ -145,101 +237,82 @@ function CategoriesPage() {
     <>
       <TitleRow>
         <FolderOpen size={28} strokeWidth={2} />
-        <PageTitle>Budget Categories</PageTitle>
+        <PageTitle>Categories</PageTitle>
       </TitleRow>
 
-      <AddForm onSubmit={handleAdd}>
-        <FormInput
-          placeholder="New category name..."
-          value={newName}
-          onChange={(e) => setNewName(e.target.value)}
-        />
-        <Input
-          placeholder="Group (optional)"
-          value={newGroupName}
-          onChange={(e) => setNewGroupName(e.target.value)}
-          style={{ flex: "0 0 160px" }}
-        />
-        <Select value={newType} onChange={(e) => setNewType(e.target.value as CategoryType)}>
-          <option value="variable">Variable</option>
-          <option value="fixed">Fixed</option>
-        </Select>
-        <Button type="submit" disabled={createMutation.isPending}>
-          Add
-        </Button>
-      </AddForm>
+      <List>
+        {categories.map((cat) =>
+          editingId === cat.id ? (
+            <CategoryForm
+              key={cat.id}
+              initial={toDraft(cat)}
+              pending={updateMutation.isPending}
+              onSubmit={(draft) => handleUpdate(cat.id, draft)}
+              onCancel={() => setEditingId(null)}
+            />
+          ) : (
+            <Row key={cat.id}>
+              <RowBody
+                type="button"
+                aria-label={`Edit ${cat.name}`}
+                onClick={() => {
+                  setCreating(false);
+                  setEditingId(cat.id);
+                }}
+              >
+                <Icon aria-hidden>{cat.icon}</Icon>
+                <Name>{cat.name}</Name>
+                <Chips>
+                  <Chip $tone={cat.type === "fixed" ? "accent" : "neutral"}>
+                    {cat.type === "fixed" ? "Fixed" : "Variable"}
+                  </Chip>
+                  {cat.groupName && <Chip>{cat.groupName}</Chip>}
+                </Chips>
+              </RowBody>
+              <RowMenu
+                label={`Actions for ${cat.name}`}
+                items={[
+                  {
+                    label: "Edit",
+                    icon: <Pencil size={14} />,
+                    onSelect: () => {
+                      setCreating(false);
+                      setEditingId(cat.id);
+                    },
+                  },
+                  {
+                    label: "Delete",
+                    icon: <Trash2 size={14} />,
+                    onSelect: () => deleteMutation.mutate(cat.id),
+                  },
+                ]}
+              />
+            </Row>
+          ),
+        )}
+        {creating ? (
+          <CategoryForm
+            initial={EMPTY_DRAFT}
+            pending={createMutation.isPending}
+            onSubmit={handleCreate}
+            onCancel={() => setCreating(false)}
+          />
+        ) : (
+          <NewRow
+            type="button"
+            onClick={() => {
+              setEditingId(null);
+              setCreating(true);
+            }}
+          >
+            + New category
+          </NewRow>
+        )}
+      </List>
 
       {createMutation.isError && (
         <ErrorMessage>Failed to create category. Name may already exist.</ErrorMessage>
       )}
-
-      {categories.length === 0 ? (
-        <EmptyState>No categories yet. Add your first one above!</EmptyState>
-      ) : (
-        <List>
-          {categories.map((cat) => (
-            <ListItem key={cat.id}>
-              {editingId === cat.id ? (
-                <>
-                  <EditInput
-                    value={editName}
-                    onChange={(e) => setEditName(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") handleSaveEdit(cat.id);
-                      if (e.key === "Escape") setEditingId(null);
-                    }}
-                    autoFocus
-                  />
-                  <EditInput
-                    value={editGroupName}
-                    onChange={(e) => setEditGroupName(e.target.value)}
-                    placeholder="Group"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") handleSaveEdit(cat.id);
-                      if (e.key === "Escape") setEditingId(null);
-                    }}
-                  />
-                  <Select
-                    value={editType}
-                    onChange={(e) => setEditType(e.target.value as CategoryType)}
-                  >
-                    <option value="variable">Variable</option>
-                    <option value="fixed">Fixed</option>
-                  </Select>
-                  <Actions>
-                    <Button
-                      onClick={() => handleSaveEdit(cat.id)}
-                      disabled={updateMutation.isPending}
-                    >
-                      Save
-                    </Button>
-                    <DangerButton onClick={() => setEditingId(null)}>Cancel</DangerButton>
-                  </Actions>
-                </>
-              ) : (
-                <>
-                  <CategoryName>
-                    {cat.name}
-                    <TypeBadge>{cat.type === "fixed" ? "Fixed" : "Variable"}</TypeBadge>
-                    {cat.groupName && <GroupBadge>{cat.groupName}</GroupBadge>}
-                  </CategoryName>
-                  <Actions>
-                    <Button
-                      onClick={() => handleStartEdit(cat.id, cat.name, cat.groupName, cat.type)}
-                    >
-                      Edit
-                    </Button>
-                    <DangerButton onClick={() => deleteMutation.mutate(cat.id)}>
-                      Delete
-                    </DangerButton>
-                  </Actions>
-                </>
-              )}
-            </ListItem>
-          ))}
-        </List>
-      )}
-
       {deleteMutation.isError && (
         <ErrorMessage>Cannot delete: transactions reference this category.</ErrorMessage>
       )}

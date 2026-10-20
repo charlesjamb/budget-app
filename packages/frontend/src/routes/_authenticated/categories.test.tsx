@@ -19,6 +19,7 @@ function setupAuthenticatedUser() {
 describe("Categories Page", () => {
   it("should display categories and allow adding new ones", async () => {
     setupAuthenticatedUser();
+    let createBody: unknown = null;
     server.use(
       http.get("/api/categories", () => {
         return HttpResponse.json({
@@ -30,6 +31,7 @@ describe("Categories Page", () => {
       }),
       http.post("/api/categories", async ({ request }) => {
         const body = (await request.json()) as { name: string; type?: string };
+        createBody = body;
         return HttpResponse.json(
           {
             category: {
@@ -49,15 +51,51 @@ describe("Categories Page", () => {
     expect(screen.getByText("Transport")).toBeInTheDocument();
 
     const user = userEvent.setup();
-    await user.type(screen.getByPlaceholderText("New category name..."), "Entertainment");
-    await user.click(screen.getByRole("button", { name: "Add" }));
+    await user.click(screen.getByRole("button", { name: "+ New category" }));
+    await user.type(screen.getByLabelText("Category name"), "Entertainment");
+    await user.click(screen.getByRole("button", { name: "Save" }));
 
     await waitFor(() => {
-      expect(screen.getByPlaceholderText("New category name...")).toHaveValue("");
+      expect(screen.queryByLabelText("Category name")).not.toBeInTheDocument();
     });
+    expect(createBody).toEqual({ name: "Entertainment", type: "variable" });
   });
 
-  it("should show empty state when no categories exist", async () => {
+  it("should edit a category inline, including its icon", async () => {
+    setupAuthenticatedUser();
+    let updateBody: unknown = null;
+    server.use(
+      http.get("/api/categories", () =>
+        HttpResponse.json({ categories: [{ id: 1, name: "Food", type: "variable" }] }),
+      ),
+      http.put("/api/categories/1", async ({ request }) => {
+        updateBody = await request.json();
+        return HttpResponse.json({ category: { id: 1, name: "Groceries", type: "variable" } });
+      }),
+    );
+
+    const user = userEvent.setup();
+    render(<TestWrapper initialPath="/categories" />);
+
+    await user.click(await screen.findByRole("button", { name: "Edit Food" }));
+    const name = screen.getByLabelText("Category name");
+    await user.clear(name);
+    await user.type(name, "Groceries");
+    await user.click(screen.getByRole("button", { name: "Choose icon" }));
+    await user.click(screen.getByRole("button", { name: "🛒" }));
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() =>
+      expect(updateBody).toEqual({
+        name: "Groceries",
+        groupName: "",
+        type: "variable",
+        icon: "🛒",
+      }),
+    );
+  });
+
+  it("should offer to add a first category when none exist", async () => {
     setupAuthenticatedUser();
     server.use(
       http.get("/api/categories", () => {
@@ -67,8 +105,6 @@ describe("Categories Page", () => {
 
     render(<TestWrapper initialPath="/categories" />);
 
-    expect(
-      await screen.findByText("No categories yet. Add your first one above!"),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "+ New category" })).toBeInTheDocument();
   });
 });

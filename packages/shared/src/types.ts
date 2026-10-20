@@ -58,6 +58,10 @@ export interface AuthMeResponse {
   householdId: number;
 }
 
+export interface UpdateProfileRequest {
+  displayName: string;
+}
+
 export interface LoginRequest {
   email: string;
   password: string;

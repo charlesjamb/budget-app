@@ -1,84 +1,78 @@
-import { useMonth } from "../../hooks/useMonth.js";
-import { FlowSteps } from "../../components/FlowSteps.js";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import styled from "styled-components";
 import { Tags } from "lucide-react";
+import type { BudgetCategory, UncategorizedGroup } from "@budget-app/shared";
+import { useMonth } from "../../hooks/useMonth.js";
+import { FlowSteps } from "../../components/FlowSteps.js";
+import { formatAmount } from "../../components/Amount.js";
 import { useUncategorizedSubcategories } from "../../hooks/useTransactions.js";
 import { useCategories } from "../../hooks/useCategories.js";
-import { useClassify } from "../../hooks/useMappingRules.js";
-import type { UncategorizedGroup } from "@budget-app/shared";
+import { useClassify, useMappingRules } from "../../hooks/useMappingRules.js";
+import { orderQueue, suggestCategoryIds } from "../../lib/classify.js";
+import { PageTitle, TitleRow, Card, SecondaryButton, SectionHeader } from "../../components/ui.js";
 
-import { PageTitle, TitleRow, CardHover, Select as BaseSelect } from "../../components/ui.js";
-
-const EmptyState = styled.div`
+const Empty = styled.div`
   text-align: center;
   padding: 48px;
   color: ${(p) => p.theme.colors.textMuted};
-  font-size: 16px;
+  font-size: ${(p) => p.theme.fontSize.lg};
   background: ${(p) => p.theme.colors.card};
   border-radius: ${(p) => p.theme.radii.lg};
   box-shadow: ${(p) => p.theme.shadows.card};
 `;
 
-const CardList = styled.div`
+const Progress = styled.div`
   display: flex;
-  flex-direction: column;
-  gap: 12px;
-`;
-
-const CardHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
-  gap: 12px;
-`;
-
-const HeaderLeft = styled.button`
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  text-align: left;
-  padding: 0;
-  flex: 1;
-  min-width: 0;
-
-  &:hover {
-    opacity: 0.7;
-  }
-`;
-
-const SubCategoryName = styled.span`
-  font-weight: 600;
-  font-size: 15px;
-`;
-
-const Count = styled.span`
+  gap: ${(p) => p.theme.space.md};
+  margin-bottom: ${(p) => p.theme.space.lg};
+  font-size: ${(p) => p.theme.fontSize.md};
   color: ${(p) => p.theme.colors.textMuted};
-  font-size: 13px;
+  font-variant-numeric: tabular-nums;
 `;
 
-const Select = styled(BaseSelect)`
-  min-width: 200px;
-  flex-shrink: 0;
+const Track = styled.div`
+  flex: 1;
+  height: 6px;
+  border-radius: ${(p) => p.theme.radii.pill};
+  background: ${(p) => p.theme.colors.border};
+  overflow: hidden;
+`;
+
+const Fill = styled.div<{ $ratio: number }>`
+  height: 100%;
+  width: ${(p) => Math.round(p.$ratio * 100)}%;
+  background: ${(p) => p.theme.colors.primary};
+`;
+
+const MerchantCard = styled(Card)`
+  padding: ${(p) => p.theme.space.xl};
+`;
+
+const Merchant = styled.h2`
+  font-size: ${(p) => p.theme.fontSize.xxl};
+  font-weight: 700;
+  margin: 0;
+`;
+
+const Meta = styled.p`
+  margin: ${(p) => p.theme.space.xs} 0 ${(p) => p.theme.space.lg};
+  color: ${(p) => p.theme.colors.textMuted};
+  font-size: ${(p) => p.theme.fontSize.md};
 `;
 
 const TransactionList = styled.div`
   border-top: 1px solid ${(p) => p.theme.colors.border};
-  background: ${(p) => p.theme.colors.background};
 `;
 
 const TransactionRow = styled.div`
   display: flex;
   align-items: center;
-  padding: 8px 20px;
+  gap: ${(p) => p.theme.space.md};
+  padding: ${(p) => p.theme.space.sm} 0;
   border-bottom: 1px solid ${(p) => p.theme.colors.border};
-  font-size: 13px;
-  gap: 12px;
+  font-size: ${(p) => p.theme.fontSize.sm};
 
   &:last-child {
     border-bottom: none;
@@ -88,25 +82,56 @@ const TransactionRow = styled.div`
 const TxDate = styled.span`
   color: ${(p) => p.theme.colors.textMuted};
   min-width: 80px;
-  flex-shrink: 0;
 `;
 
-const TxSublabel = styled.span`
-  color: ${(p) => p.theme.colors.textLight};
+const TxLabel = styled.span`
   flex: 1;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 12px;
+  color: ${(p) => p.theme.colors.textLight};
 `;
 
 const TxAmount = styled.span`
-  color: ${(p) => p.theme.colors.success};
+  font-variant-numeric: tabular-nums;
   font-weight: 500;
-  flex-shrink: 0;
-  min-width: 80px;
-  text-align: right;
+`;
+
+const Choices = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${(p) => p.theme.space.sm};
+`;
+
+const Choice = styled.button<{ $suggested?: boolean }>`
+  padding: 8px 14px;
+  border-radius: ${(p) => p.theme.radii.pill};
+  font-size: ${(p) => p.theme.fontSize.md};
+  cursor: pointer;
+  border: 1px solid ${(p) => (p.$suggested ? p.theme.colors.primary : p.theme.colors.borderLight)};
+  background: ${(p) => (p.$suggested ? p.theme.colors.accentSoft : p.theme.colors.card)};
+  color: ${(p) => (p.$suggested ? p.theme.colors.primary : p.theme.colors.text)};
+  font-weight: ${(p) => (p.$suggested ? 600 : 400)};
+
+  &:hover:not(:disabled) {
+    border-color: ${(p) => p.theme.colors.primary};
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+`;
+
+const Footer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: ${(p) => p.theme.space.md};
+  margin-top: ${(p) => p.theme.space.lg};
+  color: ${(p) => p.theme.colors.textMuted};
+  font-size: ${(p) => p.theme.fontSize.sm};
 `;
 
 function formatDate(dateStr: string): string {
@@ -114,9 +139,7 @@ function formatDate(dateStr: string): string {
   return `${d}/${m}/${y}`;
 }
 
-function formatAmount(cents: number): string {
-  return (cents / 100).toFixed(2) + " \u20AC";
-}
+const groupKey = (sub: UncategorizedGroup) => `${sub.bankSubCategory}::${sub.labelSimplified}`;
 
 export const Route = createFileRoute("/_authenticated/classify")({
   component: ClassifyPage,
@@ -126,93 +149,133 @@ function ClassifyPage() {
   const [month] = useMonth();
   const subcategoriesQuery = useUncategorizedSubcategories();
   const categoriesQuery = useCategories();
+  const rulesQuery = useMappingRules();
   const classifyMutation = useClassify();
-  const [expandedSub, setExpandedSub] = useState<string | null>(null);
+  const [skipped, setSkipped] = useState<string[]>([]);
+  const [doneCount, setDoneCount] = useState(0);
 
-  const subcategories = subcategoriesQuery.data?.subcategories ?? [];
-  const categories = categoriesQuery.data?.categories ?? [];
+  const queue = useMemo(
+    () => orderQueue(subcategoriesQuery.data?.subcategories ?? [], groupKey, skipped),
+    [subcategoriesQuery.data?.subcategories, skipped],
+  );
+  const categories = useMemo(
+    () => categoriesQuery.data?.categories ?? [],
+    [categoriesQuery.data?.categories],
+  );
+  const current = queue[0];
 
-  const handleClassify = (
-    bankSubCategory: string,
-    labelSimplified: string,
-    budgetCategoryId: number,
-  ) => {
-    classifyMutation.mutate({
-      bankSubCategory,
-      labelSimplified,
-      budgetCategoryId,
-    });
+  const suggested = useMemo(() => {
+    if (!current) return [];
+    const byId = new Map(categories.map((c) => [c.id, c]));
+    return suggestCategoryIds(rulesQuery.data?.rules ?? [], current.bankSubCategory)
+      .map((id) => byId.get(id))
+      .filter((c): c is BudgetCategory => c !== undefined);
+  }, [current, categories, rulesQuery.data?.rules]);
+
+  const handleClassify = (budgetCategoryId: number) => {
+    if (!current) return;
+    classifyMutation.mutate(
+      {
+        bankSubCategory: current.bankSubCategory,
+        labelSimplified: current.labelSimplified,
+        budgetCategoryId,
+      },
+      { onSuccess: () => setDoneCount((n) => n + 1) },
+    );
   };
 
-  const groupKey = (sub: UncategorizedGroup) => `${sub.bankSubCategory}::${sub.labelSimplified}`;
-
-  const toggleExpand = (key: string) => {
-    setExpandedSub((prev) => (prev === key ? null : key));
+  const handleSkip = () => {
+    if (!current) return;
+    const key = groupKey(current);
+    setSkipped((prev) => [...prev.filter((k) => k !== key), key]);
   };
+
+  const total = doneCount + queue.length;
+  const suggestedIds = new Set(suggested.map((c) => c.id));
 
   return (
     <>
       <TitleRow>
         <Tags size={28} strokeWidth={2} />
-        <PageTitle>Classify Transactions</PageTitle>
+        <PageTitle>Classify</PageTitle>
       </TitleRow>
 
       <FlowSteps flow="close" current="/classify" month={month} />
 
-      {subcategories.length === 0 ? (
-        <EmptyState>All transactions are classified! Nothing to do here.</EmptyState>
+      {!current ? (
+        <Empty>All transactions are classified! Nothing to do here.</Empty>
       ) : (
-        <CardList>
-          {subcategories.map((sub: UncategorizedGroup) => {
-            const key = groupKey(sub);
-            return (
-              <CardHover key={key}>
-                <CardHeader>
-                  <HeaderLeft onClick={() => toggleExpand(key)}>
-                    <SubCategoryName>{sub.labelSimplified}</SubCategoryName>
-                    <Count>
-                      {sub.bankSubCategory} &middot; {sub.count} transaction
-                      {sub.count > 1 ? "s" : ""} &mdash; click to{" "}
-                      {expandedSub === key ? "hide" : "show"} details
-                    </Count>
-                  </HeaderLeft>
-                  <Select
-                    defaultValue=""
-                    onChange={(e) =>
-                      handleClassify(
-                        sub.bankSubCategory,
-                        sub.labelSimplified,
-                        parseInt(e.target.value, 10),
-                      )
-                    }
-                    disabled={classifyMutation.isPending}
-                  >
-                    <option value="" disabled>
-                      Select category...
-                    </option>
-                    {categories.map((cat) => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </option>
-                    ))}
-                  </Select>
-                </CardHeader>
+        <>
+          <Progress>
+            <span>
+              {doneCount + 1} / {total}
+            </span>
+            <Track>
+              <Fill $ratio={doneCount / total} />
+            </Track>
+          </Progress>
 
-                {expandedSub === key && (
-                  <TransactionList>
-                    {sub.transactions.map((tx) => (
-                      <TransactionRow key={tx.id}>
-                        <TxDate>{formatDate(tx.dateOperation)}</TxDate>
-                        <TxSublabel>{tx.labelOperation}</TxSublabel>
-                        <TxAmount>{formatAmount(tx.amount)}</TxAmount>
-                      </TransactionRow>
-                    ))}
-                  </TransactionList>
-                )}
-              </CardHover>
-            );
-          })}
-        </CardList>
+          <MerchantCard>
+            <Merchant>{current.labelSimplified}</Merchant>
+            <Meta>
+              {current.bankSubCategory} &middot; {current.count} transaction
+              {current.count > 1 ? "s" : ""}
+            </Meta>
+            <TransactionList>
+              {current.transactions.map((tx) => (
+                <TransactionRow key={tx.id}>
+                  <TxDate>{formatDate(tx.dateOperation)}</TxDate>
+                  <TxLabel>{tx.labelOperation}</TxLabel>
+                  <TxAmount>{formatAmount(tx.amount)}</TxAmount>
+                </TransactionRow>
+              ))}
+            </TransactionList>
+
+            {suggested.length > 0 && (
+              <>
+                <SectionHeader>Suggested</SectionHeader>
+                <Choices>
+                  {suggested.map((cat) => (
+                    <Choice
+                      key={cat.id}
+                      $suggested
+                      disabled={classifyMutation.isPending}
+                      onClick={() => handleClassify(cat.id)}
+                    >
+                      {cat.icon ? `${cat.icon} ` : ""}
+                      {cat.name}
+                    </Choice>
+                  ))}
+                </Choices>
+              </>
+            )}
+
+            <SectionHeader>
+              {suggested.length > 0 ? "All categories" : "Choose a category"}
+            </SectionHeader>
+            <Choices>
+              {categories
+                .filter((cat) => !suggestedIds.has(cat.id))
+                .map((cat) => (
+                  <Choice
+                    key={cat.id}
+                    disabled={classifyMutation.isPending}
+                    onClick={() => handleClassify(cat.id)}
+                  >
+                    {cat.icon ? `${cat.icon} ` : ""}
+                    {cat.name}
+                  </Choice>
+                ))}
+            </Choices>
+          </MerchantCard>
+
+          <Footer>
+            <span>
+              A rule is saved so future imports of this merchant are classified automatically.
+            </span>
+            {queue.length > 1 && <SecondaryButton onClick={handleSkip}>Skip</SecondaryButton>}
+          </Footer>
+        </>
       )}
     </>
   );

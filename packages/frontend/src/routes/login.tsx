@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 import styled from "styled-components";
-import { Wallet } from "lucide-react";
 import { useAuth, useLogin } from "../hooks/useAuth.js";
 import { Button, Input, Label, ErrorMessage } from "../components/ui.js";
+import { PiggyBankIcon } from "../components/PiggyBankIcon.js";
+import { describeLoginError } from "../lib/login-error.js";
 
 const Page = styled.div`
   display: flex;
@@ -31,11 +32,22 @@ const IconWrapper = styled.div`
 `;
 
 const Title = styled.h1`
-  font-size: 24px;
+  font-size: ${(p) => p.theme.fontSize.xxl};
   font-weight: 700;
-  margin-bottom: 24px;
+  margin-bottom: ${(p) => p.theme.space.xs};
   text-align: center;
   color: ${(p) => p.theme.colors.text};
+`;
+
+const Tagline = styled.p`
+  text-align: center;
+  margin-bottom: ${(p) => p.theme.space.xl};
+  color: ${(p) => p.theme.colors.textMuted};
+  font-size: ${(p) => p.theme.fontSize.md};
+`;
+
+const SubmitButton = styled(Button)`
+  margin-top: ${(p) => p.theme.space.sm};
 `;
 
 const Form = styled.form`
@@ -71,9 +83,10 @@ function LoginPage() {
     <Page>
       <Card>
         <IconWrapper>
-          <Wallet size={48} strokeWidth={1.5} />
+          <PiggyBankIcon size={48} />
         </IconWrapper>
-        <Title>Budget Tracker</Title>
+        <Title>Mathilde &amp; Charles</Title>
+        <Tagline>Budget Tracker</Tagline>
         <Form onSubmit={handleSubmit}>
           <Label>
             Email
@@ -88,10 +101,12 @@ function LoginPage() {
               required
             />
           </Label>
-          {loginMutation.isError && <ErrorMessage>Invalid email or password</ErrorMessage>}
-          <Button type="submit" disabled={loginMutation.isPending} style={{ marginTop: 8 }}>
+          {loginMutation.isError && (
+            <ErrorMessage role="alert">{describeLoginError(loginMutation.error)}</ErrorMessage>
+          )}
+          <SubmitButton type="submit" disabled={loginMutation.isPending}>
             {loginMutation.isPending ? "Logging in..." : "Log in"}
-          </Button>
+          </SubmitButton>
         </Form>
       </Card>
     </Page>

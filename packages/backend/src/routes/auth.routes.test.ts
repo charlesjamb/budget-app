@@ -71,4 +71,48 @@ describe("Auth Routes", () => {
       expect(res.status).toBe(401);
     });
   });
+
+  describe("PATCH /api/auth/me", () => {
+    it("should update the display name", async () => {
+      const res = await request(app)
+        .patch("/api/auth/me")
+        .set("Cookie", ctx.sessionCookie)
+        .send({ displayName: "  Charles " });
+
+      expect(res.status).toBe(200);
+      expect(res.body.user.displayName).toBe("Charles");
+      const row = ctx.db.select().from(users).where(eq(users.id, ctx.userId)).get();
+      expect(row?.displayName).toBe("Charles");
+    });
+
+    it("should clear the display name when blank", async () => {
+      const res = await request(app)
+        .patch("/api/auth/me")
+        .set("Cookie", ctx.sessionCookie)
+        .send({ displayName: "   " });
+
+      expect(res.status).toBe(200);
+      expect(res.body.user.displayName).toBeNull();
+    });
+
+    it("should reject a non-string or too long name", async () => {
+      const bad = await request(app)
+        .patch("/api/auth/me")
+        .set("Cookie", ctx.sessionCookie)
+        .send({ displayName: 42 });
+      const long = await request(app)
+        .patch("/api/auth/me")
+        .set("Cookie", ctx.sessionCookie)
+        .send({ displayName: "x".repeat(51) });
+
+      expect(bad.status).toBe(400);
+      expect(long.status).toBe(400);
+    });
+
+    it("should return 401 without session", async () => {
+      const res = await request(app).patch("/api/auth/me").send({ displayName: "Charles" });
+
+      expect(res.status).toBe(401);
+    });
+  });
 });

@@ -9,7 +9,7 @@ describe("Login Page", () => {
   it("should render login form", async () => {
     render(<TestWrapper initialPath="/login" />);
 
-    expect(await screen.findByText("Budget Tracker")).toBeInTheDocument();
+    expect(await screen.findByText("Mathilde & Charles")).toBeInTheDocument();
     expect(screen.getByLabelText("Email")).toBeInTheDocument();
     expect(screen.getByLabelText("Password")).toBeInTheDocument();
   });
@@ -29,6 +29,21 @@ describe("Login Page", () => {
     await user.click(screen.getByRole("button", { name: "Log in" }));
 
     expect(await screen.findByText("Invalid email or password")).toBeInTheDocument();
+  });
+
+  it("should tell a network failure apart from bad credentials", async () => {
+    server.use(http.post("/api/auth/login", () => HttpResponse.error()));
+
+    render(<TestWrapper initialPath="/login" />);
+
+    const user = userEvent.setup();
+    await user.type(await screen.findByLabelText("Email"), "test@example.com");
+    await user.type(screen.getByLabelText("Password"), "password123");
+    await user.click(screen.getByRole("button", { name: "Log in" }));
+
+    expect(
+      await screen.findByText("Can't reach the server, check your connection"),
+    ).toBeInTheDocument();
   });
 
   it("should redirect to dashboard on successful login", async () => {
@@ -71,7 +86,7 @@ describe("Login Page", () => {
     await user.click(screen.getByRole("button", { name: "Log in" }));
 
     await waitFor(() => {
-      expect(screen.queryByText("Budget Tracker")).not.toBeInTheDocument();
+      expect(screen.queryByText("Mathilde & Charles")).not.toBeInTheDocument();
     });
   });
 });

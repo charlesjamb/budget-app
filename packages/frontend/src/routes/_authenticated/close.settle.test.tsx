@@ -59,19 +59,27 @@ describe("Settle Page", () => {
     vi.useRealTimers();
   });
 
-  it("should show end-of-month settlement when overspent", async () => {
+  it("should show what each member owes when over budget", async () => {
     setupAuthenticatedUser();
     setupSplitData();
 
     render(<TestWrapper initialPath="/close/settle" />);
 
-    expect(await screen.findByText("End-of-month settlement")).toBeInTheDocument();
-    expect(screen.getByText("Total spent")).toBeInTheDocument();
-    expect(screen.getByText("Difference (spent − budgeted)")).toBeInTheDocument();
     // totalSpent 321127, totalBudgeted 120000, difference = 201127 cents
-    expect(screen.getByText("+2011.27 €")).toBeInTheDocument();
-    // Settlement hint appears when overspent (once per member)
-    expect(screen.getAllByText(/wire additional/).length).toBeGreaterThanOrEqual(1);
+    expect(await screen.findByText(/February: spent 3\s211 € of 1\s200 €/)).toBeInTheDocument();
+    expect(screen.getByText(/2\s011\.27\s€/)).toBeInTheDocument();
+    expect(screen.getByText("over budget, to top up the joint account")).toBeInTheDocument();
+    expect(screen.getAllByText(/^owes /)).toHaveLength(2);
+  });
+
+  it("should show what each member gets back when under budget", async () => {
+    setupAuthenticatedUser();
+    setupSplitData({ totalSpent: 100000 });
+
+    render(<TestWrapper initialPath="/close/settle" />);
+
+    expect(await screen.findByText("left in the joint account")).toBeInTheDocument();
+    expect(screen.getAllByText(/^gets back /)).toHaveLength(2);
   });
 
   it("should show empty state when no household members", async () => {

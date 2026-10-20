@@ -8,4 +8,8 @@ export const handlers = [
   http.get("/api/transactions/uncategorized-subcategories", () => {
     return HttpResponse.json({ subcategories: [] });
   }),
+  // Queried by Classify (suggested categories) and Settings.
+  http.get("/api/mapping-rules", () => {
+    return HttpResponse.json({ rules: [] });
+  }),
 ];

@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import type { ContributionMember } from "@budget-app/shared";
 import { computeShares } from "../lib/split.js";
+import { parseAmountToCents } from "../lib/budget-plan.js";
 import { useBudgets } from "./useBudgets.js";
 import { useContributions } from "./useContributions.js";
 import { useMonthlySummary } from "./useTransactions.js";
@@ -26,8 +27,7 @@ export function useSplitComputation(month: string, localRevenues = NO_OVERRIDES)
     () =>
       members.map((m) => {
         const localVal = localRevenues[m.userId];
-        const revenueCents =
-          localVal !== undefined ? Math.round(parseFloat(localVal) * 100) || 0 : m.revenueCents;
+        const revenueCents = localVal !== undefined ? parseAmountToCents(localVal) : m.revenueCents;
         return { ...m, revenueCents };
       }),
     [members, localRevenues],
@@ -49,7 +49,10 @@ export function useSplitComputation(month: string, localRevenues = NO_OVERRIDES)
   }, [effectiveMembers, totalRevenueCents]);
 
   const totalBudgetedCents = useMemo(
-    () => (budgetsQuery.data?.budgets ?? []).reduce((sum, b) => sum + b.amountCents, 0),
+    () =>
+      (budgetsQuery.data?.budgets ?? [])
+        .filter((b) => b.categoryId !== 0)
+        .reduce((sum, b) => sum + b.amountCents, 0),
     [budgetsQuery.data?.budgets],
   );
 

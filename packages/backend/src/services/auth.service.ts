@@ -45,6 +45,15 @@ export function createAuthService(db: AppDatabase) {
       };
     },
 
+    updateDisplayName(userId: number, displayName: string | null) {
+      return db
+        .update(users)
+        .set({ displayName })
+        .where(eq(users.id, userId))
+        .returning({ id: users.id, email: users.email, displayName: users.displayName })
+        .get();
+    },
+
     logout(sessionId: string) {
       db.delete(sessions).where(eq(sessions.id, sessionId)).run();
     },

@@ -1,31 +1,25 @@
 import { createFileRoute } from "@tanstack/react-router";
-import styled from "styled-components";
+import { Scale } from "lucide-react";
 import { MonthPicker } from "../../components/MonthPicker.js";
 import { FlowSteps } from "../../components/FlowSteps.js";
+import { formatAmount } from "../../components/Amount.js";
 import {
   Section,
   SectionTitle,
-  SummaryRow,
-  SummaryLabel,
-  SummaryValue,
-  MemberLineRow,
+  MemberLine,
+  MemberLabel,
+  Figure,
+  BigNumber,
+  Note,
 } from "../../components/split-ui.js";
 import { useMonth } from "../../hooks/useMonth.js";
 import { useSplitComputation } from "../../hooks/useSplitComputation.js";
-import { Scale } from "lucide-react";
+import { memberName, settlementVerb } from "../../lib/members.js";
 import { EmptyState, Header, PageTitle, TitleRow } from "../../components/ui.js";
 
-const SettlementHint = styled.span<{ $positive?: boolean }>`
-  font-size: 12px;
-  color: ${(p) => (p.$positive ? p.theme.colors.danger : p.theme.colors.success)};
-`;
-
-function formatAmount(cents: number): string {
-  return (cents / 100).toFixed(2) + " €";
-}
-
-function toneOf(cents: number) {
-  return cents > 0 ? "positive" : cents < 0 ? "negative" : undefined;
+function monthName(month: string): string {
+  const [y, m] = month.split("-").map(Number);
+  return new Date(y, m - 1, 1).toLocaleString("en-US", { month: "long" });
 }
 
 export const Route = createFileRoute("/_authenticated/close/settle")({
@@ -38,6 +32,7 @@ function SettlePage() {
     isLoading,
     members,
     totalRevenueCents,
+    totalBudgetedCents,
     totalSpentCents,
     differenceCents,
     settlementAmounts,
@@ -46,6 +41,8 @@ function SettlePage() {
   if (isLoading) {
     return <EmptyState>Loading...</EmptyState>;
   }
+
+  const leftOver = -differenceCents;
 
   return (
     <>
@@ -64,38 +61,35 @@ function SettlePage() {
         <EmptyState>No household members found. Add members in Settings.</EmptyState>
       ) : (
         <Section>
-          <SectionTitle>End-of-month settlement</SectionTitle>
-          <SummaryRow>
-            <SummaryLabel>Total spent</SummaryLabel>
-            <SummaryValue>{formatAmount(totalSpentCents)}</SummaryValue>
-          </SummaryRow>
-          <SummaryRow>
-            <SummaryLabel>Difference (spent − budgeted)</SummaryLabel>
-            <SummaryValue $accent={differenceCents !== 0} $tone={toneOf(differenceCents)}>
-              {differenceCents >= 0 ? "+" : ""}
-              {formatAmount(differenceCents)}
-            </SummaryValue>
-          </SummaryRow>
-          {totalRevenueCents > 0 &&
+          <SectionTitle>
+            {monthName(month)}: spent {formatAmount(totalSpentCents, { decimals: 0 })} of{" "}
+            {formatAmount(totalBudgetedCents, { decimals: 0 })}
+          </SectionTitle>
+          <BigNumber>{formatAmount(Math.abs(leftOver))}</BigNumber>
+          <Note>
+            {leftOver > 0
+              ? "left in the joint account"
+              : leftOver < 0
+                ? "over budget, to top up the joint account"
+                : "spent exactly on budget"}
+          </Note>
+          {totalRevenueCents === 0 ? (
+            <Note>Enter the incomes on the Wires page to split this between you.</Note>
+          ) : (
+            differenceCents !== 0 &&
             members.map((m) => {
               const settlement = settlementAmounts.get(m.userId) ?? 0;
+              const verb = settlementVerb(settlement);
               return (
-                <MemberLineRow key={m.userId}>
-                  <SummaryLabel>{m.email}</SummaryLabel>
-                  <div>
-                    <SummaryValue $tone={toneOf(settlement)}>
-                      {settlement >= 0 ? "+" : ""}
-                      {formatAmount(settlement)}
-                    </SummaryValue>
-                    {settlement !== 0 && (
-                      <SettlementHint $positive={settlement > 0}>
-                        {settlement > 0 ? " → wire additional" : " → take back"}
-                      </SettlementHint>
-                    )}
-                  </div>
-                </MemberLineRow>
+                <MemberLine key={m.userId}>
+                  <MemberLabel>→ {memberName(m)}</MemberLabel>
+                  <Figure $tone={verb === "owes" ? "over" : verb === "gets back" ? "ok" : "muted"}>
+                    {verb ? `${verb} ${formatAmount(Math.abs(settlement))}` : "nothing to settle"}
+                  </Figure>
+                </MemberLine>
               );
-            })}
+            })
+          )}
         </Section>
       )}
     </>

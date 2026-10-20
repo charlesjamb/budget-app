@@ -3,6 +3,8 @@ import rateLimit from "express-rate-limit";
 import { type AppDatabase } from "../db/connection.js";
 import { createAuthService } from "../services/auth.service.js";
 
+const MAX_DISPLAY_NAME_LENGTH = 50;
+
 const loginRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 10,
@@ -68,6 +70,27 @@ export function authRoutes(db: AppDatabase): Router {
       user: result.user,
       householdId: result.householdId,
     });
+  });
+
+  router.patch("/me", (req, res) => {
+    const sessionId = req.cookies?.session;
+    const session = sessionId ? authService.getUserFromSession(sessionId) : null;
+
+    if (!session) {
+      res.status(401).json({ error: "Not authenticated" });
+      return;
+    }
+
+    const { displayName } = req.body;
+    if (typeof displayName !== "string" || displayName.trim().length > MAX_DISPLAY_NAME_LENGTH) {
+      res.status(400).json({
+        error: `displayName must be a string of at most ${MAX_DISPLAY_NAME_LENGTH} characters`,
+      });
+      return;
+    }
+
+    const user = authService.updateDisplayName(session.user.id, displayName.trim() || null);
+    res.json({ user, householdId: session.householdId });
   });
 
   return router;
