@@ -122,8 +122,13 @@ export interface HistoryData {
   categories: {
     id: number;
     name: string;
+    icon: string | null;
     amounts: Record<string, number>;
   }[];
+  /** Planned cents per month, then per category id. */
+  budgets: Record<string, Record<number, number>>;
+  /** Net spend and total planned cents per month, for every month in range. */
+  totals: Record<string, { spent: number; budget: number }>;
 }
 
 export interface UncategorizedTransaction {

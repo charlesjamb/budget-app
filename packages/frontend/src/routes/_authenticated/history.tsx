@@ -1,83 +1,102 @@
 import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import styled from "styled-components";
-import { useHistory } from "../../hooks/useTransactions.js";
-
 import { BarChart3 } from "lucide-react";
-import { PageTitle, TitleRow, EmptyState } from "../../components/ui.js";
+import { useHistory } from "../../hooks/useTransactions.js";
+import { useMonth } from "../../hooks/useMonth.js";
+import { addMonths } from "../../lib/month.js";
+import { averageOverMonths, isOverBudget } from "../../lib/history.js";
+import { formatAmount } from "../../components/Amount.js";
+import { SpendChart } from "../../components/SpendChart.js";
+import { Sparkline } from "../../components/Sparkline.js";
+import { PageTitle, TitleRow, EmptyState, SectionHeader } from "../../components/ui.js";
+
+const PRESETS = [3, 6, 12] as const;
 
 const Controls = styled.div`
   display: flex;
-  gap: 12px;
   align-items: center;
-  margin-bottom: 24px;
-
-  @media (max-width: 640px) {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: ${(p) => p.theme.space.md};
+  margin-bottom: ${(p) => p.theme.space.lg};
 `;
 
-const Label = styled.label`
-  font-size: 14px;
+const Segmented = styled.div`
+  display: inline-flex;
+  padding: 3px;
+  gap: 2px;
+  border-radius: ${(p) => p.theme.radii.pill};
+  background: ${(p) => p.theme.colors.sidebar};
+`;
+
+const Preset = styled.button<{ $active: boolean }>`
+  border: none;
+  cursor: pointer;
+  padding: 6px 14px;
+  border-radius: ${(p) => p.theme.radii.pill};
+  font-size: ${(p) => p.theme.fontSize.md};
+  font-weight: 500;
+  background: ${(p) => (p.$active ? p.theme.colors.card : "transparent")};
+  color: ${(p) => (p.$active ? p.theme.colors.text : p.theme.colors.textMuted)};
+  box-shadow: ${(p) => (p.$active ? p.theme.shadows.card : "none")};
+`;
+
+const RangeLabel = styled.span`
+  font-size: ${(p) => p.theme.fontSize.md};
   color: ${(p) => p.theme.colors.textMuted};
-  display: flex;
-  align-items: center;
-  gap: 6px;
 `;
 
-const MonthInput = styled.input`
-  padding: 6px 10px;
-  border: 1px solid ${(p) => p.theme.colors.borderLight};
-  border-radius: ${(p) => p.theme.radii.md};
-  font-size: 14px;
-  background: ${(p) => p.theme.colors.card};
-  color: ${(p) => p.theme.colors.text};
-  color-scheme: ${(p) => p.theme.colorScheme};
-
-  &:focus {
-    outline: none;
-    border-color: ${(p) => p.theme.colors.primary};
-    box-shadow: ${(p) => p.theme.shadows.focus};
-  }
-`;
-
-const TableWrapper = styled.div`
-  overflow-x: auto;
+const Card = styled.div`
   background: ${(p) => p.theme.colors.card};
   border-radius: ${(p) => p.theme.radii.lg};
   box-shadow: ${(p) => p.theme.shadows.card};
+  padding: ${(p) => p.theme.space.lg};
+`;
+
+const TableWrapper = styled(Card)`
+  padding: 0;
+  overflow-x: auto;
 `;
 
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
-  min-width: 600px;
+  min-width: 560px;
 `;
 
 const Th = styled.th`
-  text-align: left;
-  padding: 12px 16px;
-  background: ${(p) => p.theme.colors.background};
+  text-align: right;
+  padding: 10px 14px;
+  font-size: ${(p) => p.theme.fontSize.xs};
+  font-weight: 500;
+  color: ${(p) => p.theme.colors.textLight};
   border-bottom: 1px solid ${(p) => p.theme.colors.border};
-  font-size: 13px;
   white-space: nowrap;
 
   &:first-child {
+    text-align: left;
     position: sticky;
     left: 0;
-    background: ${(p) => p.theme.colors.background};
+    background: ${(p) => p.theme.colors.card};
     z-index: 1;
   }
 `;
 
-const Td = styled.td<{ $highlight?: boolean }>`
-  padding: 10px 16px;
+const Td = styled.td<{ $over?: boolean; $muted?: boolean }>`
+  padding: 10px 14px;
   border-bottom: 1px solid ${(p) => p.theme.colors.border};
-  font-size: 14px;
+  font-size: ${(p) => p.theme.fontSize.md};
+  font-variant-numeric: tabular-nums;
   text-align: right;
   white-space: nowrap;
-  color: ${(p) => (p.$highlight ? p.theme.colors.success : "inherit")};
+  background: ${(p) => (p.$over ? p.theme.colors.overSoft : "transparent")};
+  color: ${(p) =>
+    p.$over ? p.theme.colors.over : p.$muted ? p.theme.colors.textLight : "inherit"};
+
+  tr:last-child > & {
+    border-bottom: none;
+  }
 
   &:first-child {
     text-align: left;
@@ -87,24 +106,23 @@ const Td = styled.td<{ $highlight?: boolean }>`
     background: ${(p) => p.theme.colors.card};
     z-index: 1;
   }
+
+  svg {
+    margin-left: auto;
+  }
 `;
 
-function formatAmount(cents: number): string {
-  return (cents / 100).toFixed(2);
-}
-
-function getDefaultRange(): { from: string; to: string } {
-  const now = new Date();
-  const to = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-  const fromDate = new Date(now.getFullYear(), now.getMonth() - 5);
-  const from = `${fromDate.getFullYear()}-${String(fromDate.getMonth() + 1).padStart(2, "0")}`;
-  return { from, to };
-}
-
 function formatMonthHeader(month: string): string {
-  const [y, m] = month.split("-");
-  const date = new Date(parseInt(y), parseInt(m) - 1);
-  return date.toLocaleDateString("en-US", { month: "short", year: "2-digit" });
+  const [y, m] = month.split("-").map(Number);
+  return new Date(y, m - 1, 1).toLocaleDateString("en-US", { month: "short", year: "2-digit" });
+}
+
+function formatRange(from: string, to: string): string {
+  const fmt = (month: string) => {
+    const [y, m] = month.split("-").map(Number);
+    return new Date(y, m - 1, 1).toLocaleDateString("en-US", { month: "short", year: "numeric" });
+  };
+  return `${fmt(from)} – ${fmt(to)}`;
 }
 
 export const Route = createFileRoute("/_authenticated/history")({
@@ -112,58 +130,95 @@ export const Route = createFileRoute("/_authenticated/history")({
 });
 
 function HistoryPage() {
-  const defaults = getDefaultRange();
-  const [from, setFrom] = useState(defaults.from);
-  const [to, setTo] = useState(defaults.to);
+  const [to] = useMonth();
+  const navigate = useNavigate();
+  const [span, setSpan] = useState<(typeof PRESETS)[number]>(6);
+  const from = addMonths(to, -(span - 1));
   const historyQuery = useHistory(from, to);
 
   const data = historyQuery.data;
+  const rows = data
+    ? data.categories
+        .map((cat) => ({ cat, avg: averageOverMonths(cat.amounts, data.months) }))
+        .sort((a, b) => b.avg - a.avg)
+    : [];
 
   return (
     <>
       <TitleRow>
         <BarChart3 size={28} strokeWidth={2} />
-        <PageTitle>Spending History</PageTitle>
+        <PageTitle>History</PageTitle>
       </TitleRow>
 
       <Controls>
-        <Label>
-          From
-          <MonthInput type="month" value={from} onChange={(e) => setFrom(e.target.value)} />
-        </Label>
-        <Label>
-          To
-          <MonthInput type="month" value={to} onChange={(e) => setTo(e.target.value)} />
-        </Label>
+        <Segmented role="group" aria-label="Range">
+          {PRESETS.map((n) => (
+            <Preset
+              key={n}
+              type="button"
+              $active={n === span}
+              aria-pressed={n === span}
+              onClick={() => setSpan(n)}
+            >
+              {n} months
+            </Preset>
+          ))}
+        </Segmented>
+        <RangeLabel>{formatRange(from, to)}</RangeLabel>
       </Controls>
 
       {!data || data.categories.length === 0 ? (
         <EmptyState>No data for this period.</EmptyState>
       ) : (
-        <TableWrapper>
-          <Table>
-            <thead>
-              <tr>
-                <Th>Category</Th>
-                {data.months.map((m) => (
-                  <Th key={m}>{formatMonthHeader(m)}</Th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {data.categories.map((cat) => (
-                <tr key={cat.id}>
-                  <Td>{cat.name}</Td>
+        <>
+          <Card>
+            <SpendChart
+              months={data.months}
+              totals={data.totals}
+              selectedMonth={to}
+              onSelectMonth={(month) => void navigate({ to: "/", search: { month } })}
+            />
+          </Card>
+
+          <SectionHeader>By category</SectionHeader>
+          <TableWrapper>
+            <Table>
+              <thead>
+                <tr>
+                  <Th />
                   {data.months.map((m) => (
-                    <Td key={m} $highlight={!!cat.amounts[m]}>
-                      {cat.amounts[m] ? formatAmount(cat.amounts[m]) : "-"}
-                    </Td>
+                    <Th key={m}>{formatMonthHeader(m)}</Th>
                   ))}
+                  <Th>Avg</Th>
+                  <Th>Trend</Th>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
-        </TableWrapper>
+              </thead>
+              <tbody>
+                {rows.map(({ cat, avg }) => (
+                  <tr key={cat.id}>
+                    <Td>
+                      {cat.icon ? `${cat.icon} ` : ""}
+                      {cat.name}
+                    </Td>
+                    {data.months.map((m) => {
+                      const spent = cat.amounts[m] ?? 0;
+                      const over = isOverBudget(spent, data.budgets[m]?.[cat.id]);
+                      return (
+                        <Td key={m} $over={over} $muted={spent === 0}>
+                          {spent ? formatAmount(spent, { decimals: 0 }) : "–"}
+                        </Td>
+                      );
+                    })}
+                    <Td>{formatAmount(avg, { decimals: 0 })}</Td>
+                    <Td>
+                      <Sparkline values={data.months.map((m) => cat.amounts[m] ?? 0)} />
+                    </Td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </TableWrapper>
+        </>
       )}
     </>
   );

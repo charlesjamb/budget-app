@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vite-plus/test";
 import request from "supertest";
 import { eq } from "drizzle-orm";
-import { budgetCategories } from "../db/schema.js";
+import { budgetCategories, monthlyBudgets } from "../db/schema.js";
 import { createApp } from "../app.js";
 import {
   setupTestContext,
@@ -420,6 +420,45 @@ describe("Transaction Routes", () => {
       expect(res.status).toBe(200);
       expect(res.body.categories[0].amounts["2026-01"]).toBe(1000);
       expect(res.body.categories[0].amounts["2026-02"]).toBeUndefined();
+    });
+  });
+
+  describe("GET /api/transactions/history budgets and totals", () => {
+    it("should return planned budgets and per-month totals", async () => {
+      const food = createCategory(ctx.db, ctx.householdId, "Food");
+      createTransaction(ctx.db, ctx.householdId, {
+        dateOperation: "2026-01-15",
+        amount: 1000,
+        budgetCategoryId: food.id,
+      });
+      createTransaction(ctx.db, ctx.householdId, {
+        dateOperation: "2026-01-20",
+        amount: 500,
+        budgetCategoryId: food.id,
+      });
+      ctx.db
+        .insert(monthlyBudgets)
+        .values([
+          {
+            householdId: ctx.householdId,
+            month: "2026-01",
+            categoryId: food.id,
+            amountCents: 3000,
+          },
+          { householdId: ctx.householdId, month: "2026-01", categoryId: 0, amountCents: 99999 },
+        ])
+        .run();
+
+      const res = await request(app)
+        .get("/api/transactions/history?from=2026-01&to=2026-02")
+        .set("Cookie", ctx.sessionCookie);
+
+      expect(res.status).toBe(200);
+      expect(res.body.budgets).toEqual({ "2026-01": { [food.id]: 3000 } });
+      expect(res.body.totals).toEqual({
+        "2026-01": { spent: 1500, budget: 3000 },
+        "2026-02": { spent: 0, budget: 0 },
+      });
     });
   });
 

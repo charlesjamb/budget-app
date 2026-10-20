@@ -13,6 +13,7 @@ const Layout = styled.div`
 
 const Main = styled.main<{ $sidebarWidth: number }>`
   flex: 1;
+  min-width: 0;
   margin-left: ${(p) => p.$sidebarWidth}px;
   min-height: 100vh;
 

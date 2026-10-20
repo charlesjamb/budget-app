@@ -1,6 +1,6 @@
 import { eq, and, between, isNull, sql } from "drizzle-orm";
 import { type AppDatabase } from "../db/connection.js";
-import { transactions, budgetCategories, merchantAliases } from "../db/schema.js";
+import { transactions, budgetCategories, merchantAliases, monthlyBudgets } from "../db/schema.js";
 
 export function createTransactionService(db: AppDatabase) {
   function getFullTransaction(householdId: number, transactionId: number) {
@@ -191,6 +191,7 @@ export function createTransactionService(db: AppDatabase) {
         .select({
           categoryId: budgetCategories.id,
           categoryName: budgetCategories.name,
+          categoryIcon: budgetCategories.icon,
           month: sql<string>`substr(${transactions.dateOperation}, 1, 7)`.as("month"),
           totalAmount:
             sql<number>`sum(${transactions.amount} - ${transactions.reimbursedAmount})`.as(
@@ -209,6 +210,7 @@ export function createTransactionService(db: AppDatabase) {
         .groupBy(
           budgetCategories.id,
           budgetCategories.name,
+          budgetCategories.icon,
           sql`substr(${transactions.dateOperation}, 1, 7)`,
         )
         .all();
@@ -216,7 +218,7 @@ export function createTransactionService(db: AppDatabase) {
       // Pivot to { categoryId, categoryName, amounts: { month: amount } }
       const categoryMap = new Map<
         number,
-        { id: number; name: string; amounts: Record<string, number> }
+        { id: number; name: string; icon: string | null; amounts: Record<string, number> }
       >();
 
       for (const row of results) {
@@ -224,15 +226,46 @@ export function createTransactionService(db: AppDatabase) {
           categoryMap.set(row.categoryId, {
             id: row.categoryId,
             name: row.categoryName,
+            icon: row.categoryIcon,
             amounts: {},
           });
         }
         categoryMap.get(row.categoryId)!.amounts[row.month] = row.totalAmount;
       }
 
+      // Planned amounts per month and category (categoryId 0 is the legacy global cap, not a category)
+      const budgetRows = db
+        .select({
+          month: monthlyBudgets.month,
+          categoryId: monthlyBudgets.categoryId,
+          amountCents: monthlyBudgets.amountCents,
+        })
+        .from(monthlyBudgets)
+        .where(
+          and(eq(monthlyBudgets.householdId, householdId), between(monthlyBudgets.month, from, to)),
+        )
+        .all();
+
+      const budgets: Record<string, Record<number, number>> = {};
+      const totals: Record<string, { spent: number; budget: number }> = {};
+      for (const month of months) totals[month] = { spent: 0, budget: 0 };
+
+      for (const row of budgetRows) {
+        if (row.categoryId === 0) continue;
+        (budgets[row.month] ??= {})[row.categoryId] = row.amountCents;
+        totals[row.month].budget += row.amountCents;
+      }
+      for (const category of categoryMap.values()) {
+        for (const [month, amount] of Object.entries(category.amounts)) {
+          totals[month].spent += amount;
+        }
+      }
+
       return {
         months,
         categories: Array.from(categoryMap.values()),
+        budgets,
+        totals,
       };
     },
 
